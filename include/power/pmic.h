@@ -44,7 +44,7 @@ struct power_fg {
 };
 
 struct power_chrg {
-	int (*chrg_type) (struct pmic *p);
+	int (*chrg_type) (struct pmic *p, u32 ctrl_en);
 	int (*chrg_bat_present) (struct pmic *p);
 	int (*chrg_state) (struct pmic *p, int state, int current);
 };

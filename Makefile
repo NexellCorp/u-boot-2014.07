@@ -1257,7 +1257,10 @@ clobber: rm-files := $(CLOBBER_FILES)
 
 PHONY += clobber
 
-clobber: clean
+tidy:	
+	@find $(OBJTREE) -type f \( -name '*.depend*' \) -print | xargs rm -f
+
+clobber: clean tidy
 	$(call cmd,rmdirs)
 	$(call cmd,rmfiles)
 

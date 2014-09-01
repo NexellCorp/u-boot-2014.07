@@ -25,6 +25,11 @@ static volatile unsigned int   const clock_in = CONFIG_S5P_SERIAL_CLOCK;
 #define RX_FIFO_FULL_MASK	(1 << 8)
 #define TX_FIFO_FULL_MASK	(1 << 24)
 
+static void __serial_device_init(void)
+{
+}
+void serial_device_init(void)	__attribute__((weak, alias("__serial_device_init")));
+
 static inline struct s5p_uart *s5p_get_base_uart(int dev_index)
 {
 	return (struct s5p_uart *)port;
@@ -80,6 +85,8 @@ static void serial_setbrg_dev(const int dev_index)
 static int serial_init_dev(const int dev_index)
 {
 	struct s5p_uart *const uart = s5p_get_base_uart(dev_index);
+
+	serial_device_init();
 
 	/* enable FIFOs, auto clear Rx FIFO */
 	writel(0x3, &uart->ufcon);
@@ -191,13 +198,7 @@ __weak struct serial_device *default_serial_console(void)
 	return &s5p_serial_device;
 }
 
-static void __serial_device_init(void)
-{
-}
-void serial_device_init(void)	__attribute__((weak, alias("__serial_device_init")));
-
 void s5p_serial_initialize(void)
 {
-	serial_device_init();
 	serial_register(&s5p_serial_device);
 }

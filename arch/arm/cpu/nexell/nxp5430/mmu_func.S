@@ -16,7 +16,7 @@
 mmu_turn_on:
 	ldr	sp, =(CONFIG_SYS_INIT_SP_ADDR)
 	mov r13, lr
-	bl mmu_make_pagetable
+	bl mmu_on
 
 	mov	 pc, r13						@ back to caller
 
@@ -26,11 +26,10 @@ mmu_turn_on:
  * enable_mmu
  **************************************************************************
  */
-.equ	PAGE_DOMAIN,	0x55555555	
+.equ	PAGE_DOMAIN,	0x55555555
 
 	.globl enable_mmu
 enable_mmu:
-		
 		mov		r10, r0							@ r0: PTs
 		mov		r1, #0
 		MCR		p15, 0, r1, c2, c0, 2			@ performs a page table walk on TLB miss and TTB0 has 16KB boundary
@@ -41,6 +40,13 @@ enable_mmu:
 		orr		r10, r10, #0x4a					@ Enable the Data Cache
 		mcr		p15, 0, r10, c2, c0, 0
 
+		@ NXP5430
+#if 1
+		ldr		r0, =0xfAAA0
+		mcr		p15, 0, r0, c10, c2, 0			@ set PRRR
+		ldr		r0, =0xffecffec
+		mcr		p15, 0, r0, c10, c2, 1			@ set NMRR
+#endif
 		mov  	r0, #0x0
 		mcr		p15, 0, r0, c8, c7, 0			@ flush I+D TLBs
 
@@ -54,6 +60,4 @@ enable_mmu:
 		mcr		p15, 0, r1, c1, c0, 0
 
 		mov		pc, lr							@ return
-
-
 #endif

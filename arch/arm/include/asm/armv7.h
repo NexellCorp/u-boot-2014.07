@@ -66,7 +66,11 @@
  * -march=armv5 in U-Boot
  */
 #define CP15ISB	asm volatile ("mcr     p15, 0, %0, c7, c5, 4" : : "r" (0))
+#ifndef CONFIG_MACH_NXP5430
 #define CP15DSB	asm volatile ("mcr     p15, 0, %0, c7, c10, 4" : : "r" (0))
+#else
+#define CP15DSB
+#endif
 #define CP15DMB	asm volatile ("mcr     p15, 0, %0, c7, c10, 5" : : "r" (0))
 
 void v7_outer_cache_enable(void);

@@ -87,11 +87,14 @@
 #define IRQ_PHY_GPIOE					57
 #define IRQ_PHY_CRYPTO					58
 #define IRQ_PHY_PDM						59
+#define IRQ_PHY_TMU0                    60
+#define IRQ_PHY_TMU1                    61
+#define IRQ_PHY_VIP2					72
 
-#define IRQ_PHY_MAX_COUNT       		64
+#define IRQ_PHY_MAX_COUNT       		74
 
 /*
- * GPIO Interrupt Number 160 (64~223)
+ * GPIO Interrupt Number 160 (74~233)
  */
 #define IRQ_GPIO_START			IRQ_PHY_MAX_COUNT
 #define IRQ_GPIO_END			(IRQ_GPIO_START + 32 * 5)	// Group: A,B,C,D,E
@@ -103,10 +106,10 @@
 #define IRQ_GPIO_E_START		(IRQ_GPIO_START + PAD_GPIO_E)
 
 /*
- * ALIVE Interrupt Number 8 (224~231)
+ * ALIVE Interrupt Number 6 (234~239)
  */
 #define IRQ_ALIVE_START			IRQ_GPIO_END
-#define IRQ_ALIVE_END			(IRQ_ALIVE_START + 8)
+#define IRQ_ALIVE_END			(IRQ_ALIVE_START + 6)
 
 #define IRQ_ALIVE_0				(IRQ_ALIVE_START + 0)
 #define IRQ_ALIVE_1				(IRQ_ALIVE_START + 1)
@@ -114,14 +117,22 @@
 #define IRQ_ALIVE_3				(IRQ_ALIVE_START + 3)
 #define IRQ_ALIVE_4				(IRQ_ALIVE_START + 4)
 #define IRQ_ALIVE_5				(IRQ_ALIVE_START + 5)
-#define IRQ_ALIVE_6				(IRQ_ALIVE_START + 6)
-#define IRQ_ALIVE_7				(IRQ_ALIVE_START + 7)
+
+/*
+ * GIC Interrupt (256 ~ 287), must be align 32
+ */
+#define IRQ_GIC_START			((IRQ_ALIVE_END & ~31) + 32)
+#define IRQ_GIC_PPI_START		(IRQ_GIC_START  +  16)
+#define IRQ_GIC_PPI_PVT			(IRQ_GIC_START  +  29)
+#define IRQ_GIC_PPI_WDT			(IRQ_GIC_START  +  30)
+#define IRQ_GIC_PPI_VIC			(IRQ_GIC_START  +  31)
+#define IRQ_GIC_END				(IRQ_GIC_START  +  32)
 
 /*
  * MAX(Physical+Virtual) Interrupt Number
  */
-#define IRQ_SYSTEM_END			IRQ_ALIVE_END
-#define IRQ_SYSTEM_RESERVED		55					// NXE1100 PMIC
+#define IRQ_SYSTEM_END			IRQ_GIC_END
+#define IRQ_SYSTEM_RESERVED		72					// NXE1100 PMIC
 
 #define IRQ_TOTAL_MAX_COUNT  	(IRQ_SYSTEM_END + IRQ_SYSTEM_RESERVED)
 

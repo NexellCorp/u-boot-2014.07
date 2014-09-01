@@ -26,12 +26,13 @@
 
 #define PHY_BASEADDR_DMA0     		(0xC0000000)
 #define PHY_BASEADDR_DMA1     		(0xC0001000)
-#define PHY_BASEADDR_INTC0     		(0xC0002000)
-#define PHY_BASEADDR_INTC1     		(0xC0003000)
-#define PHY_BASEADDR_ALIVE			(0xC0010800)
+#define PHY_BASEADDR_INTC     		(0xC0008000)
+#define PHY_BASEADDR_CLKPWR			(0xC0010000)
+#define PHY_BASEADDR_RTC			(0xC0010C00)	// ???
+#define PHY_BASEADDR_ALIVE			(0xC0010800)	// ???
 #define PHY_BASEADDR_RSTCON			(0xC0012000)
 #define PHY_BASEADDR_TIEOFF			(0xC0011000)
-#define PHY_BASEADDR_PDM			(0xC0014000)
+#define PHY_BASEADDR_PDM			(0xC0014000)	// ???
 #define PHY_BASEADDR_CRYPTO			(0xC0015000)
 #define PHY_BASEADDR_TIMER			(0xC0017000)
 #define PHY_BASEADDR_PWM			(0xC0018000)
@@ -41,6 +42,9 @@
 #define PHY_BASEADDR_GPIOC			(0xC001C000)
 #define PHY_BASEADDR_GPIOD			(0xC001D000)
 #define PHY_BASEADDR_GPIOE			(0xC001E000)
+#define PHY_BASEADDR_OHCI			(0xC0020000)
+#define PHY_BASEADDR_EHCI			(0xC0030000)
+#define PHY_BASEADDR_HSOTG			(0xC0040000)
 #define PHY_BASEADDR_ADC			(0xC0053000)
 #define PHY_BASEADDR_PPM			(0xC0054000)
 #define PHY_BASEADDR_I2S0     		(0xC0055000)
@@ -56,6 +60,7 @@
 #define PHY_BASEADDR_GMAC			(0xC0060000)
 #define PHY_BASEADDR_VIP0			(0xC0063000)
 #define PHY_BASEADDR_VIP1			(0xC0064000)
+#define PHY_BASEADDR_VIP2			(0xC0099000)
 #define PHY_BASEADDR_DEINTERLACE	(0xC0065000)
 #define PHY_BASEADDR_SCALER			(0xC0066000)
 #define PHY_BASEADDR_ECID			(0xC0067000)
@@ -121,126 +126,128 @@
 #define PHY_BASEADDR_CLKGEN37		(0xC00AC000)	// SPI0
 #define PHY_BASEADDR_CLKGEN38		(0xC00AD000)	// SPI1
 #define PHY_BASEADDR_CLKGEN39		(0xC00A7000)	// SPI2
+#define PHY_BASEADDR_CLKGEN40		(0xC009A000)
+#define PHY_BASEADDR_DREX			(0xC00E0000)
 
 #define PHY_BASEADDR_CS_NAND		(0x2C000000)	// ????
 
-/*
- * Nexell clock generator
- */
-#define CLK_ID_TIMER_1			0
-#define CLK_ID_TIMER_2			1
-#define CLK_ID_TIMER_3			2
-#define CLK_ID_PWM_1			3
-#define CLK_ID_PWM_2			4
-#define CLK_ID_PWM_3			5
-#define CLK_ID_I2C_0			6
-#define CLK_ID_I2C_1			7
-#define CLK_ID_I2C_2			8
-#define CLK_ID_MIPI				9
-#define CLK_ID_GMAC				10	/* External Clock 1 */
-#define CLK_ID_SPDIF_TX			11
-#define CLK_ID_MPEGTSI			12
-#define CLK_ID_PWM_0			13
-#define CLK_ID_TIMER_0			14
-#define CLK_ID_I2S_0			15	/* External Clock 1 */
-#define CLK_ID_I2S_1			16	/* External Clock 1 */
-#define CLK_ID_I2S_2			17	/* External Clock 1 */
-#define CLK_ID_SDHC_0			18
-#define CLK_ID_SDHC_1			19
-#define CLK_ID_SDHC_2			20
-#define CLK_ID_MALI				21
-#define CLK_ID_UART_0			22	/* UART0_MODULE */
-#define CLK_ID_UART_2			23	/* UART1_MODULE */
-#define CLK_ID_UART_1			24	/* pl01115_Uart_modem_MODULE  */
-#define CLK_ID_UART_3			25	/* pl01115_Uart_nodma0_MODULE */
-#define CLK_ID_UART_4			26	/* pl01115_Uart_nodma1_MODULE */
-#define CLK_ID_UART_5			27	/* pl01115_Uart_nodma2_MODULE */
-#define CLK_ID_DIT				28
-#define CLK_ID_PPM				29
-#define CLK_ID_VIP_0			30	/* External Clock 1 */
-#define CLK_ID_VIP_1			31	/* External Clock 1, 2 */
-#define CLK_ID_USB2HOST			32	/* External Clock 2 */
-#define CLK_ID_CODA				33
-#define CLK_ID_CRYPTO			34
-#define CLK_ID_SCALER			35
-#define CLK_ID_PDM				36
-#define CLK_ID_SPI_0			37
-#define CLK_ID_SPI_1			38
-#define CLK_ID_SPI_2			39
-#define CLK_ID_MAX				39
+	/*
+	 * Nexell clock generator
+	 */
+	#define CLK_ID_TIMER_1			0
+	#define CLK_ID_TIMER_2			1
+	#define CLK_ID_TIMER_3			2
+	#define CLK_ID_PWM_1			3
+	#define CLK_ID_PWM_2			4
+	#define CLK_ID_PWM_3			5
+	#define CLK_ID_I2C_0			6
+	#define CLK_ID_I2C_1			7
+	#define CLK_ID_I2C_2			8
+	#define CLK_ID_MIPI				9
+	#define CLK_ID_GMAC				10	/* External Clock 1 */
+	#define CLK_ID_SPDIF_TX			11
+	#define CLK_ID_MPEGTSI			12
+	#define CLK_ID_PWM_0			13
+	#define CLK_ID_TIMER_0			14
+	#define CLK_ID_I2S_0			15	/* External Clock 1 */
+	#define CLK_ID_I2S_1			16	/* External Clock 1 */
+	#define CLK_ID_I2S_2			17	/* External Clock 1 */
+	#define CLK_ID_SDHC_0			18
+	#define CLK_ID_SDHC_1			19
+	#define CLK_ID_SDHC_2			20
+	#define CLK_ID_MALI				21
+	#define CLK_ID_UART_0			22	/* UART0_MODULE */
+	#define CLK_ID_UART_2			23	/* UART1_MODULE */
+	#define CLK_ID_UART_1			24	/* pl01115_Uart_modem_MODULE  */
+	#define CLK_ID_UART_3			25	/* pl01115_Uart_nodma0_MODULE */
+	#define CLK_ID_UART_4			26	/* pl01115_Uart_nodma1_MODULE */
+	#define CLK_ID_UART_5			27	/* pl01115_Uart_nodma2_MODULE */
+	#define CLK_ID_DIT				28
+	#define CLK_ID_PPM				29
+	#define CLK_ID_VIP_0			30	/* External Clock 1 */
+	#define CLK_ID_VIP_1			31	/* External Clock 1, 2 */
+	#define CLK_ID_USB2HOST			32	/* External Clock 2 */
+	#define CLK_ID_CODA				33
+	#define CLK_ID_CRYPTO			34
+	#define CLK_ID_SCALER			35
+	#define CLK_ID_PDM				36
+	#define CLK_ID_SPI_0			37
+	#define CLK_ID_SPI_1			38
+	#define CLK_ID_SPI_2			39
+	#define CLK_ID_MAX				39
 
-/*
- * Nexell Reset control
- */
-#define	RESET_ID_AC97				0
-#define	RESET_ID_CPU1				1
-#define	RESET_ID_CPU2				2
-#define	RESET_ID_CPU3				3
-#define	RESET_ID_WD1				4
-#define	RESET_ID_WD2				5
-#define	RESET_ID_WD3				6
-#define	RESET_ID_CRYPTO				7
-#define	RESET_ID_DEINTERLACE		8
-#define	RESET_ID_DISP_TOP			9
-#define RESET_ID_DISPLAY			10	/* DualDisplay -: MLC0/1, DPC0/1 */
-#define RESET_ID_RESCONV			11
-#define RESET_ID_LCDIF				12
-#define RESET_ID_HDMI				13
-#define RESET_ID_HDMI_VIDEO			14
-#define RESET_ID_HDMI_SPDIF			15
-#define RESET_ID_HDMI_TMDS			16
-#define RESET_ID_HDMI_PHY			17
-#define RESET_ID_LVDS				18
-#define RESET_ID_ECID				19
-#define RESET_ID_I2C0				20
-#define RESET_ID_I2C1				21
-#define RESET_ID_I2C2				22
-#define RESET_ID_I2S0				23
-#define RESET_ID_I2S1				24
-#define RESET_ID_I2S2				25
-#define RESET_ID_DREX_C				26
-#define RESET_ID_DREX_A				27
-#define RESET_ID_DREX				28
-#define RESET_ID_MIPI				29
-#define RESET_ID_MIPI_DSI			30
-#define RESET_ID_MIPI_CSI			31
-#define RESET_ID_MIPI_PHY_S			32
-#define RESET_ID_MIPI_PHY_M			33
-#define	RESET_ID_MPEGTSI			34
-#define RESET_ID_PDM				35
-#define RESET_ID_TIMER				36
-#define RESET_ID_PWM				37
-#define RESET_ID_SCALER				38
-#define RESET_ID_SDMMC0				39
-#define RESET_ID_SDMMC1				40
-#define RESET_ID_SDMMC2				41
-#define RESET_ID_SPDIFRX			42
-#define RESET_ID_SPDIFTX			43
-#define	RESET_ID_SSP0_P				44
-#define RESET_ID_SSP0				45
-#define RESET_ID_SSP1_P				46
-#define RESET_ID_SSP1				47
-#define RESET_ID_SSP2_P				48
-#define RESET_ID_SSP2				49
-#define RESET_ID_UART0				50	/* UART1 */
-#define RESET_ID_UART1				51	/* pl01115_Uart_modem	*/
-#define RESET_ID_UART2				52	/* UART1 */
-#define RESET_ID_UART3				53	/* pl01115_Uart_nodma0 */
-#define RESET_ID_UART4				54	/* pl01115_Uart_nodma1 */
-#define RESET_ID_UART5				55	/* pl01115_Uart_nodma2 */
-#define RESET_ID_USB20HOST			56
-#define RESET_ID_USB20OTG			57
-#define RESET_ID_WDT				58
-#define RESET_ID_WDT_POR			59
-#define RESET_ID_ADC				60
-#define RESET_ID_CODA_A				61
-#define RESET_ID_CODA_P				62
-#define RESET_ID_CODA_C				63
-#define RESET_ID_DWC_GMAC			64
-#define RESET_ID_MALI400			65
-#define RESET_ID_PPM				66
-#define RESET_ID_VIP1				67
-#define RESET_ID_VIP0				68
+	/*
+	 * Nexell Reset control
+	 */
+	#define	RESET_ID_AC97				0
+	#define	RESET_ID_CPU1				1
+	#define	RESET_ID_CPU2				2
+	#define	RESET_ID_CPU3				3
+	#define	RESET_ID_WD1				4
+	#define	RESET_ID_WD2				5
+	#define	RESET_ID_WD3				6
+	#define	RESET_ID_CRYPTO				7
+	#define	RESET_ID_DEINTERLACE		8
+	#define	RESET_ID_DISP_TOP			9
+	#define RESET_ID_DISPLAY			10	/* DualDisplay -: MLC0/1, DPC0/1 */
+	#define RESET_ID_RESCONV			11
+	#define RESET_ID_LCDIF				12
+	#define RESET_ID_HDMI				13
+	#define RESET_ID_HDMI_VIDEO			14
+	#define RESET_ID_HDMI_SPDIF			15
+	#define RESET_ID_HDMI_TMDS			16
+	#define RESET_ID_HDMI_PHY			17
+	#define RESET_ID_LVDS				18
+	#define RESET_ID_ECID				19
+	#define RESET_ID_I2C0				20
+	#define RESET_ID_I2C1				21
+	#define RESET_ID_I2C2				22
+	#define RESET_ID_I2S0				23
+	#define RESET_ID_I2S1				24
+	#define RESET_ID_I2S2				25
+	#define RESET_ID_DREX_C				26
+	#define RESET_ID_DREX_A				27
+	#define RESET_ID_DREX				28
+	#define RESET_ID_MIPI				29
+	#define RESET_ID_MIPI_DSI			30
+	#define RESET_ID_MIPI_CSI			31
+	#define RESET_ID_MIPI_PHY_S			32
+	#define RESET_ID_MIPI_PHY_M			33
+	#define	RESET_ID_MPEGTSI			34
+	#define RESET_ID_PDM				35
+	#define RESET_ID_TIMER				36
+	#define RESET_ID_PWM				37
+	#define RESET_ID_SCALER				38
+	#define RESET_ID_SDMMC0				39
+	#define RESET_ID_SDMMC1				40
+	#define RESET_ID_SDMMC2				41
+	#define RESET_ID_SPDIFRX			42
+	#define RESET_ID_SPDIFTX			43
+	#define	RESET_ID_SSP0_P				44
+	#define RESET_ID_SSP0				45
+	#define RESET_ID_SSP1_P				46
+	#define RESET_ID_SSP1				47
+	#define RESET_ID_SSP2_P				48
+	#define RESET_ID_SSP2				49
+	#define RESET_ID_UART0				50	/* UART1 */
+	#define RESET_ID_UART1				51	/* pl01115_Uart_modem	*/
+	#define RESET_ID_UART2				52	/* UART1 */
+	#define RESET_ID_UART3				53	/* pl01115_Uart_nodma0 */
+	#define RESET_ID_UART4				54	/* pl01115_Uart_nodma1 */
+	#define RESET_ID_UART5				55	/* pl01115_Uart_nodma2 */
+	#define RESET_ID_USB20HOST			56
+	#define RESET_ID_USB20OTG			57
+	#define RESET_ID_WDT				58
+	#define RESET_ID_WDT_POR			59
+	#define RESET_ID_ADC				60
+	#define RESET_ID_CODA_A				61
+	#define RESET_ID_CODA_P				62
+	#define RESET_ID_CODA_C				63
+	#define RESET_ID_DWC_GMAC			64
+	#define RESET_ID_MALI400			65
+	#define RESET_ID_PPM				66
+	#define RESET_ID_VIP1				67
+	#define RESET_ID_VIP0				68
 
 /*
  * Interrupt

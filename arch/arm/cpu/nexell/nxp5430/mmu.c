@@ -27,24 +27,21 @@ extern ulong _end_ofs;			/* end of image relative to _start */
 #define PAGE_TABLE_START		((CONFIG_SYS_TEXT_BASE + BSS_END_OPS) & 0xffff0000) + 0x10000
 #define PAGE_TABLE_SIZE			0x0000c000
 
-enum
-{
+enum {
 	FLD_FAULT 	= 0,
 	FLD_COARSE 	= 1,
 	FLD_SECTION = 2,
 	FLD_FINE	= 3
 };
 
-enum
-{
+enum {
 	AP_FAULT 	= 0,
 	AP_CLIENT 	= 1,
 	AP_RESERVED = 2,
 	AP_MANAGER 	= 3
 };
 
-enum
-{
+enum {
 	SECTION_BUFFERABLE 	= 2,
 	SECTION_CACHEABLE  	= 3,
 	SECTION_SBO 		= 4,
@@ -58,15 +55,15 @@ enum
 // static const u32 page_table_start =  PAGE_TABLE_START  ;
 
 static const u32 ptable[] = {
- #include "page_map.h"
+ 	#include "page_map.h"
 };
 
-static void make_page_table(u32 *ptable	)
+static void make_page_table(u32 *ptable)
 {
-	int				index;
-	unsigned int	temp,virtual_address, physical_address, num_of_MB;
-	unsigned int	mode, i, addr, data;
-	unsigned int	*address_table;
+	int	index;
+	unsigned int temp,virtual_address, physical_address, num_of_MB;
+	unsigned int mode, i, addr, data;
+	unsigned int *address_table;
 
 	address_table = (u32*)ptable;
 
@@ -93,15 +90,14 @@ static void make_page_table(u32 *ptable	)
         	physical_address += 1<<20;
 	    	addr += ACCESS_ALIGN;
 	    }
-
    }
 
 	//-------------------------------------------------------------------------
 	// Cacheable, Bufferable, R/W
 	//-------------------------------------------------------------------------
 	index = 0;
-	mode  = (1<<SECTION_CACHEABLE) | (1<<SECTION_BUFFERABLE) | (FLD_SECTION<<0);	// Cachable & Bufferable
-	mode  = mode | AP_CLIENT<<SECTION_AP;					// set kernel R/W permission
+	mode = (1<<SECTION_CACHEABLE) | (1<<SECTION_BUFFERABLE) | (FLD_SECTION<<0);	// Cachable & Bufferable
+	mode = mode | AP_CLIENT<<SECTION_AP;					// set kernel R/W permission
 
 	while (1) {
 		temp			 = *(address_table+index++) & 0xfff<<20;
@@ -126,8 +122,8 @@ static void make_page_table(u32 *ptable	)
 	// No Cacheable, No Bufferable, R/W
 	//-------------------------------------------------------------------------
 	index = 0;
-	mode  = (0<<SECTION_CACHEABLE) | (0<<SECTION_BUFFERABLE) | (FLD_SECTION<<0);	// No Cachable & No Bufferable
-	mode  = mode | AP_CLIENT<<SECTION_AP;					// set kernel R/W permission
+	mode = (0<<SECTION_CACHEABLE) | (0<<SECTION_BUFFERABLE) | (FLD_SECTION<<0);	// No Cachable & No Bufferable
+	mode = mode | AP_CLIENT<<SECTION_AP;					// set kernel R/W permission
 
 	while (1) {
 		virtual_address	 = *(address_table+index++) & 0xfff<<20;
@@ -147,7 +143,6 @@ static void make_page_table(u32 *ptable	)
 				addr += ACCESS_ALIGN;
 			}
 		}
-
 	}
 	return;
 }
@@ -155,9 +150,9 @@ static void make_page_table(u32 *ptable	)
 extern void arm_init_before_mmu(void);
 extern void enable_mmu(unsigned);
 
-void mmu_make_pagetable(void)
+void mmu_on(void)
 {
-	mmu_page_table_flush(PAGE_TABLE_START,PAGE_TABLE_SIZE);
+	mmu_page_table_flush(PAGE_TABLE_START, PAGE_TABLE_SIZE);
 	make_page_table((u32*)ptable);		/* 	Make MMU PAGE TABLE	*/
 
 	arm_init_before_mmu();						/* Flush DCACHE */

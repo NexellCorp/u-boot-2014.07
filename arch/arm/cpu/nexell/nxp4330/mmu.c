@@ -155,9 +155,9 @@ static void make_page_table(u32 *ptable	)
 extern void arm_init_before_mmu(void);
 extern void enable_mmu(unsigned);
 
-void mmu_make_pagetable(void)
+void mmu_on(void)
 {
-	mmu_page_table_flush(PAGE_TABLE_START,PAGE_TABLE_SIZE);
+	mmu_page_table_flush(PAGE_TABLE_START, PAGE_TABLE_SIZE);
 	make_page_table((u32*)ptable);		/* 	Make MMU PAGE TABLE	*/
 
 	arm_init_before_mmu();						/* Flush DCACHE */

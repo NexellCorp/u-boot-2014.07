@@ -142,7 +142,9 @@ ENTRY(c_runtime_cpu_setup)
  */
 #ifndef CONFIG_SYS_ICACHE_OFF
 	mcr	p15, 0, r0, c7, c5, 0	@ invalidate icache
+#ifndef CONFIG_MACH_NXP5430
 	mcr     p15, 0, r0, c7, c10, 4	@ DSB
+#endif
 	mcr     p15, 0, r0, c7, c5, 4	@ ISB
 #endif
 /*
@@ -182,11 +184,14 @@ ENTRY(cpu_init_cp15)
 	/*
 	 * Invalidate L1 I/D
 	 */
+
 	mov	r0, #0			@ set up for MCR
 	mcr	p15, 0, r0, c8, c7, 0	@ invalidate TLBs
 	mcr	p15, 0, r0, c7, c5, 0	@ invalidate icache
 	mcr	p15, 0, r0, c7, c5, 6	@ invalidate BP array
+#ifndef CONFIG_MACH_NXP5430
 	mcr     p15, 0, r0, c7, c10, 4	@ DSB
+#endif
 	mcr     p15, 0, r0, c7, c5, 4	@ ISB
 
 	/*

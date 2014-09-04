@@ -21,7 +21,7 @@
  * MA 02111-1307 USA
  */
 
-#define MACH_TYPE_NXP5430		       5430
+#define MACH_TYPE_NXP5430		       4330
 
 #if defined(CONFIG_MACH_NXP5430)
 	#ifdef machine_arch_type

@@ -224,8 +224,11 @@ int do_goImage (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	entry = (IMAGE*)addr;
 
-	entry(addr, machtype);
+#ifdef CONFIG_MMU_ENABLE
+	disable_mmu();
+#endif
 
+	entry(addr, machtype);
 	return 0;
 }
 

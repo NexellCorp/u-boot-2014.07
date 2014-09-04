@@ -190,9 +190,9 @@ ENTRY(cpu_init_cp15)
 	mcr	p15, 0, r0, c7, c5, 0	@ invalidate icache
 	mcr	p15, 0, r0, c7, c5, 6	@ invalidate BP array
 #ifndef CONFIG_MACH_NXP5430
-	mcr     p15, 0, r0, c7, c10, 4	@ DSB
+	mcr p15, 0, r0, c7, c10, 4	@ DSB
 #endif
-	mcr     p15, 0, r0, c7, c5, 4	@ ISB
+	mcr p15, 0, r0, c7, c5, 4	@ ISB
 
 	/*
 	 * disable MMU stuff and caches

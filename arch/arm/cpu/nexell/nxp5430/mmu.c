@@ -46,7 +46,8 @@ enum {
 	SECTION_CACHEABLE  	= 3,
 	SECTION_SBO 		= 4,
 	SECTION_DOMAIN 		= 5,
-	SECTION_AP 			= 10
+	SECTION_AP 			= 10,
+	SECTION_SHARED		= 16,
 };
 
 //------------------------------------------------------------------------------
@@ -75,6 +76,7 @@ static void make_page_table(u32 *ptable)
 	//-------------------------------------------------------------------------
 	index = 0;
 	mode  = (0<<SECTION_CACHEABLE) | (0<<SECTION_BUFFERABLE) | (FLD_SECTION<<0);	// No Cachable & No Bufferable
+	mode |= (1<<SECTION_SHARED);
 	mode  = mode | AP_CLIENT<<SECTION_AP;					// set kernel R/W permission
 //	while(1)
 	{
@@ -96,8 +98,9 @@ static void make_page_table(u32 *ptable)
 	// Cacheable, Bufferable, R/W
 	//-------------------------------------------------------------------------
 	index = 0;
-	mode = (1<<SECTION_CACHEABLE) | (1<<SECTION_BUFFERABLE) | (FLD_SECTION<<0);	// Cachable & Bufferable
-	mode = mode | AP_CLIENT<<SECTION_AP;					// set kernel R/W permission
+	mode  = (1<<SECTION_CACHEABLE) | (1<<SECTION_BUFFERABLE) | (FLD_SECTION<<0);	// Cachable & Bufferable
+	mode |= (1<<SECTION_SHARED);
+	mode  = mode | AP_CLIENT<<SECTION_AP;					// set kernel R/W permission
 
 	while (1) {
 		temp			 = *(address_table+index++) & 0xfff<<20;
@@ -150,12 +153,56 @@ static void make_page_table(u32 *ptable)
 extern void arm_init_before_mmu(void);
 extern void enable_mmu(unsigned);
 
+static void smp_enable(int r0, int r1)
+{
+	asm (".word 0xEC510F1F\n" : : : "memory", "cc");	/* mrrc p15, 1, r0, r1, c15 */
+	asm (".word 0xE3800040\n" : : : "memory", "cc");	/* orr r0, r0, #0x40 */
+	asm (".word 0xEC410F1F\n" : : : "memory", "cc");	/* mcrr p15, 1, r0, r1, c15 */
+}
+
 void mmu_on(void)
 {
+	volatile unsigned int *TIE_OFF;
+	volatile unsigned int *CCI_REG;
+
+	smp_enable(0, 0);
+//	 TIE_OFF = (unsigned int *)(0xc0011000 + (42*4));
+//	*TIE_OFF |= 0x7;	/* shared */
+#if 0
+	 CCI_REG = (unsigned int *)(0xe0090000);
+    *CCI_REG = 0x3f;
+	 CCI_REG = (unsigned int *)(0xe0091000);
+	*CCI_REG = 0x0;
+ 	 CCI_REG = (unsigned int *)(0xe0092000);
+	*CCI_REG = 0x0;
+	 CCI_REG = (unsigned int *)(0xe0093000);
+	*CCI_REG = 0x0;
+	 CCI_REG = (unsigned int *)(0xe0094000);
+	*CCI_REG = 0x0;
+	 CCI_REG = (unsigned int *)(0xe0095000);
+	*CCI_REG = 0x0;
+#else
+	#if 1
+	 CCI_REG = (unsigned int *)(0xe0090000);
+    *CCI_REG = 0x8;
+	 CCI_REG = (unsigned int *)(0xe0091000);
+	*CCI_REG = 0x0;
+ 	 CCI_REG = (unsigned int *)(0xe0092000);
+	*CCI_REG = 0x0;
+	 CCI_REG = (unsigned int *)(0xe0093000);
+	*CCI_REG = 0x0;
+	 CCI_REG = (unsigned int *)(0xe0094000);
+	*CCI_REG = 0x0;
+	 CCI_REG = (unsigned int *)(0xe0095000);
+	*CCI_REG = 0x3<<30 | 0x3;
+	#endif
+//	*CCI_REG = 0x0;
+#endif
+
 	mmu_page_table_flush(PAGE_TABLE_START, PAGE_TABLE_SIZE);
 	make_page_table((u32*)ptable);		/* 	Make MMU PAGE TABLE	*/
 
-	arm_init_before_mmu();						/* Flush DCACHE */
+	arm_init_before_mmu();				/* Flush DCACHE */
 	flush_dcache_all();
 	invalidate_dcache_all();
 

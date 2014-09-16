@@ -138,7 +138,7 @@ static void bd_gpio_init(void)
 			NX_GPIO_SetOutputValue(index, bit,  (lv  ? CTRUE : CFALSE));
 			NX_GPIO_SetInterruptMode(index, bit, (lv));
 
-			NX_GPIO_SetPullSelect(index, bit, (NX_GPIO_PULL)plup);
+			NX_GPIO_SetPullEnable(index, bit, (NX_GPIO_PULL)plup );
 			NX_GPIO_SetDriveStrength(index, bit, (NX_GPIO_DRVSTRENGTH)stren); /* pad strength */
 		}
 	}

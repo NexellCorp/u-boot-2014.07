@@ -108,8 +108,9 @@ int board_mmc_init(bd_t *bis)
 {
 	int err = 0;
 
-#if(CONFIG_MMC0_ATTACH == TRUE)
+	#if(CONFIG_MMC0_ATTACH == TRUE)
 	writel(readl(0xC0012004) | (1<<7), 0xC0012004);
+	#endif
 
 	#if(CONFIG_MMC0_CLOCK)
 	err = dw_mci_init(0xC0062000, 4, 0, CONFIG_MMC0_CLOCK);
@@ -120,11 +121,10 @@ int board_mmc_init(bd_t *bis)
 	#ifdef CONFIG_MMC0_CLK_DELAY
 	dw_mci_clk_delay(CONFIG_MMC0_CLK_DELAY, 0xC0062000);
 	#endif
-#endif
 
-#if(CONFIG_MMC1_ATTACH == TRUE)
+	#if(CONFIG_MMC1_ATTACH == TRUE)
 	writel(readl(0xC0012004) | (1<<8), 0xC0012004);
-
+	#endif
 	#if(CONFIG_MMC1_CLOCK)
 	err = dw_mci_init(0xC0068000, 4, 1, CONFIG_MMC1_CLOCK);
 	#else
@@ -134,11 +134,10 @@ int board_mmc_init(bd_t *bis)
 	#ifdef CONFIG_MMC1_CLK_DELAY
 	dw_mci_clk_delay( CONFIG_MMC1_CLK_DELAY, 0xC0068000);
 	#endif
-#endif
 
-#if(CONFIG_MMC2_ATTACH == TRUE)
+	#if(CONFIG_MMC2_ATTACH == TRUE)
 	writel(readl(0xC0012004) | (1<<9), 0xC0012004);
-
+	#endif
 	#if(CONFIG_MMC2_CLOCK)
 	err = dw_mci_init(0xC0069000, 4,2, CONFIG_MMC2_CLOCK);
 	#else
@@ -147,7 +146,6 @@ int board_mmc_init(bd_t *bis)
 	#ifdef CONFIG_MMC2_CLK_DELAY
 	dw_mci_clk_delay(CONFIG_MMC2_CLK_DELAY, 0xC0069000);
 	#endif
-#endif
 
 	return err;
 }

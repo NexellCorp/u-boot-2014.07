@@ -1160,6 +1160,12 @@ static int fboot_cmd_getvar(const char *cmd, f_cmd_inf *inf, struct f_trans_stat
 		goto done_getvar;
 	}
 
+	if (!strncmp(cmd, "chip", strlen("chip"))) {
+		strncpy(p, CONFIG_SYS_PROMPT, 7);
+		goto done_getvar;
+	}
+
+
 	fastboot_getvar(cmd, p);
 
 done_getvar:

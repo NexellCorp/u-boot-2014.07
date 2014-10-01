@@ -122,7 +122,7 @@
  *	U-Boot Environments
  */
 /* refer to common/env_common.c	*/
-#define CONFIG_BOOTDELAY	   			10
+#define CONFIG_BOOTDELAY	   			2
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 #define CONFIG_ETHADDR		   			00:e2:1c:ba:e8:60
 #define CONFIG_NETMASK		   			255.255.255.0

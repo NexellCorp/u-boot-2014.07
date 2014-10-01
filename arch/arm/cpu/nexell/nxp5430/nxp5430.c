@@ -67,40 +67,6 @@ static void cpu_base_init(void)
  	 */
 	NX_ALIVE_SetWriteEnable(CTRUE);
 	__raw_writel(0xFFFFFFFF, SCR_ARM_SECOND_BOOT);
-
-	/*
-	 * NOTE> Control for ACP register access.
-	 */
-/*
-	tie_reg = (U32)IO_ADDRESS(NX_TIEOFF_GetPhysicalAddress());
-
-	val = __raw_readl(tie_reg + 0x70) & ~((3 << 30) | (3 << 10));
-	writel(val,   (tie_reg + 0X70));
-
-	val = __raw_readl(tie_reg + 0x80) & ~(3 << 3);
-	writel(val,   (tie_reg + 0x80));
-*/
-#ifndef CONFIG_MMU_ENABLE
-	{
-	volatile unsigned int *TIE_OFF;
-	volatile unsigned int *CCI_REG;
-
-//	 TIE_OFF = (unsigned int *)(0xc0011000 + (42*4));
-//	*TIE_OFF |= 0x7;	/* shared */
-	 CCI_REG = (unsigned int *)(0xe0090000);
-    *CCI_REG = 0x3f;
-	 CCI_REG = (unsigned int *)(0xe0091000);
-	*CCI_REG = 0x0;
- 	 CCI_REG = (unsigned int *)(0xe0092000);
-	*CCI_REG = 0x0;
-	 CCI_REG = (unsigned int *)(0xe0093000);
-	*CCI_REG = 0x0;
-	 CCI_REG = (unsigned int *)(0xe0094000);
-	*CCI_REG = 0x0;
-	 CCI_REG = (unsigned int *)(0xe0095000);
-	*CCI_REG = 0x3<<30 | 0x3;
-	}
-#endif
 }
 
 static void cpu_bus_init(void)

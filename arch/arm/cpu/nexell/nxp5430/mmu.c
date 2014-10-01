@@ -1,5 +1,6 @@
 
 #include <common.h>
+#include <asm/io.h>
 #include <platform.h>
 #include <mach-api.h>
 
@@ -153,51 +154,16 @@ static void make_page_table(u32 *ptable)
 extern void arm_init_before_mmu(void);
 extern void enable_mmu(unsigned);
 
-static void smp_enable(int r0, int r1)
-{
-	asm (".word 0xEC510F1F\n" : : : "memory", "cc");	/* mrrc p15, 1, r0, r1, c15 */
-	asm (".word 0xE3800040\n" : : : "memory", "cc");	/* orr r0, r0, #0x40 */
-	asm (".word 0xEC410F1F\n" : : : "memory", "cc");	/* mcrr p15, 1, r0, r1, c15 */
-}
+#define	CCI_REG	0xe0090000
 
 void mmu_on(void)
 {
-	volatile unsigned int *TIE_OFF;
-	volatile unsigned int *CCI_REG;
-
-	smp_enable(0, 0);
-//	 TIE_OFF = (unsigned int *)(0xc0011000 + (42*4));
-//	*TIE_OFF |= 0x7;	/* shared */
-#if 0
-	 CCI_REG = (unsigned int *)(0xe0090000);
-    *CCI_REG = 0x3f;
-	 CCI_REG = (unsigned int *)(0xe0091000);
-	*CCI_REG = 0x0;
- 	 CCI_REG = (unsigned int *)(0xe0092000);
-	*CCI_REG = 0x0;
-	 CCI_REG = (unsigned int *)(0xe0093000);
-	*CCI_REG = 0x0;
-	 CCI_REG = (unsigned int *)(0xe0094000);
-	*CCI_REG = 0x0;
-	 CCI_REG = (unsigned int *)(0xe0095000);
-	*CCI_REG = 0x0;
-#else
-	#if 1
-	 CCI_REG = (unsigned int *)(0xe0090000);
-    *CCI_REG = 0x8;
-	 CCI_REG = (unsigned int *)(0xe0091000);
-	*CCI_REG = 0x0;
- 	 CCI_REG = (unsigned int *)(0xe0092000);
-	*CCI_REG = 0x0;
-	 CCI_REG = (unsigned int *)(0xe0093000);
-	*CCI_REG = 0x0;
-	 CCI_REG = (unsigned int *)(0xe0094000);
-	*CCI_REG = 0x0;
-	 CCI_REG = (unsigned int *)(0xe0095000);
-	*CCI_REG = 0x3<<30 | 0x3;
-	#endif
-//	*CCI_REG = 0x0;
-#endif
+	writel(0x8, (CCI_REG + 0x0000));	// CCI
+	writel(0x0, (CCI_REG + 0x1000));	// S0 : coresight
+ 	writel(0x0, (CCI_REG + 0x2000));	// S1 : bottom bus
+	writel(0x0, (CCI_REG + 0x3000));	// S2 : top bus
+	writel((0x3<<30) | 0x3, (CCI_REG + 0x4000));	// S3: cpu cluster 1
+	writel((0x3<<30) | 0x3, (CCI_REG + 0x5000));	// S4: cpu cluster 0
 
 	mmu_page_table_flush(PAGE_TABLE_START, PAGE_TABLE_SIZE);
 	make_page_table((u32*)ptable);		/* 	Make MMU PAGE TABLE	*/

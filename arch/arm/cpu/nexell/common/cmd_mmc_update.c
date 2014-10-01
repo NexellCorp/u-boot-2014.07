@@ -80,6 +80,7 @@ int do_update_mmc(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 	p   = (unsigned char *)mem_addr;
 	blk = (dst_addr/MMC_BLOCK_SIZE);
 	cnt = (mem_len/MMC_BLOCK_SIZE) + ((mem_len & (MMC_BLOCK_SIZE-1)) ? 1 : 0);
+	flush_dcache_all();
 
 	if (! strcmp(argv[2], "2ndboot")) {
 		struct boot_dev_head *bh = (struct boot_dev_head *)mem_addr;

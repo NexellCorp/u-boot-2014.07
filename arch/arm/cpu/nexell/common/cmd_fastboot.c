@@ -1369,6 +1369,7 @@ static int fboot_rx_handler(const unsigned char *buffer, unsigned int length)
 			if (!strncmp(cmd, str, len) &&
 				fptr->fnc_t)
 			{
+				flush_dcache_all();
 				fptr->fnc_t(cmd+len, inf, fst);
 				break;
 			}

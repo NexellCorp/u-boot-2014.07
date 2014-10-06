@@ -184,23 +184,23 @@ static struct nxp_clk_periph clk_periphs [] = {
 	CLK_PERI_1S(DEV_NAME_SPI		,  0, CLK_ID_SPI_0	    , PHY_BASEADDR_CLKGEN37, (_PLL_0_2_)),
 	CLK_PERI_1S(DEV_NAME_SPI		,  1, CLK_ID_SPI_1	    , PHY_BASEADDR_CLKGEN38, (_PLL_0_2_)),
 	CLK_PERI_1S(DEV_NAME_SPI		,  2, CLK_ID_SPI_2		, PHY_BASEADDR_CLKGEN39, (_PLL_0_2_)),
-#if 0
+	#if 0
 	CLK_PERI_2S(DEV_NAME_USB2HOST   , -1, CLK_ID_USB2HOST   , PHY_BASEADDR_CLKGEN32, (_PLL_0_3_), (_PLL_0_3_|_EXTCLK1_)),
-//	CLK_PERI_1S(DEV_NAME_VIP		,  0, CLK_ID_VIP_0	    , PHY_BASEADDR_CLKGEN30, (_PLL_0_3_|_EXTCLK1_|_GATE_BCLK_)),
-//	CLK_PERI_1S(DEV_NAME_VIP		,  1, CLK_ID_VIP_1	    , PHY_BASEADDR_CLKGEN31, (_PLL_0_3_|_EXTCLK1_|_EXTCLK2_|_GATE_BCLK_)),
+	CLK_PERI_1S(DEV_NAME_VIP		,  0, CLK_ID_VIP_0	    , PHY_BASEADDR_CLKGEN30, (_PLL_0_3_|_EXTCLK1_|_GATE_BCLK_)),
+	CLK_PERI_1S(DEV_NAME_VIP		,  1, CLK_ID_VIP_1	    , PHY_BASEADDR_CLKGEN31, (_PLL_0_3_|_EXTCLK1_|_EXTCLK2_|_GATE_BCLK_)),
 	CLK_PERI_1S(DEV_NAME_MIPI		, -1, CLK_ID_MIPI		, PHY_BASEADDR_CLKGEN9 , (_PLL_0_2_)),
 	CLK_PERI_2S(DEV_NAME_GMAC		, -1, CLK_ID_GMAC		, PHY_BASEADDR_CLKGEN10, (_PLL_0_3_|_EXTCLK1_), (_CLKOUTn_)),
 	CLK_PERI_1S(DEV_NAME_SPDIF_TX	, -1, CLK_ID_SPDIF_TX	, PHY_BASEADDR_CLKGEN11, (_PLL_0_2_)),
 	CLK_PERI_1S(DEV_NAME_MPEGTSI	, -1, CLK_ID_MPEGTSI	, PHY_BASEADDR_CLKGEN12, (_GATE_BCLK_)),
-//	CLK_PERI_1S(DEV_NAME_MALI		, -1, CLK_ID_MALI		, PHY_BASEADDR_CLKGEN21, (_GATE_BCLK_)),
+	CLK_PERI_1S(DEV_NAME_MALI		, -1, CLK_ID_MALI		, PHY_BASEADDR_CLKGEN21, (_GATE_BCLK_)),
 	CLK_PERI_1S(DEV_NAME_DIT		, -1, CLK_ID_DIT		, PHY_BASEADDR_CLKGEN28, (_GATE_BCLK_)),
 	CLK_PERI_1S(DEV_NAME_PPM		, -1, CLK_ID_PPM		, PHY_BASEADDR_CLKGEN29, (_PLL_0_2_)),
 	CLK_PERI_2S(DEV_NAME_USB2HOST	, -1, CLK_ID_USB2HOST	, PHY_BASEADDR_CLKGEN32, (_PLL_0_3_), (_PLL_0_3_|_EXTCLK1_)),
-//	CLK_PERI_1S(DEV_NAME_CODA		, -1, CLK_ID_CODA		, PHY_BASEADDR_CLKGEN33, (_GATE_PCLK_|_GATE_BCLK_)),
+	CLK_PERI_1S(DEV_NAME_CODA		, -1, CLK_ID_CODA		, PHY_BASEADDR_CLKGEN33, (_GATE_PCLK_|_GATE_BCLK_)),
 	CLK_PERI_1S(DEV_NAME_CRYPTO		, -1, CLK_ID_CRYPTO	    , PHY_BASEADDR_CLKGEN34, (_GATE_PCLK_)),
 	CLK_PERI_1S(DEV_NAME_SCALER		, -1, CLK_ID_SCALER	    , PHY_BASEADDR_CLKGEN35, (_GATE_BCLK_)),
 	CLK_PERI_1S(DEV_NAME_PDM		, -1, CLK_ID_PDM		, PHY_BASEADDR_CLKGEN36, (_GATE_PCLK_)),
-#endif
+	#endif
 };
 
 static struct clklink_dev clk_link[] = { };
@@ -218,8 +218,8 @@ static struct nxp_clk_dev	(clk_devices[DEVICE_NUM]);
 /*
  * Core frequencys
  */
-struct core_clk_hz {
-	unsigned long pll0, pll1, pll2, pll3;					/* PLL */
+struct _core_hz_ {
+	unsigned long pll[4];					/* PLL */
 	unsigned long cpu_fclk, cpu_bclk;						/* cpu */
 	unsigned long mem_fclk, mem_dclk, mem_bclk, mem_pclk;	/* ddr */
 	unsigned long bus_bclk, bus_pclk;						/* bus */
@@ -231,7 +231,7 @@ struct core_clk_hz {
 	unsigned long hdmi_pclk;
 };
 
-static struct core_clk_hz core_hz;	/* core clock */
+static struct _core_hz_ core_hz;	/* core clock */
 static unsigned int support_dvfs = 1;
 
 /*
@@ -332,7 +332,6 @@ static inline void peri_clk_disable(void *base)
  */
 static struct NX_CLKPWR_RegisterSet * const clkpwr =
 	(struct NX_CLKPWR_RegisterSet *)IO_ADDRESS(PHY_BASEADDR_CLKPWR_MODULE);
-#define	getquotient(v, d)	(v/d)
 
 #define	getquotient(v, d)	(v/d)
 
@@ -431,30 +430,32 @@ static unsigned int pll_get_div(int dvo)
 			  				((pll_get_div(PLL_DIV_CCI4)>> 0)&0x3F)	/						\
 			  				((pll_get_div(PLL_DIV_CCI4)>> 8)&0x3F))
 
-static inline void core_update_rate(int type)
+static inline unsigned long core_update_rate(int type)
 {
+	unsigned long rate = 0;
 	switch (type) {
-	case  0: core_hz.pll0 		= PLLN_RATE(0);    break;
-	case  1: core_hz.pll1 		= PLLN_RATE(1);    break;
-	case  2: core_hz.pll2 		= PLLN_RATE(2);    break;
-	case  3: core_hz.pll3 		= PLLN_RATE(3);    break;
-	case  4: core_hz.cpu_fclk 	= CPU_FCLK_RATE(PLL_DIV_CPUG0);  break;
-	case  5: core_hz.mem_fclk  	= MEM_FCLK_RATE();  break;
-	case  6: core_hz.bus_bclk 	= BUS_BCLK_RATE();  break;
-	case  7: core_hz.bus_pclk  	= BUS_PCLK_RATE();  break;
-	case  8: core_hz.cpu_bclk 	= CPU_BCLK_RATE(PLL_DIV_CPUG0);  break;
-	case  9: core_hz.mem_dclk  	= MEM_DCLK_RATE();  break;
-	case 10: core_hz.mem_bclk  	= MEM_BCLK_RATE();  break;
-	case 11: core_hz.mem_pclk  	= MEM_PCLK_RATE();  break;
-	case 12: core_hz.g3d_bclk 	= G3D_BCLK_RATE(); 	break;
-	case 13: core_hz.coda_bclk 	= MPG_BCLK_RATE(); 	break;
-	case 14: core_hz.coda_pclk 	= MPG_PCLK_RATE(); 	break;
-	case 15: core_hz.disp_bclk 	= DISP_BCLK_RATE(); break;
-	case 16: core_hz.disp_pclk 	= DISP_PCLK_RATE(); break;
-	case 17: core_hz.hdmi_pclk 	= HDMI_PCLK_RATE(); break;
-	case 18: core_hz.cci4_bclk 	= CCI4_BCLK_RATE(); break;
-	case 19: core_hz.cci4_pclk 	= CCI4_PCLK_RATE(); break;
+	case  0: rate = core_hz.pll[0] 	= PLLN_RATE(0);    break;
+	case  1: rate = core_hz.pll[1] 	= PLLN_RATE(1);    break;
+	case  2: rate = core_hz.pll[2] 	= PLLN_RATE(2);    break;
+	case  3: rate = core_hz.pll[3] 	= PLLN_RATE(3);    break;
+	case  4: rate = core_hz.cpu_fclk 	= CPU_FCLK_RATE(PLL_DIV_CPUG0);  break;
+	case  5: rate = core_hz.mem_fclk  	= MEM_FCLK_RATE();  break;
+	case  6: rate = core_hz.bus_bclk 	= BUS_BCLK_RATE();  break;
+	case  7: rate = core_hz.bus_pclk  	= BUS_PCLK_RATE();  break;
+	case  8: rate = core_hz.cpu_bclk 	= CPU_BCLK_RATE(PLL_DIV_CPUG0);  break;
+	case  9: rate = core_hz.mem_dclk  	= MEM_DCLK_RATE();  break;
+	case 10: rate = core_hz.mem_bclk  	= MEM_BCLK_RATE();  break;
+	case 11: rate = core_hz.mem_pclk  	= MEM_PCLK_RATE();  break;
+	case 12: rate = core_hz.g3d_bclk 	= G3D_BCLK_RATE(); 	break;
+	case 13: rate = core_hz.coda_bclk 	= MPG_BCLK_RATE(); 	break;
+	case 14: rate = core_hz.coda_pclk 	= MPG_PCLK_RATE(); 	break;
+	case 15: rate = core_hz.disp_bclk 	= DISP_BCLK_RATE(); break;
+	case 16: rate = core_hz.disp_pclk 	= DISP_PCLK_RATE(); break;
+	case 17: rate = core_hz.hdmi_pclk 	= HDMI_PCLK_RATE(); break;
+	case 18: rate = core_hz.cci4_bclk 	= CCI4_BCLK_RATE(); break;
+	case 19: rate = core_hz.cci4_pclk 	= CCI4_PCLK_RATE(); break;
 	};
+	return rate;
 }
 
 static inline unsigned long core_rate_hz(int type)
@@ -462,10 +463,10 @@ static inline unsigned long core_rate_hz(int type)
 	unsigned long rate = 0;
 
 	switch (type) {
-	case  0: rate = core_hz.pll0; 		break;
-	case  1: rate = core_hz.pll1; 		break;
-	case  2: rate = core_hz.pll2; 		break;
-	case  3: rate = core_hz.pll3; 		break;
+	case  0: rate = core_hz.pll[0];		break;
+	case  1: rate = core_hz.pll[1];		break;
+	case  2: rate = core_hz.pll[2];		break;
+	case  3: rate = core_hz.pll[3];		break;
 	case  4: rate = core_hz.cpu_fclk;	break;
 	case  5: rate = core_hz.mem_fclk;  	break;
 	case  6: rate = core_hz.bus_bclk;  	break;
@@ -491,7 +492,7 @@ static inline unsigned long core_rate_hz(int type)
 
 static inline long core_rate(int type)
 {
-	return nxp_cpu_clock_hz(type);
+	return core_rate_hz(type);
 }
 
 static inline long core_set_rate(struct clk *clk, long rate)
@@ -524,7 +525,7 @@ static inline long core_set_rate(struct clk *clk, long rate)
 }
 
 /*
- * CLK Interfaces
+ * Clock Interfaces
  */
 static inline long get_rate_divide(long rate, long request,
 				int align, int *divide)
@@ -872,7 +873,7 @@ void nxp_cpu_clock_print(void)
 		core_update_rate(i);
 
 	printk("PLL : [0] = %10lu, [1] = %10lu, [2] = %10lu, [3] = %10lu\n",
-		core_hz.pll0, core_hz.pll1, core_hz.pll2, core_hz.pll3);
+		core_hz.pll[0], core_hz.pll[1], core_hz.pll[2], core_hz.pll[3]);
 
 	/* CPU0, 1  : DIV 0, 7 */
 	pll = pll_get_dvo(PLL_DIV_CPUG0), cpu = pll, support_dvfs = 1;

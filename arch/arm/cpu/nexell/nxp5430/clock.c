@@ -133,12 +133,12 @@ struct nxp_clk_dev {
 	struct nxp_clk_periph *peri;
 };
 
-struct clklink_dev {
+struct clk_link_dev {
 	char *name;
 	int   id;
 };
 
-struct clkgen_register {
+struct clk_gen_reg {
 	volatile U32 CLKENB;
 	volatile U32 CLKGEN[4];
 };
@@ -203,7 +203,7 @@ static struct nxp_clk_periph clk_periphs [] = {
 	#endif
 };
 
-static struct clklink_dev clk_link[] = { };
+static struct clk_link_dev clk_link[] = { };
 
 #define	PERIPH_NUM			((int)ARRAY_SIZE(clk_periphs))
 #define	CLKPLL_NUM			((int)ARRAY_SIZE(clk_plls))
@@ -237,9 +237,9 @@ static unsigned int support_dvfs = 1;
 /*
  * CLKGEN HW
  */
-static inline void peri_clk_bclk(void *base, int on)
+static inline void clk_gen_bclk(void *base, int on)
 {
-	struct clkgen_register *preg = base;
+	struct clk_gen_reg *preg = base;
 	register U32 val;
 
 	val	 = ReadIODW(&preg->CLKENB);
@@ -248,9 +248,9 @@ static inline void peri_clk_bclk(void *base, int on)
 	WriteIODW(&preg->CLKENB, val);
 }
 
-static inline void peri_clk_pclk(void *base, int on)
+static inline void clk_gen_pclk(void *base, int on)
 {
-	struct clkgen_register *preg = base;
+	struct clk_gen_reg *preg = base;
 	register U32 val;
 
 	if (!on) return;
@@ -261,9 +261,9 @@ static inline void peri_clk_pclk(void *base, int on)
 	WriteIODW(&preg->CLKENB, val);
 }
 
-static inline void peri_clk_rate(void *base, int level, int src, int div)
+static inline void clk_gen_rate(void *base, int level, int src, int div)
 {
-	struct clkgen_register *preg = base;
+	struct clk_gen_reg *preg = base;
 	register U32 val;
 
 #ifdef CONFIG_NXP5430_CPUFREQ_PLLDEV
@@ -283,9 +283,9 @@ static inline void peri_clk_rate(void *base, int level, int src, int div)
 	WriteIODW(&preg->CLKGEN[level<<1], val);
 }
 
-static inline void peri_clk_invert(void *base, int level, int inv)
+static inline void clk_gen_inv(void *base, int level, int inv)
 {
-	struct clkgen_register *preg = base;
+	struct clk_gen_reg *preg = base;
 	register U32 val;
 
 	val = ReadIODW(&preg->CLKGEN[level<<1]);
@@ -294,25 +294,14 @@ static inline void peri_clk_invert(void *base, int level, int inv)
 	WriteIODW(&preg->CLKGEN[level<<1], val);
 }
 
-static inline void peri_clk_enable(void *base)
+static inline void clk_gen_enb(void *base, int on)
 {
-	struct clkgen_register *preg = base;
+	struct clk_gen_reg *preg = base;
 	register U32 val;
 
 	val	 = ReadIODW(&preg->CLKENB);
 	val	&= ~(1 << 2);
-	val	|=  (1 << 2);
-	WriteIODW(&preg->CLKENB, val);
-}
-
-static inline void peri_clk_disable(void *base)
-{
-	struct clkgen_register *preg = base;
-	register U32 val;
-
-	val	 = ReadIODW(&preg->CLKENB);
-	val	&= ~(1 << 2);
-	val	|=  (0 << 2);
+	val	|=  ((on ? 1 : 0) << 2);
 	WriteIODW(&preg->CLKENB, val);
 }
 
@@ -729,7 +718,7 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 		int d = (0 == i ? peri->clk_div0: peri->clk_div1);
 		if (-1 == s)
 			continue;
-		peri_clk_rate(peri->base_addr, i, s, d);
+		clk_gen_rate(peri->base_addr, i, s, d);
 		pr_debug("clk: %s.%d (%p) set_rate [%d] src[%d] div[%d]\n",
 			peri->dev_name, peri->dev_id, peri->base_addr, i, s, d);
 	}
@@ -757,10 +746,10 @@ int clk_enable(struct clk *clk)
 	if (!(INPUT_MASK & peri->clk_mask0)) {
 		/* Gated BCLK/PCLK enable */
 		if (_GATE_BCLK_ & peri->clk_mask0)
-			peri_clk_bclk(peri->base_addr, 1);
+			clk_gen_bclk(peri->base_addr, 1);
 
 		if (_GATE_PCLK_ & peri->clk_mask0)
-			peri_clk_pclk(peri->base_addr, 1);
+			clk_gen_pclk(peri->base_addr, 1);
 
 		spin_unlock_irqrestore(&peri->lock, flags);
 		return 0;
@@ -769,17 +758,17 @@ int clk_enable(struct clk *clk)
 	/* invert */
 	inv = peri->clk_inv0;
 	for (; peri->level > i; i++, inv = peri->clk_inv1)
-		peri_clk_invert(peri->base_addr, i, inv);
+		clk_gen_inv(peri->base_addr, i, inv);
 
 	/* Gated BCLK/PCLK enable */
 	if (_GATE_BCLK_ & peri->clk_mask0)
-		peri_clk_bclk(peri->base_addr, 1);
+		clk_gen_bclk(peri->base_addr, 1);
 
 	if (_GATE_PCLK_ & peri->clk_mask0)
-		peri_clk_pclk(peri->base_addr, 1);
+		clk_gen_pclk(peri->base_addr, 1);
 
 	/* CLKGEN enable */
-	peri_clk_enable(peri->base_addr);
+	clk_gen_enb(peri->base_addr, 1);
 
 	spin_unlock_irqrestore(&peri->lock, flags);
 	return 0;
@@ -801,22 +790,22 @@ void clk_disable(struct clk *clk)
 	if (!(INPUT_MASK & peri->clk_mask0)) {
 		/* Gated BCLK/PCLK disable */
 		if (_GATE_BCLK_ & peri->clk_mask0)
-			peri_clk_bclk(peri->base_addr, 0);
+			clk_gen_bclk(peri->base_addr, 0);
 
 		if (_GATE_PCLK_ & peri->clk_mask0)
-			peri_clk_pclk(peri->base_addr, 0);
+			clk_gen_pclk(peri->base_addr, 0);
 
 		spin_unlock_irqrestore(&peri->lock, flags);
 		return;
 	}
-	peri_clk_disable(peri->base_addr);
+	clk_gen_enb(peri->base_addr, 0);
 
 	/* Gated BCLK/PCLK disable */
 	if (_GATE_BCLK_ & peri->clk_mask0)
-		peri_clk_bclk(peri->base_addr, 0);
+		clk_gen_bclk(peri->base_addr, 0);
 
 	if (_GATE_PCLK_ & peri->clk_mask0)
-		peri_clk_pclk(peri->base_addr, 0);
+		clk_gen_pclk(peri->base_addr, 0);
 
 	spin_unlock_irqrestore(&peri->lock, flags);
 	return;

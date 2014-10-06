@@ -22,25 +22,29 @@
 #include <nx_type.h>
 #include <nx_chip.h>
 #include <nx_tieoff.h>
-#include <nx_usb20otg.h>
+//#include <nx_usb20otg.h>
 
 #include <common.h>
 #include <command.h>
+#include <asm/io.h>
 #include "usbdown.h"
 #if (0)
 #define	NX_DEBUG_MSG(args...) 	printf(args)
 #else
-#define	NX_DEBUG_MSG(args...) 	do{}while(0) 
+#define	NX_DEBUG_MSG(args...) 	do{}while(0)
 #endif
 
 
 #define USBD_VID			0x2375
 #define USBD_PID			0x4330
 
-static struct NX_RSTCON_RegisterSet *pRSTCONReg = (struct NX_RSTCON_RegisterSet *)PHY_BASEADDR_RSTCON_MODULE;
-static struct NX_TIEOFF_RegisterSet *pTieoffreg = (struct NX_TIEOFF_RegisterSet *)PHY_BASEADDR_TIEOFF_MODULE;
-static struct NX_USB_OTG_RegisterSet *pUOReg = (struct NX_USB_OTG_RegisterSet *)PHY_BASEADDR_USB20OTG_MODULE_AHBS0;
-static USBBOOTSTATUS * pUSBBootStatus;
+static volatile struct NX_RSTCON_RegisterSet *pRSTCONReg =
+				(struct NX_RSTCON_RegisterSet *)PHY_BASEADDR_RSTCON_MODULE;
+static volatile struct NX_TIEOFF_RegisterSet *pTieoffreg =
+				(struct NX_TIEOFF_RegisterSet *)PHY_BASEADDR_TIEOFF_MODULE;
+static volatile struct NX_USB_OTG_RegisterSet *pUOReg =
+				(struct NX_USB_OTG_RegisterSet *)PHY_BASEADDR_USB20OTG_MODULE_AHBS0;
+static volatile USBBOOTSTATUS * pUSBBootStatus;
 
 static const U8 __attribute__((aligned(4))) gs_DeviceDescriptorFS[DEVICE_DESCRIPTOR_SIZE] =
 {
@@ -232,7 +236,7 @@ static void nx_usb_ep0_int_hndlr(void)
 		pSetupPacket->wIndex,
 		pSetupPacket->wLength
 		);
-		
+
 		switch (pSetupPacket->bRequest) {
 		case STANDARD_SET_ADDRESS:
 			/* Set Address Update bit */
@@ -335,7 +339,7 @@ static void nx_usb_ep0_int_hndlr(void)
 
 	if(pUSBBootStatus->speed == USB_HIGH) {
 		/*clear nak, next ep0, 64byte */
-		pUOReg->DCSR.DEPIR[CONTROL_EP].DIEPCTL = ((1<<26)|(CONTROL_EP<<11)|(0<<0));	
+		pUOReg->DCSR.DEPIR[CONTROL_EP].DIEPCTL = ((1<<26)|(CONTROL_EP<<11)|(0<<0));
 	}
 	else {
 		/*clear nak, next ep0, 8byte */
@@ -644,7 +648,6 @@ static void nx_udc_int_hndlr(void)
 
 	if (int_status & INT_RESET) {
 		NX_DEBUG_MSG("INT_RESET\n");
-
 		nx_usb_reset();
 	}
 
@@ -679,10 +682,10 @@ static void nx_udc_int_hndlr(void)
 	if ((int_status & INT_IN_EP) || (int_status & INT_OUT_EP)) {
 		NX_DEBUG_MSG("INT_IN or OUT_EP\n");
 		/* Read only register field */
-
 		nx_usb_transfer();
 	}
 	pUOReg->GCSR.GINTSTS = int_status; /* Interrupt Clear */
+	NX_DEBUG_MSG("[GINTSTS:0x%08x:0x%08x]\n", int_status, (WkUpInt|OEPInt|IEPInt|EnumDone|USBRst|USBSusp|RXFLvl));
 }
 
 CBOOL iUSBBOOT(void)
@@ -695,13 +698,14 @@ CBOOL iUSBBOOT(void)
 	pTieoffreg->TIEOFFREG[14] |= 3<<8;			// 8: enable, 9:phy word interface (0: 8 bit, 1: 16 bit)
 	pTieoffreg->TIEOFFREG[13] = 0xA3006C00;		// VBUSVLDEXT=1,VBUSVLDEXTSEL=1,POR=0
 	pTieoffreg->TIEOFFREG[13] = 0xA3006C80;		// POR_ENB=1
-	
+
 	udelay(40);		// 40us delay need.
-	
+
 	pTieoffreg->TIEOFFREG[13] = 0xA3006C88;		// nUtmiResetSync : 00000001
-	udelay(1);	// 10 clock need
+	udelay(10);	// 10 clock need
 	pTieoffreg->TIEOFFREG[13] = 0xA3006C8C;		// nResetSync : 00000001
-	udelay(1);	// 10 clock need
+	udelay(10);	// 10 clock need
+
 	/* usb core soft reset */
 	pUOReg->GCSR.GRSTCTL = CORE_SOFT_RESET;
 		while(!(pUOReg->GCSR.GRSTCTL & AHB_MASTER_IDLE));
@@ -719,7 +723,8 @@ CBOOL iUSBBOOT(void)
 		|0<<4		/* 0: utmi+, 1:ulpi */
 		|1<<3		/* phy i/f  0:8bit, 1:16bit */
 		|7<<0;		/* HS/FS Timeout**/
-	
+
+
 	if ((pUOReg->GCSR.GINTSTS & 0x1) == INT_DEV_MODE)
 	{
 		/* soft disconnect on */
@@ -740,7 +745,9 @@ CBOOL iUSBBOOT(void)
 	pUSBBootStatus->ep0_state = EP0_STATE_INIT;
 
 	pUSBBootStatus->bDownLoading = CTRUE;
-	
+
+	dmb();
+
 	while (pUSBBootStatus->bDownLoading)
 	{
 		if (ctrlc())
@@ -750,16 +757,17 @@ CBOOL iUSBBOOT(void)
 		{
 			nx_udc_int_hndlr();
 			pUOReg->GCSR.GINTSTS = 0xFFFFFFFF;
+			mdelay(3);
 		}
 	}
 
 	pUSBBootStatus->RxBuffAddr -= 512;
-	
 
 	pUSBBootStatus->iRxSize = NSIH[17] ;
 	pUSBBootStatus->bDownLoading = CTRUE;
 	printf(" Size  %d(hex : %x)\n",pUSBBootStatus->iRxSize, pUSBBootStatus->iRxSize );
-	
+	dmb();
+
 	while (pUSBBootStatus->bDownLoading)
 	{
 		if (ctrlc())
@@ -771,15 +779,16 @@ CBOOL iUSBBOOT(void)
 			pUOReg->GCSR.GINTSTS = 0xFFFFFFFF;
 		}
 	}
-	
-_exit:	
+
+_exit:
+	dmb();
 	/* usb core soft reset */
 	pUOReg->GCSR.GRSTCTL = CORE_SOFT_RESET;
 	while(!(pUOReg->GCSR.GRSTCTL & AHB_MASTER_IDLE));
 	pTieoffreg->TIEOFFREG[13] &= ~(1<<3);					//nUtmiResetSync = 0
 	pTieoffreg->TIEOFFREG[13] &= ~(1<<2);					//nResetSync = 0
 	pTieoffreg->TIEOFFREG[13] |= 3<<7;						//POR_ENB=1, POR=1
-		
+
 	return CTRUE;
 }
 
@@ -787,7 +796,7 @@ int do_usbdown(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
     int addr;
     USBBOOTSTATUS status;
-    
+
     pUSBBootStatus = &status;
     addr = simple_strtoul(argv[1],NULL,16);
 
@@ -797,13 +806,13 @@ int do_usbdown(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
     printf("Download Address %x ",addr);
     pUSBBootStatus->RxBuffAddr = (U8*)addr;
     iUSBBOOT();
-	flush_dcache_all();	
+	flush_dcache_all();
 	printf("Download complete \n");
     return 0;
 
 usage:
     cmd_usage(cmdtp);
-    return 1;   
+    return 1;
 }
 
 U_BOOT_CMD(

@@ -8,45 +8,68 @@
 #include <asm/system.h>
 #include <linux/linkage.h>
 
-/*************************************************************************
+/*
+ *************************************************************************
  *
- * Startup Code (reset vector: arm/lib/vectors.S)
+ * Exception vectors as described in ARM reference manuals
  *
- *************************************************************************/
-.globl	__start
-__start:
-	b	reset
-	ldr	pc, =_undefined_instruction
-	ldr	pc, =_software_interrupt
-	ldr	pc, =_prefetch_abort
-	ldr	pc, =_data_abort
-	ldr	pc, =_not_used
-	ldr	pc, =_irq
-	ldr	pc, =_fiq
+ * replace arm/lib/vectors.S
+ *
+ *************************************************************************
+ */
+	.globl	_stext
+_stext:
+	b 	reset
+	ldr	pc, _undefined_instruction
+	ldr	pc, _software_interrupt
+	ldr	pc, _prefetch_abort
+	ldr	pc, _data_abort
+	ldr	pc, _not_used
+	ldr	pc, _irq
+	ldr	pc, _fiq
+
+_undefined_instruction:	.word undefined_instruction
+_software_interrupt:	.word software_interrupt
+_prefetch_abort:	.word prefetch_abort
+_data_abort:		.word data_abort
+_not_used:		.word not_used
+_irq:			.word irq
+_fiq:			.word fiq
+
 	.balignl 16,0xdeadbeef
 
-.globl _TEXT_BASE
-_TEXT_BASE:
+/*
+ *************************************************************************
+ *
+ * Text and section base
+ *
+ *************************************************************************
+ */
+
+	.globl TEXT_BASE
+TEXT_BASE:
 	.word	CONFIG_SYS_TEXT_BASE
 
-/*
- * These are defined in the board-specific linker script.
- */
-.globl _bss_start_ofs
+	.globl _bss_start_ofs
 _bss_start_ofs:
-	.word __bss_start - __start
+	.word __bss_start - _stext
 
-.globl _bss_end_ofs
+	.globl _bss_end_ofs
 _bss_end_ofs:
-	.word __bss_end - __start
+	.word __bss_end - _stext
 
-.globl _end_ofs
+	.globl _end_ofs
 _end_ofs:
-	.word _end - __start
+	.word _end - _stext
 
 /*
- * the actual reset code (call from arm/lib/vectors.S)
+ *************************************************************************
+ *
+ * Reset handling
+ *
+ *************************************************************************
  */
+
 	.globl reset
 
 reset:
@@ -71,8 +94,8 @@ relocate_to_text:
 	 * relocate u-boot code on memory to text base
 	 * for nexell arm core (add by jhkim)
 	 */
-	adr	r0, __start				/* r0 <- current position of code   */
-	ldr	r1, _TEXT_BASE			/* test if we run from flash or RAM */
+	adr	r0, _stext				/* r0 <- current position of code   */
+	ldr	r1, TEXT_BASE			/* test if we run from flash or RAM */
 	cmp r0, r1              	/* don't reloc during debug         */
 	beq clear_bss
 
@@ -85,13 +108,13 @@ copy_loop_text:
 	cmp	r0, r2					/* until source end addreee [r2]    */
 	ble	copy_loop_text
 
-	ldr	r1, _TEXT_BASE			/* restart at text base */
+	ldr	r1, TEXT_BASE			/* restart at text base */
 	mov pc, r1
 
 clear_bss:
 	ldr	r0, _bss_start_ofs
 	ldr	r1, _bss_end_ofs
-	ldr	r4, _TEXT_BASE			/* text addr */
+	ldr	r4, TEXT_BASE			/* text addr */
 	add	r0, r0, r4
 	add	r1, r1, r4
 	mov	r2, #0x00000000			/* clear */
@@ -119,7 +142,7 @@ clbss_l:str	r2, [r0]			/* clear loop... */
 	bic	sp, sp, #7					/* 8-byte alignment for ABI compliance */
 
 	mov	r0, r9						/* gd_t *gd */
-	ldr r1, _TEXT_BASE				/* ulong text */
+	ldr r1, TEXT_BASE				/* ulong text */
 	mov r2, sp						/* ulong sp */
 	bl	global_data_setup
 
@@ -151,7 +174,7 @@ ENTRY(c_runtime_cpu_setup)
  * Move vector table
  */
 	/* Set vector address in CP15 VBAR register */
-	ldr     r0, =__start
+	ldr     r0, =_stext
 	mcr     p15, 0, r0, c12, c0, 0  @Set VBAR
 
 	bx	lr

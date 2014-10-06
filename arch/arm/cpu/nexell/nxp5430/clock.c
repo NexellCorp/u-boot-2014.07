@@ -805,11 +805,13 @@ void __init nxp_cpu_clock_init(void)
 
 		/* prevent uart clock for low level debug message */
 		#ifndef CONFIG_DEBUG_NX_UART
+		/*
 		if (peri->dev_name) {
 			peri_clk_disable(peri->base_addr);
 			peri_clk_bclk(peri->base_addr, 0);
 			peri_clk_pclk(peri->base_addr, 0);
 		}
+		*/
 		#endif
 	}
 

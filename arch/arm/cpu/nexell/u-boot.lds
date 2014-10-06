@@ -9,7 +9,7 @@
 
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
-ENTRY(__start)
+ENTRY(_stext)
 SECTIONS
 {
 	. = 0x00000000;
@@ -19,7 +19,7 @@ SECTIONS
 	{
 		*(.__image_copy_start)
 		SOCDIR/start.o (.text*)
-		*(.vectors)
+		SOCDIR/vectors.o (.text*)
 		*(.text*)
 	}
 

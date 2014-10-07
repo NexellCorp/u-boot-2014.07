@@ -169,6 +169,9 @@ static void setup_end_tag(bd_t *bd)
 }
 #endif
 
+#ifdef CONFIG_MMU_ENABLE
+extern void disable_mmu(void);
+#endif
 
 int do_goImage (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {

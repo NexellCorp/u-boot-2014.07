@@ -34,7 +34,6 @@
 
 static void cpu_base_init(void)
 {
-	U32 tie_reg, val;
 	int i = 0;
 
 	NX_RSTCON_Initialize();
@@ -75,21 +74,6 @@ static void cpu_bus_init(void)
 	NX_MCUS_Initialize();
 	NX_MCUS_SetBaseAddress((U32)IO_ADDRESS(NX_MCUS_GetPhysicalAddress()));
 	NX_MCUS_OpenModule();
-
-	/*
-	 * NAND Bus config
-	 */
-#if 0
-	NX_MCUS_SetNANDBUSConfig
-	(
-		0, /* NF */
-		CFG_SYS_NAND_TACS,		// tACS  ( 0 ~ 3 )
-		CFG_SYS_NAND_TCAH,		// tCAH  ( 0 ~ 3 )
-		CFG_SYS_NAND_TCOS,		// tCOS  ( 0 ~ 3 )
-		CFG_SYS_NAND_TCOH,		// tCOH  ( 0 ~ 3 )
-		CFG_SYS_NAND_TACC		// tACC  ( 1 ~ 16)
-	);
-#endif
 
 	/*
 	 * MCU-Static config: Static Bus #0 ~ #1

@@ -152,7 +152,24 @@ struct spi_param _spi_param[3] = {
 	},
 
 };
-
+static void  dump_reg(int ch)
+{
+	U32 *reg = 0xC005b000;
+	printf("Configure    : %08x \n", *reg);
+	printf("control      : %08x \n", *(reg+1));
+	printf("control      : %08x \n", *(reg+2));
+#if 1 
+	printf("CS           : %08x \n", *(reg+3));
+	printf("int EN       : %08x \n", *(reg+4));
+	printf("status       : %08x \n", *(reg+5));
+	printf("Tx data      : %08x \n", *(reg+6));
+	printf("Rx data      : %08x \n", *(reg+7));
+	printf("Packet cnt   : %08x \n", *(reg+8));
+	printf("Send status clear : %08x \n", *reg+9);
+	printf("SWAP         : %08x \n", *(reg+10));
+	printf("Feedback     : %08x \n", *(reg+11));
+#endif
+}
 /*global Variable */
 
 #ifdef CONFIG_SPI_EEPROM_WRITE_PROTECT
@@ -269,7 +286,7 @@ void spi_init_f (void)
 	struct clk *clk = NULL;
 	struct ssp_clock_params clk_freq = {0};
 	char name[10]= {0, };
-	unsigned long hz  = 10* 1000 * 1000;
+	unsigned long hz  = 30* 1000 * 1000;
 	unsigned long rate = 0;
 	DBGOUT("%s \n ",__func__);
 	flush_dcache_all();
@@ -292,28 +309,31 @@ void spi_init_f (void)
 			NX_SSP_SetBaseAddress( ModuleIndex, (U32)NX_SSP_GetPhysicalAddress(ModuleIndex) );
 			sprintf(name,"nxp-spi%d",ModuleIndex);
 			clk= clk_get(NULL, name);
-			hz = _spi_param[ModuleIndex].hz;
 			rate = clk_set_rate(clk,hz);
-			clk_enable(clk);
+			rate = clk_get_rate(clk);
+			clk_enable(clk);;
 
 		    NX_RSTCON_SetRST(NX_SSP_GetResetNumber( ModuleIndex, NX_SSP_PRESETn ), RSTCON_ASSERT);
 		    NX_RSTCON_SetRST(NX_SSP_GetResetNumber( ModuleIndex, NX_SSP_PRESETn ), RSTCON_NEGATE);
 
-			calculate_effective_freq(clk, _spi_param[ModuleIndex].req, &clk_freq);
-//			NX_SSP_SetClockPrescaler( ModuleIndex, clk_freq.cpsdvsr, clk_freq.scr );
+			//calculate_effective_freq(clk, _spi_param[ModuleIndex].req, &clk_freq);
 			NX_SSP_SetEnable( ModuleIndex, CFALSE ); 			// SSP operation disable
-//			NX_SSP_SetProtocol( ModuleIndex, 0); 				// Protocol : Motorola SPI
-
-			NX_SSP_SetClockPolarityInvert( ModuleIndex, 1);
-//			NX_SSP_SetClockPhase( ModuleIndex, 1);
-
+			NX_SSP_SetHIGHSPEEDMode( ModuleIndex, 1);
+			NX_SSP_SetSPIFormat( ModuleIndex, 0);
+			
 			NX_SSP_SetBitWidth( ModuleIndex, 8 ); 				// 8 bit
 			NX_SSP_SetSlaveMode( ModuleIndex, CFALSE ); 		// master mode
-			NX_SSP_SetInterruptEnable( ModuleIndex,0, CFALSE );
-			NX_SSP_SetInterruptEnable( ModuleIndex,1, CFALSE );
-			NX_SSP_SetInterruptEnable( ModuleIndex,2, CFALSE );
-			NX_SSP_SetInterruptEnable( ModuleIndex,3, CFALSE );
-			NX_SSP_SetDMATransferMode( ModuleIndex, CFALSE );   //DMA_Not use
+
+			NX_SSP_SetNSSOUT(ModuleIndex, 1);
+			NX_SSP_SetCSMode(ModuleIndex, 1);
+			
+			NX_SSP_SetTXRDYLVL( ModuleIndex, 1 );			// Transmit FIFO TriggerLevel
+			NX_SSP_SetRXRDYLVL( ModuleIndex, 1 );
+
+			NX_SSP_SetDMAReceiveMode( ModuleIndex, CFALSE );				// Receive DMA Mode 
+			NX_SSP_SetDMATransmitMode( ModuleIndex, CFALSE );		
+			NX_SSP_SetInterruptEnableAll( ModuleIndex, CFALSE );
+
 		}
 		spi_type[ModuleIndex] = _spi_param[ModuleIndex].spi_type;
 	}
@@ -332,16 +352,14 @@ ssize_t spi_read  (uchar *addr, int alen, uchar *buffer, int len)
 	U32 index = 0,i=0;
 	volatile U8 tmp;
 	DBGOUT(" %s moudele = %d\n", __func__, device);
-
 	spi_init_f();
-
 	if(alen > MAX_ADDR_LEN)
 	{
 		SPIMSG("fail : addrlen small than %d \n",MAX_ADDR_LEN);
 		return -1;
 	}
 	dummycount = alen;
-
+	//udelay(10);
 	/* cmd and addr send */
 	if( _spi_param[device].spi_type == SPI_TYPE_EEPROM )	//if EEPROM send CMD_SPI_READ
 	{
@@ -355,17 +373,19 @@ ssize_t spi_read  (uchar *addr, int alen, uchar *buffer, int len)
 	}
 
 	CS_ON();
-
 	NX_SSP_SetEnable( device, CTRUE );
 
 	//len = lencnt;
+int cnt = 0;
 
 	while( len + dummycount)
 	{
+		
 		if(!(NX_SSP_IsTxFIFOFull(device)))	// check receive buffer is not empty
 		{
 			NX_SSP_PutByte(device, 0); //send dummy data for read			// send dummy data for receive read data.
-			while(NX_SSP_IsRxFIFOEmpty(device)) ;
+			while(NX_SSP_IsRxFIFOEmpty(device)) {
+			}
 
 			if(dummycount != 0)
 			{
@@ -379,8 +399,12 @@ ssize_t spi_read  (uchar *addr, int alen, uchar *buffer, int len)
 			}
 		}
 	}
+ cnt = 0;
+	while(!(NX_SSP_IsTxFIFOEmpty(device)))
+	{
+	}// wait until tx buffer
 
-	while(!(NX_SSP_IsTxFIFOEmpty(device)));		// wait until tx buffer
+	//while(!(NX_SSP_IsTxFIFOEmpty(device)));		// wait until tx buffer
 
 	do{
 		tmp = NX_SSP_GetByte(device);
@@ -463,7 +487,7 @@ static U8 flash_page_program(U32 dwFlashAddr, int alen, uchar * databuffer, U32 
 	volatile U8 temp ,i,j=alen;
 	U32 index = 0;
 	u8 addr[4] ={0 , };
-
+	
 	for(i = 0 ; i < alen; i++)
 	{
 		addr[i] = dwFlashAddr >> (( j - 1)*8 ) & 0xff;
@@ -508,9 +532,7 @@ static U8 flash_page_program(U32 dwFlashAddr, int alen, uchar * databuffer, U32 
 		{
 			NX_SSP_PutByte(device, databuffer[index++]); //send addr
 			dwDataSize--;
-			while(NX_SSP_IsTxRxEnd(device));
-			//while(!NX_SSP_IsTxFIFOEmpty(device));// ready to Fifo Empty
-			//while(!NX_SSP_IsTxFIFOEmpty(device));// ready to Fifo Empty
+			//while(NX_SSP_IsTxRxEnd(device));
 			while(!(NX_SSP_IsRxFIFOEmpty(device))){
 				temp = NX_SSP_GetByte(device);	//read dummy data
 			}
@@ -616,7 +638,7 @@ ssize_t spi_write (uchar *addr, int alen, uchar *buffer, int len)
 
 		pTmpBuffer = malloc(CONFIG_EEPROM_ERASE_SIZE);
 
-		DBGOUT("Writesize %d FlashAddr %x BlockC00nt %d  StartOffs %x \n ",
+		DBGOUT("Writesize %d FlashAddr %x BlockC00nt %d  StartOffs %x  %x \n ",
 						 WriteSize, FlashAddr, BlockCnt, StartOffs, StartRest);
 
 		if (StartRest) {

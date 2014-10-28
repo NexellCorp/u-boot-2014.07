@@ -223,6 +223,7 @@ static void nx_usb_ep0_int_hndlr(void)
 	U16 addr;
 
 	NX_DEBUG_MSG("Event EP0\n");
+	dmb();
 
 	if (pUSBBootStatus->ep0_state == EP0_STATE_INIT) {
 
@@ -345,6 +346,7 @@ static void nx_usb_ep0_int_hndlr(void)
 		/*clear nak, next ep0, 8byte */
 		pUOReg->DCSR.DEPIR[CONTROL_EP].DIEPCTL = ((1<<26)|(CONTROL_EP<<11)|(3<<0));
 	}
+	dmb();
 }
 
 static void nx_usb_transfer_ep0(void)
@@ -483,6 +485,7 @@ static void nx_usb_reset(void)
 
 	/*clear device address */
 	pUOReg->DCSR.DCFG &= ~(0x7F<<4);
+	dmb();
 }
 
 static S32 nx_usb_set_init(void)
@@ -562,6 +565,8 @@ static S32 nx_usb_set_init(void)
 	/*bulk in ep enable, clear nak, bulk, usb active, next ep1, max pkt */
 	pUOReg->DCSR.DEPIR[BULK_IN_EP].DIEPCTL = 0u<<31|1<<26|2<<18|1<<15|pUSBBootStatus->bulkin_max_pktsize<<0;
 
+	dmb();
+
 	return CTRUE;
 }
 
@@ -582,6 +587,7 @@ static void nx_usb_pkt_receive(void)
 		if((rx_status & BULK_OUT_EP)&&(fifo_cnt_byte)) {
 			nx_usb_int_bulkout(fifo_cnt_byte);
 			pUOReg->GCSR.GINTMSK = INT_RESUME|INT_OUT_EP|INT_IN_EP|INT_ENUMDONE|INT_RESET|INT_SUSPEND|INT_RX_FIFO_NOT_EMPTY;
+			dmb();
 			return;
 		}
 	} else if ((rx_status & (0xf<<17)) == GLOBAL_OUT_NAK) {
@@ -593,6 +599,7 @@ static void nx_usb_pkt_receive(void)
 	} else {
 		NX_DEBUG_MSG("Reserved\n");
 	}
+	dmb();
 }
 
 static void nx_usb_transfer(void)
@@ -708,7 +715,8 @@ CBOOL iUSBBOOT(void)
 
 	/* usb core soft reset */
 	pUOReg->GCSR.GRSTCTL = CORE_SOFT_RESET;
-		while(!(pUOReg->GCSR.GRSTCTL & AHB_MASTER_IDLE));
+	while(!(pUOReg->GCSR.GRSTCTL & AHB_MASTER_IDLE));
+
 
 	/* init_core */
 	pUOReg->GCSR.GAHBCFG = PTXFE_HALF|NPTXFE_HALF|MODE_SLAVE|BURST_SINGLE|GBL_INT_UNMASK;
@@ -724,6 +732,7 @@ CBOOL iUSBBOOT(void)
 		|1<<3		/* phy i/f  0:8bit, 1:16bit */
 		|7<<0;		/* HS/FS Timeout**/
 
+	dmb();
 
 	if ((pUOReg->GCSR.GINTSTS & 0x1) == INT_DEV_MODE)
 	{
@@ -732,11 +741,14 @@ CBOOL iUSBBOOT(void)
 		udelay(10);
 		/* soft disconnect off */
 		pUOReg->DCSR.DCTL &= ~SOFT_DISCONNECT;
+		udelay(10);
 
 		/* usb init device */
 		pUOReg->DCSR.DCFG = 1<<18;// | pUSBBootStatus->speed<<0; /* [][1: full speed(30Mhz) 0:high speed]*/
 		pUOReg->GCSR.GINTMSK = INT_RESUME|INT_OUT_EP|INT_IN_EP|INT_ENUMDONE|INT_RESET|INT_SUSPEND|INT_RX_FIFO_NOT_EMPTY;
+		udelay(10);
 	}
+	dmb();
 
 	pUSBBootStatus->CurConfig = 0;
 	pUSBBootStatus->CurInterface = 0;

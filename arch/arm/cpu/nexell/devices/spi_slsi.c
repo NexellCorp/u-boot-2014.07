@@ -26,7 +26,8 @@
 #include <platform.h>
 #include <mach-api.h>
 
-#if (0)
+#define DEBUG 0
+#if (DEBUG)
 
 #define DBGOUT(msg...)		{ printf("spi: " msg); }
 #else
@@ -152,9 +153,11 @@ struct spi_param _spi_param[3] = {
 	},
 
 };
+
+#if (DEBUG)
 static void  dump_reg(int ch)
 {
-	U32 *reg = 0xC005b000;
+	U32 *reg = NX_SSP_GetBaseAddress( ch );
 	printf("Configure    : %08x \n", *reg);
 	printf("control      : %08x \n", *(reg+1));
 	printf("control      : %08x \n", *(reg+2));
@@ -170,6 +173,8 @@ static void  dump_reg(int ch)
 	printf("Feedback     : %08x \n", *(reg+11));
 #endif
 }
+#endif
+
 /*global Variable */
 
 #ifdef CONFIG_SPI_EEPROM_WRITE_PROTECT
@@ -203,88 +208,18 @@ static void CS_OFF(void)
 	NX_GPIO_SetOutputValue(_spi_pad[0].fss.pad /32, _spi_pad[0].fss.pad % 32 , 1);
 	NX_GPIO_SetOutputEnable(_spi_pad[0].fss.pad /32, _spi_pad[0].fss.pad % 32 , 1);
 }
-
+#if 0
 static u32 spi_rate(u32 rate, u16 cpsdvsr, u16 scr)
 {
 	return rate / (cpsdvsr * (1 + scr));
 }
-
-static int calculate_effective_freq(struct clk *clk, int freq, struct
-				    ssp_clock_params * clk_freq)
-{
-	/* Lets calculate the frequency parameters */
-	u16 cpsdvsr = CPSDVR_MIN, scr = SCR_MIN;
-	u32 rate, max_tclk, min_tclk, best_freq = 0, best_cpsdvsr = 0,
-		best_scr = 0, tmp, found = 0;
-
-	rate = clk_get_rate(clk);
-	/* cpsdvscr = 2 & scr 0 */
-	max_tclk = spi_rate(rate, CPSDVR_MIN, SCR_MIN);
-	/* cpsdvsr = 254 & scr = 255 */
-	min_tclk = spi_rate(rate, CPSDVR_MAX, SCR_MAX);
-
-	if (freq > max_tclk)
-		SPIMSG("Max speed that can be programmed is %d Hz, you requested %d\n",
-			max_tclk, freq);
-
-	if (freq < min_tclk) {
-		SPIMSG(	"Requested frequency: %d Hz is less than minimum possible %d Hz\n",
-			freq, min_tclk);
-		return -1;
-	}
-
-	/*
-	 * best_freq will give closest possible available rate (<= requested
-	 * freq) for all values of scr & cpsdvsr.
-	 */
-	while ((cpsdvsr <= CPSDVR_MAX) && !found) {
-		while (scr <= SCR_MAX) {
-			tmp = spi_rate(rate, cpsdvsr, scr);
-
-			if (tmp > freq) {
-				/* we need lower freq */
-				scr++;
-				continue;
-			}
-			/*
-			 * If found exact value, mark found and break.
-			 * If found more closer value, update and break.
-			 */
-			if (tmp > best_freq) {
-				best_freq = tmp;
-				best_cpsdvsr = cpsdvsr;
-				best_scr = scr;
-
-				if (tmp == freq)
-					found = 1;
-			}
-			/*
-			 * increased scr will give lower rates, which are not
-			 * required
-			 */
-			break;
-		}
-		cpsdvsr += 2;
-		scr = SCR_MIN;
-	}
-
-	clk_freq->cpsdvsr = (u8) (best_cpsdvsr & 0xFF);
-	clk_freq->scr = (u8) (best_scr & 0xFF);
-
-	DBGOUT(	"SSP Target Frequency is: %u, Effective Frequency is %u\n",
-		freq, best_freq);
-	DBGOUT( "SSP cpsdvsr = %d, scr = %d\n",
-		clk_freq->cpsdvsr, clk_freq->scr);
-
-	return 0;
-}
+#endif
 
 void spi_init_f (void)
 {
 	int ModuleIndex =0;
 
 	struct clk *clk = NULL;
-	struct ssp_clock_params clk_freq = {0};
 	char name[10]= {0, };
 	unsigned long hz  = 30* 1000 * 1000;
 	unsigned long rate = 0;
@@ -313,10 +248,9 @@ void spi_init_f (void)
 			rate = clk_get_rate(clk);
 			clk_enable(clk);;
 
-		    NX_RSTCON_SetRST(NX_SSP_GetResetNumber( ModuleIndex, NX_SSP_PRESETn ), RSTCON_ASSERT);
-		    NX_RSTCON_SetRST(NX_SSP_GetResetNumber( ModuleIndex, NX_SSP_PRESETn ), RSTCON_NEGATE);
+		    NX_RSTCON_SetRST(NX_SSP_GetResetNumber( ModuleIndex, 0 ), RSTCON_ASSERT);
+		    NX_RSTCON_SetRST(NX_SSP_GetResetNumber( ModuleIndex, 0 ), RSTCON_NEGATE);
 
-			//calculate_effective_freq(clk, _spi_param[ModuleIndex].req, &clk_freq);
 			NX_SSP_SetEnable( ModuleIndex, CFALSE ); 			// SSP operation disable
 			NX_SSP_SetHIGHSPEEDMode( ModuleIndex, 1);
 			NX_SSP_SetSPIFormat( ModuleIndex, 0);

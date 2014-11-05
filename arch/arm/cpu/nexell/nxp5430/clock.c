@@ -349,6 +349,7 @@ static struct NX_CLKPWR_RegisterSet * const clkpwr =
 static unsigned int pll_get_rate(unsigned int pllN, unsigned int xtal)
 {
     unsigned int val, val1, nP, nM, nS, nK;
+	unsigned int temp = 0;
     val   = clkpwr->PLLSETREG[pllN];
     val1  = clkpwr->PLLSETREG_SSCG[pllN];
 	xtal /= 1000;	/* Unit Khz */
@@ -358,10 +359,19 @@ static unsigned int pll_get_rate(unsigned int pllN, unsigned int xtal)
     nS= (val >>  0) & 0x0FF;
     nK= (val1>> 16) & 0xFFFF;
 
+#if 0
 	if(pllN>=2 && (val1 & 1<<28))
 		return (getquotient((nM * xtal),nP)>>nS)*1000+(((((((getquotient((nK * xtal),nP)>>nS)*5)>>3)*5)>>3)*5)>>7);
 	else
 		return (getquotient((nM * xtal),nP)>>nS)*1000;
+#else
+    if ((pllN > 1) && nK) {
+        temp = (unsigned int)(getquotient((getquotient((nK * 1000), 65536) * xtal), nP)>>nS);
+    }
+
+    temp = (unsigned int)((getquotient((nM * xtal), nP)>>nS)*1000) + temp;
+    return temp;
+#endif
 }
 
 static unsigned int pll_get_dvo(int dvo)

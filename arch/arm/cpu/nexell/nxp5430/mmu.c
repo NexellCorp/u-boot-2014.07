@@ -158,6 +158,12 @@ extern void enable_mmu(unsigned);
 
 void mmu_on(void)
 {
+	void *vector_base = (void *)0xFFFF0000;
+
+	/* copy vector table */
+	memcpy(vector_base, (void const *)CONFIG_SYS_TEXT_BASE, 64);
+
+	/* set CCI-400 */
 	writel(0x8, (CCI_REG + 0x0000));	// CCI
 	writel(0x0, (CCI_REG + 0x1000));	// S0 : coresight
  	writel(0x0, (CCI_REG + 0x2000));	// S1 : bottom bus
@@ -175,4 +181,3 @@ void mmu_on(void)
 	enable_mmu(PAGE_TABLE_START);
 	return;
 }
-

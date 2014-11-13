@@ -95,10 +95,26 @@ void enable_caches(void)
 #error unable to access prototype, must be define the macro "CONFIG_ARCH_CPU_INIT"
 #endif
 
+struct stack {
+	u32 irq[3];
+	u32 abt[3];
+} ____cacheline_aligned;
+
+static struct stack stacks;
+
 #if defined(CONFIG_ARCH_CPU_INIT)
 int arch_cpu_init (void)
 {
-	nxp_cpu_init();
+	/*
+	 * global data (_start is invalid so reconfig mon_len value)
+	 *
+	 */
+	gd->mon_len = (ulong)&__bss_end - CONFIG_SYS_TEXT_BASE;
+
+	/*
+	 * cpu initialize
+	 */
+	nxp_cpu_arch_init();
 	nxp_cpu_clock_init();
 	nxp_cpu_periph_init();
 	return 0;
@@ -108,7 +124,7 @@ int arch_cpu_init (void)
 #if defined(CONFIG_DISPLAY_CPUINFO)
 int print_cpuinfo(void)
 {
-	nxp_print_info();
+	nxp_print_cpu_info();
 	return 0;
 }
 #endif
@@ -134,17 +150,29 @@ void dram_init_banksize(void)
 #ifdef CONFIG_RELOC_TO_TEXT_BASE
 extern uchar default_environment[];
 
+extern ulong _IRQ_STACK_START_IN_;
+#ifdef CONFIG_USE_IRQ
+extern ulong _IRQ_STACK_START_;
+extern ulong _FIQ_STACK_START_;
+#endif
+
 void global_data_setup(gd_t *gd, ulong text, ulong sp)
 {
-	ulong pc;
-	ulong s_text, e_text;
-	ulong bd;
-	ulong e_heap;
+	struct stack *stk = &stacks;
+	ulong text_start, text_end, heap_end;
+	ulong pc, bd;
 
 	/* reconfig stack info */
 	gd->relocaddr 	  = text;
 	gd->start_addr_sp = sp;
 	gd->reloc_off 	  = 0;
+	gd->irq_sp = (unsigned long)stk->abt;	/* Abort stack */
+
+	_IRQ_STACK_START_IN_ = gd->irq_sp + 8;
+#ifdef CONFIG_USE_IRQ
+	_IRQ_STACK_START_ = gd->irq_sp - 4;
+	_FIQ_STACK_START_ = _IRQ_STACK_START_ - CONFIG_STACKSIZE_IRQ;
+#endif
 
 	/* copy bd info  */
 	bd = (unsigned int)gd - sizeof(bd_t);
@@ -161,20 +189,20 @@ void global_data_setup(gd_t *gd, ulong text, ulong sp)
 	gd->env_addr = (ulong)default_environment;
 #endif
 	/* get cpu info */
-	s_text = (unsigned int)(gd->relocaddr);
-	e_text = (unsigned int)(gd->relocaddr + _bss_end_ofs);
-	e_heap = CONFIG_SYS_MALLOC_END;
+	text_start = (unsigned int)(gd->relocaddr);
+	text_end = (unsigned int)(gd->relocaddr + _bss_end_ofs);
+	heap_end = CONFIG_SYS_MALLOC_END;
 
 #if defined(CONFIG_SYS_GENERIC_BOARD)
 	/* refer initr_malloc (common/board_r.c) */
-	gd->relocaddr = e_heap;
+	gd->relocaddr = heap_end;
 #endif
 
 	asm("mov %0, pc":"=r" (pc));
 	asm("mov %0, sp":"=r" (sp));
 
-	printf("Heap = 0x%08lx~0x%08lx\n", e_heap-TOTAL_MALLOC_LEN, e_heap);
-	printf("Code = 0x%08lx~0x%08lx\n", s_text, e_text);
+	printf("Heap = 0x%08lx~0x%08lx\n", heap_end-TOTAL_MALLOC_LEN, heap_end);
+	printf("Code = 0x%08lx~0x%08lx\n", text_start, text_end);
 	printf("GLD  = 0x%08lx\n", (ulong)gd);
 	printf("GLBD = 0x%08lx\n", (ulong)gd->bd);
 	printf("SP   = 0x%08lx,0x%08lx(CURR)\n", gd->start_addr_sp, sp);
@@ -182,8 +210,8 @@ void global_data_setup(gd_t *gd, ulong text, ulong sp)
 
 	printf("TAGS = 0x%08lx \n", gd->bd->bi_boot_params);
 	#ifdef CONFIG_MMU_ENABLE
-	ulong s_page =  (e_text & 0xffff0000) + 0x10000;
-	printf("PAGE = 0x%08lx~0x%08lx\n",s_page, s_page + 0xc000 );
+	ulong page_tlb =  (text_end & 0xffff0000) + 0x10000;
+	printf("PAGE = 0x%08lx~0x%08lx\n", page_tlb, page_tlb + 0xc000 );
 	#endif
 	printf("MACH = [%ld]   \n", gd->bd->bi_arch_number);
 	printf("VER  = %u      \n", nxp_cpu_version());

@@ -8,22 +8,43 @@
 #include <asm/system.h>
 #include <linux/linkage.h>
 
-/*************************************************************************
+/*
+ *************************************************************************
  *
- * Startup Code (reset vector: arm/lib/vectors.S)
+ * Exception vectors as described in ARM reference manuals
  *
- *************************************************************************/
-.globl	__start
-__start:
-	b	reset
-	ldr	pc, =_undefined_instruction
-	ldr	pc, =_software_interrupt
-	ldr	pc, =_prefetch_abort
-	ldr	pc, =_data_abort
-	ldr	pc, =_not_used
-	ldr	pc, =_irq
-	ldr	pc, =_fiq
+ * replace arm/lib/vectors.S
+ *
+ *************************************************************************
+ */
+	.globl	_stext
+_stext:
+	b 	reset
+	ldr	pc, _undefined_instruction
+	ldr	pc, _software_interrupt
+	ldr	pc, _prefetch_abort
+	ldr	pc, _data_abort
+	ldr	pc, _not_used
+	ldr	pc, _irq
+	ldr	pc, _fiq
+
+_undefined_instruction:	.word undefined_instruction
+_software_interrupt:	.word software_interrupt
+_prefetch_abort:	.word prefetch_abort
+_data_abort:		.word data_abort
+_not_used:		.word not_used
+_irq:			.word irq
+_fiq:			.word fiq
+
 	.balignl 16,0xdeadbeef
+
+/*
+ *************************************************************************
+ *
+ * Text and section base
+ *
+ *************************************************************************
+ */
 
 .globl _TEXT_BASE
 _TEXT_BASE:
@@ -34,19 +55,24 @@ _TEXT_BASE:
  */
 .globl _bss_start_ofs
 _bss_start_ofs:
-	.word __bss_start - __start
+	.word __bss_start - _stext
 
 .globl _bss_end_ofs
 _bss_end_ofs:
-	.word __bss_end - __start
+	.word __bss_end - _stext
 
 .globl _end_ofs
 _end_ofs:
-	.word _end - __start
+	.word _end - _stext
 
 /*
- * the actual reset code (call from arm/lib/vectors.S)
+ *************************************************************************
+ *
+ * Reset handling
+ *
+ *************************************************************************
  */
+
 	.globl reset
 
 reset:
@@ -71,7 +97,7 @@ relocate_to_text:
 	 * relocate u-boot code on memory to text base
 	 * for nexell arm core (add by jhkim)
 	 */
-	adr	r0, __start				/* r0 <- current position of code   */
+	adr	r0, _stext				/* r0 <- current position of code   */
 	ldr	r1, _TEXT_BASE			/* test if we run from flash or RAM */
 	cmp r0, r1              	/* don't reloc during debug         */
 	beq clear_bss
@@ -149,7 +175,7 @@ ENTRY(c_runtime_cpu_setup)
  * Move vector table
  */
 	/* Set vector address in CP15 VBAR register */
-	ldr     r0, =__start
+	ldr     r0, =_stext
 	mcr     p15, 0, r0, c12, c0, 0  @Set VBAR
 
 	bx	lr

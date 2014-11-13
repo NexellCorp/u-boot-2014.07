@@ -123,7 +123,7 @@
  *	U-Boot Environments
  */
 /* refer to common/env_common.c	*/
-#define CONFIG_BOOTDELAY	   			2
+#define CONFIG_BOOTDELAY				2
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 #define CONFIG_ETHADDR		   			00:e2:1c:ba:e8:60
 #define CONFIG_NETMASK		   			255.255.255.0
@@ -132,7 +132,8 @@
 #define CONFIG_GATEWAYIP				192.168.1.254
 #define CONFIG_BOOTFILE					"uImage"  		/* File to load	*/
 
-#define CONFIG_BOOTCOMMAND "ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 root.img.gz;bootm 0x48000000"
+//#define CONFIG_BOOTCOMMAND "ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 root.img.gz;bootm 0x48000000"
+#define CONFIG_BOOTCOMMAND "udown 0x48000000;bootm 0x48000000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -186,7 +187,8 @@
  * Ethernet configuration
  * depend on CONFIG_CMD_NET
  */
-#define CONFIG_DRIVER_DM9000			1
+//#define CONFIG_DRIVER_DM9000
+//#define CONFIG_DESIGNWARE_ETH
 
 #if defined(CONFIG_CMD_NET)
 	/* DM9000 Ethernet device */
@@ -195,6 +197,27 @@
 	#define DM9000_IO	   				CONFIG_DM9000_BASE
 	#define DM9000_DATA	   				(CONFIG_DM9000_BASE + 0x4)
 //	#define CONFIG_DM9000_DEBUG
+	#endif
+
+    /* DWC Ethernet driver configuration */
+    #if defined(CONFIG_DESIGNWARE_ETH)
+	#define CONFIG_DWCGMAC_BASE			IO_ADDRESS(PHY_BASEADDR_GMAC)
+	#define CONFIG_PHY_ADDR				3           /* RTL8211 PHY address */
+//	#define CONFIG_PHY_ADDR				1           /* LAN8820 PHY address */
+	#define CONFIG_PHY_RESET_DELAY		10000       /* in usec */
+
+	#define CONFIG_DW_ALTDESCRIPTOR
+	#define CONFIG_DW_SEARCH_PHY
+//	#define CONFIG_DW_AUTONEG
+//	#define CONFIG_DW_SPEED10M			/* #ifndef CONFIG_DW_AUTONEG */
+//	#define CONFIG_DW_DUPLEXHALF		/* #ifndef CONFIG_DW_AUTONEG */
+
+	#define CONFIG_PHY_GIGE				/* Include GbE speed/duplex detection */
+	#define CONFIG_PHY_DYNAMIC_ANEG		1
+	#define CONFIG_MII
+	#define CONFIG_CMD_MII
+//	#define CONFIG_NET_MULTI
+	#define CONFIG_CMD_PING
 	#endif
 #endif
 
@@ -225,14 +248,13 @@
 	#endif
 
 	#if defined(CONFIG_ENV_IS_IN_NAND)
-		#define	CONFIG_ENV_OFFSET			(0x400000)									/* 4MB */
-		#define CONFIG_ENV_SIZE           	(0x100000)									/* 1 block size */
-		#define CONFIG_ENV_RANGE			(0x400000)		 							/* avoid bad block */
+		#define	CONFIG_ENV_OFFSET			(0x400000)										/* 4MB */
+		#define CONFIG_ENV_SIZE           	(4*1024*1024)									/* 1 block size */
+		#define CONFIG_ENV_RANGE			CONFIG_ENV_SIZE * 2 							/* avoid bad block */
 	#endif
 
 	#undef  CONFIG_CMD_IMLS
 
-	#define	CONFIG_CMD_MTDPARTS
 	#if defined(CONFIG_CMD_MTDPARTS)
 		#define	CONFIG_MTD_DEVICE
 		#define	CONFIG_MTD_PARTITIONS
@@ -304,6 +326,7 @@
 			#define	CONFIG_2STBOOT_SIZE				   	16*1024
 			#define	CONFIG_UBOOT_OFFSET				   	64*1024
 			#define	CONFIG_UBOOT_SIZE				   (512-64)*1024
+			#define	CONFIG_CMD_SPI_EEPROM_UPDATE		/* build cmd_spi_eeprom.c */
  	 	#endif
 		#if defined(CONFIG_ENV_IS_IN_EEPROM)
 			#define	CONFIG_ENV_OFFSET					32*1024	/* 248 ~ 256K Environment */
@@ -319,7 +342,6 @@
 /*-----------------------------------------------------------------------
  * SPI
  */
-
 #if defined  (CONFIG_SPI)
     #if defined (CONFIG_SPI_MODULE_0)
 		#define CONFIG_SPI_MODULE_0_SOURCE_CLOCK    CFG_SPI0_SRC_CLK
@@ -368,59 +390,6 @@
 #endif
 
 /*-----------------------------------------------------------------------
- * PMIC
- */
-#define CONFIG_PMIC
-#if defined(CONFIG_PMIC)
-#define CONFIG_CMD_I2C
-#define CONFIG_PMIC_I2C
-#define CONFIG_PMIC_NXE2000
-#define CONFIG_HAVE_BATTERY
-//#define CONFIG_SW_UBC_DETECT	/* need with CONFIG_FASTBOOT. */
-
-#define CONFIG_PMIC_CHARGING_PATH_ADP               (0) // Support only VADP. Do not supported USB ADP.
-#define CONFIG_PMIC_CHARGING_PATH_UBC               (1) // Support only VUSB. (USB connector - USB ADP & PC)
-#define CONFIG_PMIC_CHARGING_PATH_ADP_UBC           (2) // Using VADP, VUSB power path. Separated power path.
-#define CONFIG_PMIC_CHARGING_PATH_ADP_UBC_LINKED    (3) // Using VADP, VUSB power path. Linked power path.
-
-#define CONFIG_PMIC_NXE2000_CHARGING_PATH           CONFIG_PMIC_CHARGING_PATH_ADP_UBC
-
-#define CONFIG_NXP_RTC_USE
-#endif
-
-/*-----------------------------------------------------------------------
- * BATTERY CHECK (FUEL GAUGE)
- */
-#if defined(CONFIG_HAVE_BATTERY)
-
-//#define CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE
-//#define CONFIG_PMIC_SET_BOOTUP_VOLTAGE
-
-#define CONFIG_BAT_CHECK
-#define CONFIG_FAST_BOOTUP
-
-#if defined(CONFIG_BAT_CHECK)
-
-#if defined(CONFIG_PMIC) && defined(CONFIG_PMIC_NXE2000)
-#define CONFIG_POWER
-#define CONFIG_POWER_I2C
-#define CONFIG_POWER_NXE2000
-#define CONFIG_POWER_FG
-#define CONFIG_POWER_FG_NXE2000
-#define CONFIG_POWER_MUIC
-#define CONFIG_POWER_MUIC_NXE2000
-#define CONFIG_POWER_BATTERY
-#define CONFIG_POWER_BATTERY_NXE2000
-
-#define	CFG_IO_I2C0_SCL	((PAD_GPIO_E + 14) | PAD_FUNC_ALT0)
-#define	CFG_IO_I2C0_SDA	((PAD_GPIO_E + 15) | PAD_FUNC_ALT0)
-
-#endif
-
-#endif
-#endif	// #if defined(CONFIG_HAVE_BATTERY)
-
-/*-----------------------------------------------------------------------
  * I2C
  *
  * probe
@@ -450,7 +419,7 @@
 	#define	CONFIG_SYS_I2C_SPEED		100000				/* default speed, 100 khz */
 
 	#define	CONFIG_I2C0_NEXELL								/* 0 = i2c 0 */
-	#define	CONFIG_I2C0_NO_STOP				1				/* when tx end, 0= generate stop signal , 1: skip stop signal */
+	#define	CONFIG_I2C0_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
 
 	#define	CONFIG_I2C1_NEXELL								/* 1 = i2c 1 */
 	#define	CONFIG_I2C1_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
@@ -471,8 +440,8 @@
  * #> fatload mmc 0  0x.....	"file"
  *
  */
-#define	CONFIG_CMD_MMC
-#define CONFIG_ENV_IS_IN_MMC
+//#define	CONFIG_CMD_MMC
+//#define CONFIG_ENV_IS_IN_MMC
 
 #if defined(CONFIG_CMD_MMC)
 
@@ -485,11 +454,14 @@
 	#define CONFIG_MMC1_ATTACH      	FALSE   /* 1 = MMC1 : 	         */
 	#define CONFIG_MMC2_ATTACH      	TRUE    /* 2 = MMC2 : External   */
 
-	#define CONFIG_MMC0_CLOCK			50000000
-	#define CONFIG_MMC0_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(0)
+	#define CONFIG_MMC0_CLOCK			20000000
+	#define CONFIG_MMC0_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(2)
 
-	#define CONFIG_MMC2_CLOCK			50000000
-	#define CONFIG_MMC2_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(0)
+	#define CONFIG_MMC1_CLOCK			20000000
+	#define CONFIG_MMC1_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(2)
+
+	#define CONFIG_MMC2_CLOCK			20000000
+	#define CONFIG_MMC2_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(2)
 
 	#define CONFIG_DWMMC
 	#define CONFIG_NXP_DWMMC
@@ -561,21 +533,19 @@
 /*-----------------------------------------------------------------------
  * FASTBOOT
  */
-#define CONFIG_FASTBOOT
+//#define CONFIG_FASTBOOT
 
 #if defined(CONFIG_FASTBOOT) & defined(CONFIG_USB_GADGET)
 #define CFG_FASTBOOT_TRANSFER_BUFFER        CONFIG_MEM_LOAD_ADDR
 #define CFG_FASTBOOT_TRANSFER_BUFFER_SIZE	(CFG_MEM_PHY_SYSTEM_SIZE - CFG_FASTBOOT_TRANSFER_BUFFER)
 
 #define	FASTBOOT_PARTS_DEFAULT		\
-			"flash=mmc,0:2ndboot:2nd:0x200,0x4000;"	\
-			"flash=mmc,0:bootloader:boot:0x8000,0x70000;"	\
-			"flash=mmc,0:boot:ext4:0x00100000,0x04000000;"		\
-			"flash=mmc,0:system:ext4:0x04100000,0x28E00000;"	\
-			"flash=mmc,0:cache:ext4:0x2CF00000,0x21000000;"		\
-			"flash=mmc,0:misc:emmc:0x4E000000,0x00800000;"		\
-			"flash=mmc,0:recovery:emmc:0x4E900000,0x01600000;"	\
-			"flash=mmc,0:userdata:ext4:0x50000000,0x0;"
+			"flash=eeprom,0:2ndboot:2nd:0x0,0x4000;"	\
+			"flash=eeprom,0:bootloader:boot:0x10000,0x70000;"	\
+			"flash=mmc,0:boot:ext4:0x000100000,0x004000000;"	\
+			"flash=mmc,0:system:ext4:0x004100000,0x028E00000;"	\
+			"flash=mmc,0:cache:ext4:0x02CF00000,0x21000000;"	\
+			"flash=mmc,0:userdata:ext4:0x4df00000,0x0;"
 #endif
 
 /*-----------------------------------------------------------------------

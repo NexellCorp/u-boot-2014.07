@@ -98,7 +98,16 @@ void enable_caches(void)
 #if defined(CONFIG_ARCH_CPU_INIT)
 int arch_cpu_init (void)
 {
-	nxp_cpu_init();
+	/*
+	 * global data (_start is invalid so reconfig mon_len value)
+	 *
+	 */
+	gd->mon_len = (ulong)&__bss_end - CONFIG_SYS_TEXT_BASE;
+
+	/*
+	 * cpu initialize
+	 */
+	nxp_cpu_arch_init();
 	nxp_cpu_clock_init();
 	nxp_cpu_periph_init();
 	return 0;
@@ -108,7 +117,7 @@ int arch_cpu_init (void)
 #if defined(CONFIG_DISPLAY_CPUINFO)
 int print_cpuinfo(void)
 {
-	nxp_print_info();
+	nxp_print_cpu_info();
 	return 0;
 }
 #endif
@@ -136,10 +145,8 @@ extern uchar default_environment[];
 
 void global_data_setup(gd_t *gd, ulong text, ulong sp)
 {
-	ulong pc;
-	ulong s_text, e_text;
-	ulong bd;
-	ulong e_heap;
+	ulong text_start, text_end, heap_end;
+	ulong pc, bd;
 
 	/* reconfig stack info */
 	gd->relocaddr 	  = text;
@@ -161,20 +168,20 @@ void global_data_setup(gd_t *gd, ulong text, ulong sp)
 	gd->env_addr = (ulong)default_environment;
 #endif
 	/* get cpu info */
-	s_text = (unsigned int)(gd->relocaddr);
-	e_text = (unsigned int)(gd->relocaddr + _bss_end_ofs);
-	e_heap = CONFIG_SYS_MALLOC_END;
+	text_start = (unsigned int)(gd->relocaddr);
+	text_end = (unsigned int)(gd->relocaddr + _bss_end_ofs);
+	heap_end = CONFIG_SYS_MALLOC_END;
 
 #if defined(CONFIG_SYS_GENERIC_BOARD)
 	/* refer initr_malloc (common/board_r.c) */
-	gd->relocaddr = e_heap;
+	gd->relocaddr = heap_end;
 #endif
 
 	asm("mov %0, pc":"=r" (pc));
 	asm("mov %0, sp":"=r" (sp));
 
-	printf("Heap = 0x%08lx~0x%08lx\n", e_heap-TOTAL_MALLOC_LEN, e_heap);
-	printf("Code = 0x%08lx~0x%08lx\n", s_text, e_text);
+	printf("Heap = 0x%08lx~0x%08lx\n", heap_end-TOTAL_MALLOC_LEN, heap_end);
+	printf("Code = 0x%08lx~0x%08lx\n", text_start, text_end);
 	printf("GLD  = 0x%08lx\n", (ulong)gd);
 	printf("GLBD = 0x%08lx\n", (ulong)gd->bd);
 	printf("SP   = 0x%08lx,0x%08lx(CURR)\n", gd->start_addr_sp, sp);
@@ -182,7 +189,7 @@ void global_data_setup(gd_t *gd, ulong text, ulong sp)
 
 	printf("TAGS = 0x%08lx \n", gd->bd->bi_boot_params);
 	#ifdef CONFIG_MMU_ENABLE
-	ulong s_page =  (e_text & 0xffff0000) + 0x10000;
+	ulong s_page =  (text_end & 0xffff0000) + 0x10000;
 	printf("PAGE = 0x%08lx~0x%08lx\n",s_page, s_page + 0xc000 );
 	#endif
 	printf("MACH = [%ld]   \n", gd->bd->bi_arch_number);

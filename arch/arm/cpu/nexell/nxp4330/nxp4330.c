@@ -162,7 +162,7 @@ void nxp_cpu_periph_init(void)
 	clk_enable(clk);
 }
 
-void nxp_cpu_init(void)
+void nxp_cpu_arch_init(void)
 {
 	cpu_base_init();
 	cpu_bus_init();
@@ -179,7 +179,7 @@ unsigned int nxp_cpu_version(void)
 	return version;
 }
 
-void nxp_print_info(void)
+void nxp_print_cpu_info(void)
 {
 	nxp_cpu_clock_print();
 }

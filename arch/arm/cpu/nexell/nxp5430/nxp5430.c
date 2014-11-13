@@ -34,7 +34,6 @@
 
 static void cpu_base_init(void)
 {
-	U32 tie_reg, val;
 	int i = 0;
 
 	NX_RSTCON_Initialize();
@@ -77,21 +76,6 @@ static void cpu_bus_init(void)
 	NX_MCUS_OpenModule();
 
 	/*
-	 * NAND Bus config
-	 */
-#if 0
-	NX_MCUS_SetNANDBUSConfig
-	(
-		0, /* NF */
-		CFG_SYS_NAND_TACS,		// tACS  ( 0 ~ 3 )
-		CFG_SYS_NAND_TCAH,		// tCAH  ( 0 ~ 3 )
-		CFG_SYS_NAND_TCOS,		// tCOS  ( 0 ~ 3 )
-		CFG_SYS_NAND_TCOH,		// tCOH  ( 0 ~ 3 )
-		CFG_SYS_NAND_TACC		// tACC  ( 1 ~ 16)
-	);
-#endif
-
-	/*
 	 * MCU-Static config: Static Bus #0 ~ #1
 	 */
 	#define STATIC_BUS_CONFIGUTATION( _n_ )								\
@@ -119,41 +103,9 @@ static void cpu_bus_init(void)
  */
 void nxp_cpu_periph_init(void)
 {
-#if defined(CONFIG_PL011_SERIAL)
-	#if		(CFG_UART_DEBUG_CH == 0)
-	int id = RESET_ID_UART0;
-	char *dev = "nxp-uart.0";
-	#elif	(CFG_UART_DEBUG_CH == 1)
-	int id = RESET_ID_UART1;
-	char *dev = "nxp-uart.1";
-	#elif	(CFG_UART_DEBUG_CH == 2)
-	int id = RESET_ID_UART2;
-	char *dev = "nxp-uart.2";
-	#elif	(CFG_UART_DEBUG_CH == 3)
-	int id = RESET_ID_UART3;
-	char *dev = "nxp-uart.3";
-	#elif	(CFG_UART_DEBUG_CH == 4)
-	int id = RESET_ID_UART4;
-	char *dev = "nxp-uart.4";
-	#elif	(CFG_UART_DEBUG_CH == 5)
-	int id = RESET_ID_UART5;
-	char *dev = "nxp-uart.5";
-	#endif
-
-	struct clk *clk = clk_get(NULL, (const char*)dev);
-
-	/* reset control: Low active ___|---   */
-	NX_RSTCON_SetRST(id, RSTCON_ASSERT);
-	NX_RSTCON_SetRST(id, RSTCON_NEGATE);
-
-	/* set clock   */
-	clk_disable(clk);
-	clk_set_rate(clk, CFG_UART_CLKGEN_CLOCK_HZ);
-	clk_enable(clk);
-#endif
 }
 
-void nxp_cpu_init(void)
+void nxp_cpu_arch_init(void)
 {
 	cpu_base_init();
 	cpu_bus_init();
@@ -164,7 +116,7 @@ unsigned int nxp_cpu_version(void)
 	return 0;
 }
 
-void nxp_print_info(void)
+void nxp_print_cpu_info(void)
 {
 	nxp_cpu_clock_print();
 }

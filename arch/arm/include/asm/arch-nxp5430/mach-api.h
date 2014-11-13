@@ -27,9 +27,9 @@
 #include <config.h>
 #include "clk.h"
 
-extern void	nxp_cpu_init(void);
+extern void	nxp_cpu_arch_init(void);
 extern void nxp_cpu_periph_init(void);
-extern void nxp_print_info(void);
+extern void nxp_print_cpu_info(void);
 extern void nxp_board_preboot_os(void);
 
 extern unsigned int logo_get_logo_bmp_addr(void);

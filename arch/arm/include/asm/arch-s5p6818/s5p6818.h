@@ -21,8 +21,8 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __NXP5430_H__
-#define __NXP5430_H__
+#ifndef __S5P6818_H__
+#define __S5P6818_H__
 
 #define PHY_BASEADDR_DMA0     		(0xC0000000)
 #define PHY_BASEADDR_DMA1     		(0xC0001000)
@@ -252,7 +252,7 @@
 /*
  * Interrupt
  */
-#include "nxp5430_irq.h"
+#include "s5p6818_irq.h"
 
 /*
  * prototype header
@@ -288,5 +288,5 @@
 #include <nx_vip.h>
 
 #endif /* 	__ASSEMBLY__ */
-#endif /*	__NXP5430_H__ */
+#endif /*	__S5P6818_H__ */
 

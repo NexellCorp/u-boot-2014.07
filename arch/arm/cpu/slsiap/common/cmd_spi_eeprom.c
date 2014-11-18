@@ -30,13 +30,13 @@
 #include <spi.h>
 #include <asm/sections.h>
 
-#if defined (CONFIG_MACH_NXP4330)
-#include <asm/arch/nxp4330_boot.h>
-#elif defined (CONFIG_MACH_NXP5430)
-#include <asm/arch/nxp5430_boot.h>
+#if defined (CONFIG_MACH_S5P4418)
+#include <asm/arch/s5p4418_boot.h>
+#elif defined (CONFIG_MACH_S5P6818)
+#include <asm/arch/s5p6818_boot.h>
 #endif
 
-#define	CFG_2STBOOT_SIZE		(16*1024)	/* Fix NXP4330 */
+#define	CFG_2STBOOT_SIZE		(16*1024)	/* Fix */
 
 extern int  eeprom_write (unsigned dev_addr, unsigned offset,
                uchar *buffer, unsigned cnt);

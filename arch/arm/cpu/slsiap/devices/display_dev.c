@@ -70,13 +70,13 @@ void disp_topctl_reset(void)
 	int rstnum = NX_DISPLAYTOP_GetResetNumber();
 	DBGOUT("Reset TOPCTRL\n");
 
-#if defined(CONFIG_MACH_NXP4330)
+#if defined(CONFIG_MACH_S5P4418)
 	if (NX_RSTCON_GetnRST(rstnum))
 		return;
 
 	NX_RSTCON_SetnRST(rstnum, RSTCON_nDISABLE);
 	NX_RSTCON_SetnRST(rstnum, RSTCON_nENABLE);
-#elif defined(CONFIG_MACH_NXP5430)
+#elif defined(CONFIG_MACH_S5P6818)
 	if (NX_RSTCON_GetRST(rstnum))
 		return;
 
@@ -91,13 +91,13 @@ void disp_syncgen_reset(void)
 	int rstnum = NX_DUALDISPLAY_GetResetNumber(0);
 	DBGOUT("Reset SYNCGEN\n");
 
-#if defined(CONFIG_MACH_NXP4330)
+#if defined(CONFIG_MACH_S5P4418)
 	if (NX_RSTCON_GetnRST(rstnum))
 		return;
 
 	NX_RSTCON_SetnRST(rstnum, RSTCON_nDISABLE);
 	NX_RSTCON_SetnRST(rstnum, RSTCON_nENABLE);
-#elif defined(CONFIG_MACH_NXP5430)
+#elif defined(CONFIG_MACH_S5P6818)
 	if (NX_RSTCON_GetRST(rstnum))
 		return;
 

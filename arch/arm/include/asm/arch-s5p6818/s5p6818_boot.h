@@ -21,8 +21,8 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __NXP5430_BOOT_H__
-#define __NXP5430_BOOT_H__
+#ifndef __S5P6818_BOOT_H__
+#define __S5P6818_BOOT_H__
 
 struct boot_dev_eeprom {
 	char	addr_step;
@@ -35,7 +35,7 @@ struct boot_dev_mmc {
 	char port_no;
 	char resv0[3];
 	char rese1;
-	unsigned int crc32;		/* not use : nxp5430 */
+	unsigned int crc32;		/* not use : s5p6818 */
 };
 
 union boot_dev_data {
@@ -66,5 +66,5 @@ struct boot_dev_head {
 	unsigned int  signature;			// 0x1FC	"NSIH"
 };
 
-#endif /*	__NXP5430_BOOT_H__ */
+#endif /*	__S5P6818_BOOT_H__ */
 

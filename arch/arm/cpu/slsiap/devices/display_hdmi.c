@@ -51,14 +51,14 @@ enum NXP_HDMI_PRESET {
 
 static inline void hdmi_reset(void)
 {
-#if defined(CONFIG_MACH_NXP4330)
+#if defined(CONFIG_MACH_S5P4418)
     NX_RSTCON_SetnRST(NX_HDMI_GetResetNumber(0, i_nRST_VIDEO), RSTCON_nDISABLE);
     NX_RSTCON_SetnRST(NX_HDMI_GetResetNumber(0, i_nRST_SPDIF), RSTCON_nDISABLE);
     NX_RSTCON_SetnRST(NX_HDMI_GetResetNumber(0, i_nRST_TMDS), RSTCON_nDISABLE);
     NX_RSTCON_SetnRST(NX_HDMI_GetResetNumber(0, i_nRST_VIDEO), RSTCON_nENABLE);
     NX_RSTCON_SetnRST(NX_HDMI_GetResetNumber(0, i_nRST_SPDIF), RSTCON_nENABLE);
     NX_RSTCON_SetnRST(NX_HDMI_GetResetNumber(0, i_nRST_TMDS), RSTCON_nENABLE);
-#elif defined(CONFIG_MACH_NXP5430)
+#elif defined(CONFIG_MACH_S5P6818)
     NX_RSTCON_SetRST(NX_HDMI_GetResetNumber(0, i_nRST_VIDEO), RSTCON_ASSERT);
     NX_RSTCON_SetRST(NX_HDMI_GetResetNumber(0, i_nRST_SPDIF), RSTCON_ASSERT);
     NX_RSTCON_SetRST(NX_HDMI_GetResetNumber(0, i_nRST_TMDS), RSTCON_ASSERT);
@@ -392,12 +392,12 @@ static void disp_hdmi_init(void)
     /**
      * [SEQ 4] release the resets of HDMI.i_PHY_nRST and HDMI.i_nRST
      */
-#if defined(CONFIG_MACH_NXP4330)
+#if defined(CONFIG_MACH_S5P4418)
     NX_RSTCON_SetnRST(NX_HDMI_GetResetNumber(0, i_nRST_PHY), RSTCON_nDISABLE);
     NX_RSTCON_SetnRST(NX_HDMI_GetResetNumber(0, i_nRST), RSTCON_nDISABLE);
     NX_RSTCON_SetnRST(NX_HDMI_GetResetNumber(0, i_nRST_PHY), RSTCON_nENABLE);
     NX_RSTCON_SetnRST(NX_HDMI_GetResetNumber(0, i_nRST), RSTCON_nENABLE);
-#elif defined(CONFIG_MACH_NXP5430)
+#elif defined(CONFIG_MACH_S5P6818)
     NX_RSTCON_SetRST(NX_HDMI_GetResetNumber(0, i_nRST_PHY), RSTCON_ASSERT);
     NX_RSTCON_SetRST(NX_HDMI_GetResetNumber(0, i_nRST), RSTCON_ASSERT);
     NX_RSTCON_SetRST(NX_HDMI_GetResetNumber(0, i_nRST_PHY), RSTCON_NEGATE);

@@ -24,7 +24,7 @@
 #ifndef __PLATFORM_H__
 #define __PLATFORM_H__
 
-#include <nxp4330.h>
+#include <s5p4418.h>
 
 #ifndef __ASSEMBLY__
 #include <cfg_type.h>

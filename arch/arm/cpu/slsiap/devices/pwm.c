@@ -126,9 +126,9 @@ int pwm_init(int pwm_id, int div, int invert)
 	sprintf(name, "%s.%d", DEV_NAME_PWM, ch);
 	pwm_dev[ch].clk = clk_get(NULL, name);
 
-#if defined(CONFIG_MACH_NXP4330)
+#if defined(CONFIG_MACH_S5P4418)
 	NX_RSTCON_SetnRST(RESET_ID_PWM, RSTCON_nENABLE);
-#elif defined(CONFIG_MACH_NXP5430)
+#elif defined(CONFIG_MACH_S5P6818)
 	NX_RSTCON_SetRST(RESET_ID_PWM, RSTCON_NEGATE);
 #endif
 	return 0;

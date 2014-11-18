@@ -32,7 +32,7 @@ static void disp_mipi_reset(void)
 	NX_TIEOFF_Set(TIEOFFINDEX_OF_MIPI0_NX_DPSRAM_1R1W_EMAA, 3);
 	NX_TIEOFF_Set(TIEOFFINDEX_OF_MIPI0_NX_DPSRAM_1R1W_EMAB, 3);
 
-#if defined(CONFIG_MACH_NXP4330)
+#if defined(CONFIG_MACH_S5P4418)
     NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber(index, NX_MIPI_RST       ) , RSTCON_nDISABLE);
     NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber(index, NX_MIPI_RST_DSI_I ) , RSTCON_nDISABLE);
     NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber(index, NX_MIPI_RST_CSI_I ) , RSTCON_nDISABLE);
@@ -42,7 +42,7 @@ static void disp_mipi_reset(void)
     NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber(index, NX_MIPI_RST_DSI_I ) , RSTCON_nENABLE);
 	NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber(index, NX_MIPI_RST_PHY_S ) , RSTCON_nENABLE);
     NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber(index, NX_MIPI_RST_PHY_M ) , RSTCON_nENABLE);
-#elif defined(CONFIG_MACH_NXP5430)
+#elif defined(CONFIG_MACH_S5P6818)
     NX_RSTCON_SetRST(NX_MIPI_GetResetNumber(index, NX_MIPI_RST       ) , RSTCON_ASSERT);
     NX_RSTCON_SetRST(NX_MIPI_GetResetNumber(index, NX_MIPI_RST_DSI_I ) , RSTCON_ASSERT);
     NX_RSTCON_SetRST(NX_MIPI_GetResetNumber(index, NX_MIPI_RST_CSI_I ) , RSTCON_ASSERT);

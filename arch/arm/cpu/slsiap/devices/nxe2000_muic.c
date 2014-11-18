@@ -22,18 +22,18 @@
  */
 
 #include <common.h>
+#include <errno.h>
+#include <i2c.h>
 #include <asm/io.h>
 #include <asm/gpio.h>
 #include <power/pmic.h>
 #include <power/power_chrg.h>
-#include <i2c.h>
-#include <errno.h>
 
 #if defined(CONFIG_OTG_PHY_NEXELL)
 #include <otg_phy.h>
 #endif
-#include <nxe2000_power.h>
 #include "nxe2000-private.h"
+#include <nxe2000_power.h>
 
 #define NXE2000_CHG_PRIO		(0)		/* 1:VUSB, 0:VADP	*/
 
@@ -54,6 +54,96 @@
                             | (0x1 << NXE2000_POS_CHGCTL1_VADPCHGEN)    \
                             | (0x1 << NXE2000_POS_CHGCTL1_SUSPEND) )
 
+
+#if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+u32 chgctl_reg_val;
+#endif
+#if defined(CONFIG_FASTBOOT) && defined(CONFIG_SW_UBC_DETECT)
+extern int otg_bind_check(int miliSec_Timeout);
+
+static int s_otg_bind_status;
+static int s_otg_bind_flag;
+static int muic_chrg_get_type(struct pmic *p, u32 ctrl_en)
+{
+	u32 val = 0, tmp = 0;
+	u32 chg_state;
+	unsigned char charger;
+
+	if (pmic_probe(p))
+		return CHARGER_NO;
+
+	pmic_reg_read(p, NXE2000_REG_CHGSTATE, &chg_state);
+	if ((chg_state & 0xC0) == 0x00)
+		return CHARGER_UNKNOWN;
+
+#if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP) || (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP_UBC)
+#if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP_UBC)
+	if (chg_state & 0x40)
+#endif
+	{
+		if (ctrl_en)
+		{
+			pmic_reg_read(p, NXE2000_REG_CHGCTL1, &val);
+			val &= ~(0x1 << NXE2000_POS_CHGCTL1_CHGP);
+			val |=  (0x1 << NXE2000_POS_CHGCTL1_VADPCHGEN);
+			pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
+		}
+		else
+		{
+			chgctl_reg_val &= ~(0x1 << NXE2000_POS_CHGCTL1_CHGP);
+			chgctl_reg_val |= (0x1 << NXE2000_POS_CHGCTL1_VADPCHGEN);
+		}
+		charger = CHARGER_TA;
+		return charger;
+	}
+
+	if (ctrl_en)
+	{
+		pmic_reg_read(p, NXE2000_REG_CHGCTL1, &val);
+		val &= ~(0x1 << NXE2000_POS_CHGCTL1_CHGP);
+		val |= (0x1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
+		pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
+	}
+	else
+	{
+		chgctl_reg_val &= ~(0x1 << NXE2000_POS_CHGCTL1_CHGP);
+		chgctl_reg_val |= (0x1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
+	}
+#endif
+
+	s_otg_bind_status = otg_bind_check(500);
+	s_otg_bind_flag = 1;
+
+#if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_UBC)
+	if (ctrl_en)
+	{
+		pmic_reg_read(p, NXE2000_REG_CHGCTL1, &val);
+		val |= (0x1 << NXE2000_POS_CHGCTL1_CHGP)
+			|  (0x1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
+		pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
+	}
+	else
+	{
+		chgctl_reg_val |= (0x1 << NXE2000_POS_CHGCTL1_CHGP);
+		chgctl_reg_val |= (0x1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
+	}
+#endif
+
+	pmic_reg_read(p, NXE2000_REG_CHGSTATE, &chg_state);
+
+	if (s_otg_bind_status == 1) {
+		tmp = (NXE2000_DEF_LIMIT_USBDATA_AMP / 100000);
+		charger = CHARGER_USB;
+	} else {
+		tmp = (NXE2000_DEF_LIMIT_USB_AMP / 100000);
+		charger = CHARGER_TA;
+	}
+	val = 0xE0 | ((tmp < 15) ? (tmp - 1) : 14);
+	pmic_reg_write(p, NXE2000_REG_REGISET2, val);
+
+	return charger;
+}
+#else
 
 static int nxe2000_apsd_detect(struct pmic *p)
 {
@@ -116,104 +206,11 @@ apsd_fail:
 	return ret;
 }
 
-#if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
-extern u32 chgctl_reg_val;
-#endif
-#if defined(CONFIG_FASTBOOT) && defined(CONFIG_SW_UBC_DETECT)
-extern int otg_bind_check(int miliSec_Timeout);
-
-static int s_otg_bind_status;
-static int s_otg_bind_flag;
 static int muic_chrg_get_type(struct pmic *p, u32 ctrl_en)
 {
 	int chg_ilim_uA;
 	int type;
-	u32 val, tmp = 0;
-	u32 chg_state;
-	unsigned char charger;
-
-	if (pmic_probe(p))
-		return CHARGER_NO;
-
-	pmic_reg_read(p, NXE2000_REG_CHGSTATE, &chg_state);
-	if ((chg_state & 0xC0) == 0x00)
-		return CHARGER_UNKNOWN;
-
-#if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP) || (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP_UBC)
-#if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP_UBC)
-	if (chg_state & 0x40)
-#endif
-	{
-#if defined(CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
-		pmic_reg_read(p, NXE2000_REG_CHGCTL1, &val);
-//		val &= ~(0x1 << NXE2000_POS_CHGCTL1_CHGP);
-		val |=  (0x1 << NXE2000_POS_CHGCTL1_VADPCHGEN);
-		pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
-#else
-		if (ctrl_en)
-		{
-			pmic_reg_read(p, NXE2000_REG_CHGCTL1, &val);
-//			val &= ~(0x1 << NXE2000_POS_CHGCTL1_CHGP);
-			val |=  (0x1 << NXE2000_POS_CHGCTL1_VADPCHGEN);
-			pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
-		}
-		else
-		{
-			chgctl_reg_val |= (0x1 << NXE2000_POS_CHGCTL1_VADPCHGEN);
-		}
-#endif
-
-		return CHARGER_TA;
-	}
-#endif
-
-//	if (!s_otg_bind_flag) {
-		s_otg_bind_status   = otg_bind_check(500);
-		s_otg_bind_flag     = 1;
-//	}
-
-#if defined(CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
-	pmic_reg_read(p, NXE2000_REG_CHGCTL1, &val);
-	val |= (0x1 << NXE2000_POS_CHGCTL1_CHGP)
-		|  (0x1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
-	pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
-#else
-	if (ctrl_en)
-	{
-		pmic_reg_read(p, NXE2000_REG_CHGCTL1, &val);
-		val |= (0x1 << NXE2000_POS_CHGCTL1_CHGP)
-			|  (0x1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
-		pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
-	}
-	else
-	{
-		chgctl_reg_val  |= (0x1 << NXE2000_POS_CHGCTL1_CHGP)
-						|  (0x1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
-	}
-#endif
-
-	pmic_reg_read(p, NXE2000_REG_CHGSTATE, &chg_state);
-
-	if (s_otg_bind_status == 1) {
-		tmp = (NXE2000_DEF_LIMIT_USB_AMP / 100000);
-		charger = CHARGER_USB;
-	} else {
-		tmp = (NXE2000_DEF_LIMIT_ADP_AMP / 100000);
-		charger = CHARGER_TA;
-	}
-
-	val = 0xE0 | ((tmp < 15) ? (tmp - 1) : 14);
-	pmic_reg_write(p, NXE2000_REG_REGISET2, val);
-
-	return charger;
-}
-#else
-
-static int muic_chrg_get_type(struct pmic *p, u32 ctrl_en)
-{
-	int chg_ilim_uA;
-	int type;
-	u32 val, tmp = 0;
+	u32 val = 0, tmp = 0;
 	u32 chg_state;
 	unsigned char charger;
 
@@ -317,8 +314,8 @@ static int muic_chrg_get_type(struct pmic *p, u32 ctrl_en)
 
 // DEVLOPER_MODE
 #if defined(CONFIG_PMIC_NXE2000_ADP_CHARGER_ONLY_MODE)
-tmp     = (0x1 << NXE2000_POS_CHGCTL1_VADPCHGEN);
-charger = CHARGER_TA;
+		tmp     = (0x1 << NXE2000_POS_CHGCTL1_VADPCHGEN);
+		charger = CHARGER_TA;
 #endif
 	}
 	else

@@ -344,7 +344,7 @@ static void s3c_usb_read_out_fifo(u8 *buf, int num);
 
 #include "fastboot.c"
 
-/* ghcstop fix for nxp4330 */
+/* ghcstop fix */
 static void s3c_usb_init_phy(void)
 {
 #if !defined(CONFIG_OTG_PHY_NEXELL)
@@ -372,11 +372,11 @@ static void s3c_usb_init_phy(void)
     otg_phy_init();
 #endif
 
-	printf("nxp4330 usb device tie configuration done\n");
+	printf("Core usb device tie configuration done\n");
 }
 
 /* OTG PHY Power Off */
-/* ghcstop fix for nxp4330 */
+/* ghcstop fix */
 static void s3c_usb_phy_off(void)
 {
 #if !defined(CONFIG_OTG_PHY_NEXELL)

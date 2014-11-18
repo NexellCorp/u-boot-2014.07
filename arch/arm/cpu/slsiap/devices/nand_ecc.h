@@ -69,7 +69,7 @@
 #define NX_NFECCCTRL_ERRNUM			25
 #define NX_NF_ENCODE			0
 #define NX_NF_DECODE			1
-#define NX_NFECCCTRL_ZEROPAD		22
+#define NX_NFECCCTRL_ZEROPAD		25
 #define NX_NFECCCTRL_ELPNUM			18	// number of elp (0x7F)
 #define NX_NFECCCTRL_PDATACNT		10	// number of parity bit (0xFF)
 #define NX_NFECCCTRL_DATACNT		0	// nand data count value(write) (0x3FF)

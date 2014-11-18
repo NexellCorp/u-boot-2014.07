@@ -251,10 +251,8 @@ static int nand_hw_ecc_read_page(struct mtd_info *mtd, struct nand_chip *chip,
 
 	uint32_t *errdat;
 	int err = 0, errcnt = 0;
-#ifndef NO_ISSUE_MTD_BITFLIP_PATCH	/* freestyle@2013.09.26 */
 	uint32_t corrected = 0, failed = 0;
 	uint32_t max_bitflips = 0;
-#endif
 	int is_erasedpage = 0;
 
 	DBGOUT("%s, page=%d, ecc mode=%d, bytes=%d, page=%d, step=%d\n",
@@ -318,11 +316,7 @@ static int nand_hw_ecc_read_page(struct mtd_info *mtd, struct nand_chip *chip,
 				if (0 >= errcnt) {
 					ERROUT("page %d step %2d ecc error, can't %s ...\n",
 						page, (chip->ecc.steps-eccsteps), 0==errcnt?"detect":"correct");
-#ifndef NO_ISSUE_MTD_BITFLIP_PATCH	/* freestyle@2013.09.26 */
 					failed++;
-#else
-					mtd->ecc_stats.failed++;
-#endif
 					ret = -EBADMSG;
 					printk("read retry page %d, retry: %d \n", page, retry);
 					goto retry_rd;	/* EXIT */
@@ -339,16 +333,10 @@ static int nand_hw_ecc_read_page(struct mtd_info *mtd, struct nand_chip *chip,
 						ECCERR("0x%4x\n", errdat[errpos[k]/32]);
 					}
 
-#ifndef NO_ISSUE_MTD_BITFLIP_PATCH	/* freestyle@2013.09.26 */
 					#if !(U_BOOT_NAND)
 					corrected += errcnt;
 					#endif
 					max_bitflips = max_t(unsigned int, max_bitflips, errcnt);
-#else
-					#if !(U_BOOT_NAND)
-					mtd->ecc_stats.corrected += errcnt;
-					#endif
-#endif
 				}
 			}
 		}
@@ -361,28 +349,20 @@ static int nand_hw_ecc_read_page(struct mtd_info *mtd, struct nand_chip *chip,
 		}
 #endif
 
-#ifndef NO_ISSUE_MTD_BITFLIP_PATCH	/* freestyle@2013.09.26 */
 		mtd->ecc_stats.corrected += corrected;
 		if (failed > 0)
 			mtd->ecc_stats.failed++;
 
 		DBGOUT("DONE %s, ret=%d\n", __func__, ret);
 		return max_bitflips;
-#else
-		ret = 0;	/* no error */
-		DBGOUT("DONE %s, ret=%d\n", __func__, ret);
-		return ret;
-#endif
 
 retry_rd:
 		retry++;
 	} while (NAND_READ_RETRY > retry);
 
-#ifndef NO_ISSUE_MTD_BITFLIP_PATCH	/* freestyle@2013.09.26 */
 	mtd->ecc_stats.corrected += corrected;
 	if (failed > 0)
 		mtd->ecc_stats.failed++;
-#endif
 
 	DBGOUT("FAIL %s, ret=%d, retry=%d\n", __func__, ret, retry);
 	return ret;
@@ -440,7 +420,6 @@ static int nand_hw_write_page(struct mtd_info *mtd, struct nand_chip *chip,
 		memcpy (randomize_buf, buf, mtd->writesize);
 
 		randomizer_page (page & pages_per_block_mask, randomize_buf, mtd->writesize);
-		//printk("  page: %d ------->    randomize\n", page);
 
 		funcbuf = randomize_buf;
 	}
@@ -519,7 +498,9 @@ int nand_ecc_alloc_buffer(struct mtd_info *mtd)
 	if (!randomize_buf) {
 		ERROUT("randomize buffer alloc failed\n");
 	}
-	//printk  ("    [%s:%d] buf: %p\n", __func__, __LINE__, randomize_buf);
+	//printk  ("    [%s:%d] randomize_buf: %p, mtd->writesize: %d, pages_per_block_mask: %x\n",
+	//	__func__, __LINE__, randomize_buf, mtd->writesize, pages_per_block_mask);
+
 
 	// kfree ...
 #endif
@@ -680,9 +661,7 @@ int nand_hw_ecc_init_device(struct mtd_info *mtd)
 	chip->ecc.read_page 	= nand_hw_ecc_read_page;
 	chip->ecc.write_page 	= nand_hw_ecc_write_page;
 	chip->write_page		= nand_hw_write_page;
-#ifndef NO_ISSUE_MTD_BITFLIP_PATCH	/* freestyle@2013.09.26 */
 	chip->ecc.strength		= ((eccbyte * 8 / fls (8*eccsize)) * 80 / 100);
-#endif
 
 	NX_MCUS_ResetNFECCBlock();
 	NX_MCUS_SetECCMode(eccmode);

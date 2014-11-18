@@ -41,6 +41,7 @@ struct pmic;
 struct power_fg {
 	int (*fg_battery_check) (struct pmic *p, struct pmic *bat);
 	int (*fg_battery_update) (struct pmic *p, struct pmic *bat);
+	int (*fg_ibatt) (struct pmic *p, struct pmic *bat);
 };
 
 struct power_chrg {

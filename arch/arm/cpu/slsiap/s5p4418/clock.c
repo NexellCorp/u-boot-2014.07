@@ -65,20 +65,20 @@
 #define	INPUT_CLKS		6		/* PLL0, PLL1, PLL2, PLL3, EXT1, EXT2 */
 
 #if defined(CONFIG_NEXELL_DFS_BCLK)
-	#if defined(CONFIG_NXP4330_DFS_BCLK_PLL_0)
-	#define CONFIG_NXP4330_BCLKFREQ_PLLDEV 	0
-	#elif defined(CONFIG_NXP4330_DFS_BCLK_PLL_1)
-	#define CONFIG_NXP4330_BCLKFREQ_PLLDEV 	1
+	#if defined(CONFIG_S5P4418_DFS_BCLK_PLL_0)
+	#define CONFIG_S5P4418_BCLKFREQ_PLLDEV 	0
+	#elif defined(CONFIG_S5P4418_DFS_BCLK_PLL_1)
+	#define CONFIG_S5P4418_BCLKFREQ_PLLDEV 	1
 	#else
-	#define CONFIG_NXP4330_BCLKFREQ_PLLDEV	0
+	#define CONFIG_S5P4418_BCLKFREQ_PLLDEV	0
 	#endif
-#define	DVFS_BCLK_PLL	~(1<<CONFIG_NXP4330_BCLKFREQ_PLLDEV)
+#define	DVFS_BCLK_PLL	~(1<<CONFIG_S5P4418_BCLKFREQ_PLLDEV)
 #else
 #define	DVFS_BCLK_PLL	(-1UL)
 #endif
 
-#ifdef  CONFIG_ARM_NXP4330_CPUFREQ
-#define	DVFS_CPU_PLL	~(1<<CONFIG_NXP4330_CPUFREQ_PLLDEV)
+#ifdef  CONFIG_ARM_S5P4418_CPUFREQ
+#define	DVFS_CPU_PLL	~(1<<CONFIG_S5P4418_CPUFREQ_PLLDEV)
 #define	nxp_cpu_pll_change_frequency(c, l)	do { } while(0);
 #else
 #define	DVFS_CPU_PLL	(-1UL)
@@ -251,12 +251,12 @@ static inline void peri_clk_rate(void *base, int level, int src, int div)
 	struct clkgen_register *preg = base;
 	register U32 val;
 
-#ifdef CONFIG_NXP4330_CPUFREQ_PLLDEV
-	if (CONFIG_NXP4330_CPUFREQ_PLLDEV == src)
+#ifdef CONFIG_S5P4418_CPUFREQ_PLLDEV
+	if (CONFIG_S5P4418_CPUFREQ_PLLDEV == src)
 		printk("*** %s: Fail pll.%d for CPU  DFS ***\n", __func__, src);
 #endif
-#ifdef CONFIG_NXP4330_BCLKFREQ_PLLDEV
-	if (CONFIG_NXP4330_BCLKFREQ_PLLDEV == src)
+#ifdef CONFIG_S5P4418_BCLKFREQ_PLLDEV
+	if (CONFIG_S5P4418_BCLKFREQ_PLLDEV == src)
 		printk("*** %s: Fail pll.%d for BCLK DFS ***\n", __func__, src);
 #endif
 
@@ -398,7 +398,7 @@ static inline long core_rate(int type)
 
 static inline long core_set_rate(struct clk *clk, long rate)
 {
-#if defined(CONFIG_ARM_NXP4330_CPUFREQ)
+#if defined(CONFIG_ARM_S5P4418_CPUFREQ)
 	struct nxp_clk_dev *cdev = clk_container(clk);
 	char * c = (char *)cdev->name;
 	int pll = -1;

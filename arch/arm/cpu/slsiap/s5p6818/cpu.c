@@ -29,7 +29,7 @@
 #include <asm/sections.h>
 #include <platform.h>
 #include <mach-types.h>
-#include <asm/arch-nxp5430/mach-api.h>
+#include <asm/arch/mach-api.h>
 
 extern ulong _bss_start_ofs;	/* BSS start relative to _start */
 extern ulong _bss_end_ofs;		/* BSS end relative to _start */

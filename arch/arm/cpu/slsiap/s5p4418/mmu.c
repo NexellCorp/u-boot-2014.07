@@ -11,7 +11,7 @@
 
 #include <platform.h>
 #include <mach-types.h>
-#include <asm/arch-nxp4330/mach-api.h>
+#include <asm/arch/mach-api.h>
 
 extern ulong _bss_start_ofs;	/* BSS start relative to _start */
 extern ulong _bss_end_ofs;		/* BSS end relative to _start */
@@ -53,7 +53,7 @@ enum
 };
 
 //------------------------------------------------------------------------------
-// Virtual Map Address Table For NXP4330
+// Virtual Map Address Table
 //
 // static const u32 page_table_start =  PAGE_TABLE_START  ;
 

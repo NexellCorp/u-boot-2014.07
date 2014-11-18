@@ -1434,8 +1434,20 @@ static int fboot_rx_handler(const unsigned char *buffer, unsigned int length)
 
 #define ANDROID_VENDOR_ID 				0x18D1
 #define ANDROID_PRODUCT_ID				0x0002
-#define NEXELL_VENDOR_ID 				0x2375
-#define NEXELL_PRODUCT_ID				0x4330
+#define USB_VENDOR_ID 					0x2375
+#define USB_PRODUCT_ID					0x4330
+
+#define	USB_STRING_MANUFACTURER			"SLSIAP"
+
+#if	defined(CONFIG_MACH_S5P4418)
+#define USB_STRING_PRODUCT				"S5P4418"
+#define USB_STRING_SERIAL				"S5P4418"
+#elif defined (CONFIG_MACH_S5P6818)
+#define USB_STRING_PRODUCT				"S5P6818"
+#define USB_STRING_SERIAL				"S5P6818"
+#else
+#define USB_STRING_SERIAL				"Unknown"
+#endif
 
 #define USB_STRING_MANUFACTURER_INDEX  	1
 #define USB_STRING_PRODUCT_INDEX       	2
@@ -1459,9 +1471,9 @@ static int fboot_interface_init(void)
 	if (android_drvier)
 		return 0;
 
-	usb_dev_descript[USB_STRING_MANUFACTURER_INDEX] = "Nexell";
-	usb_dev_descript[USB_STRING_PRODUCT_INDEX]   	= "PYROPE";
-	usb_dev_descript[USB_STRING_SERIAL_INDEX] 		= "NXP4330";
+	usb_dev_descript[USB_STRING_MANUFACTURER_INDEX] = USB_STRING_MANUFACTURER;
+	usb_dev_descript[USB_STRING_PRODUCT_INDEX]   	= USB_STRING_PRODUCT;
+	usb_dev_descript[USB_STRING_SERIAL_INDEX] 		= USB_STRING_SERIAL;
 	usb_dev_descript[USB_STRING_CONFIG_INDEX]    	= "Android Fastboot";
 	usb_dev_descript[USB_STRING_INF_INDEX]  		= "Android Fastboot";
 
@@ -1479,10 +1491,10 @@ void fboot_usb_descriptor(descriptors_t *desc)
 		desc->dev.idProductL = ANDROID_PRODUCT_ID	& 0xff;	//0xFF; /**/
 		desc->dev.idProductH = ANDROID_PRODUCT_ID	>>8;	//0x0F; /**/
 	} else {
-		desc->dev.idVendorL  = NEXELL_VENDOR_ID  	& 0xff;	//0xB4;	/**/
-		desc->dev.idVendorH  = NEXELL_VENDOR_ID		>>8;	//0x0B;	/**/
-		desc->dev.idProductL = NEXELL_PRODUCT_ID	& 0xff;	//0xFF; /**/
-		desc->dev.idProductH = NEXELL_PRODUCT_ID	>>8;	//0x0F; /**/
+		desc->dev.idVendorL  = USB_VENDOR_ID  	& 0xff;	//0xB4;	/**/
+		desc->dev.idVendorH  = USB_VENDOR_ID		>>8;	//0x0B;	/**/
+		desc->dev.idProductL = USB_PRODUCT_ID	& 0xff;	//0xFF; /**/
+		desc->dev.idProductH = USB_PRODUCT_ID	>>8;	//0x0F; /**/
 	}
 }
 

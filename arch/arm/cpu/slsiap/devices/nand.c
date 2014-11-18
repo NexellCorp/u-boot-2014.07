@@ -456,7 +456,9 @@ int nand_ecc_post_scan(struct mtd_info *mtd)
 	int ret = 0;
 
 	ret = nand_ecc_layout_check(mtd);
+#ifdef CONFIG_MTD_NAND_ECC_HW
 	nand_ecc_alloc_buffer(mtd);
+#endif
 
 	return ret;
 }

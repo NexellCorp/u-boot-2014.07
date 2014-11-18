@@ -21,8 +21,8 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __NXP4330_H__
-#define __NXP4330_H__
+#ifndef __S5P4418_H__
+#define __S5P4418_H__
 
 #define PHY_BASEADDR_DMA0     		(0xC0000000)
 #define PHY_BASEADDR_DMA1     		(0xC0001000)
@@ -245,7 +245,7 @@
 /*
  * Interrupt
  */
-#include "nxp4330_irq.h"
+#include "s5p4418_irq.h"
 
 /*
  * prototype header
@@ -281,5 +281,5 @@
 #include <nx_vip.h>
 
 #endif /* 	__ASSEMBLY__ */
-#endif /*	__NXP4330_H__ */
+#endif /*	__S5P4418_H__ */
 

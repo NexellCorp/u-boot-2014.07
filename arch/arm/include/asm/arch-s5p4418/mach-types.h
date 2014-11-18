@@ -21,16 +21,16 @@
  * MA 02111-1307 USA
  */
 
-#define MACH_TYPE_NXP4330		       4330
+#define MACH_TYPE_S5P4418		       4330
 
-#if defined(CONFIG_MACH_NXP4330)
+#if defined(CONFIG_MACH_S5P4418)
 	#ifdef machine_arch_type
 		#undef  machine_arch_type
-		#define machine_arch_type		MACH_TYPE_NXP4330
+		#define machine_arch_type		MACH_TYPE_S5P4418
 	#else
-		#define machine_arch_type		MACH_TYPE_NXP4330
+		#define machine_arch_type		MACH_TYPE_S5P4418
 	#endif
-	#define machine_is_nxp4330()		(machine_arch_type == MACH_TYPE_NXP4330)
+	#define machine_is_s5p4418()		(machine_arch_type == MACH_TYPE_S5P4418)
 #else
-	#define machine_is_nxp4330()		(0)
+	#define machine_is_s5p4418()		(0)
 #endif

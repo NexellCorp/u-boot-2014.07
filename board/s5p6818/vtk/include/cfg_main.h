@@ -28,8 +28,8 @@
 /*------------------------------------------------------------------------------
  * 	System Name
  */
-#define	CFG_SYS_CPU_NAME						"nxp5430"
-#define	CFG_SYS_BOARD_NAME						"nxp5430-vtk"
+#define	CFG_SYS_CPU_NAME						"s5p6818"
+#define	CFG_SYS_BOARD_NAME						"s5p6818-vtk"
 
 /*------------------------------------------------------------------------------
  * 	Debug Uart

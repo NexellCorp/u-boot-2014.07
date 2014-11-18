@@ -22,14 +22,63 @@
  */
 
 #include <common.h>
+#include <errno.h>
+#include <i2c.h>
 #include <power/pmic.h>
 #include <power/power_chrg.h>
 #include <power/battery.h>
 #include <power/fg_battery_cell_params.h>
-#include <nxe2000_power.h>
-#include <i2c.h>
-#include <errno.h>
 #include "nxe2000-private.h"
+
+#include <nxe2000_power.h>
+
+static int power_check_fuel_gauge_reg(struct pmic *p, int Reg_h, int Reg_l, int enable_bit)
+{
+	u32 get_data_h, get_data_l;
+	int old_data, current_data;
+	int i;
+	int ret = 0;
+
+	old_data = 0;
+
+	for (i = 0; i < 5 ; i++) {
+		ret = pmic_reg_read(p, Reg_h, &get_data_h);
+		if (ret < 0) {
+			printf("power_check_fuel_gauge_reg(): Error in reading the register\n");
+			return ret;
+		}
+
+		ret = pmic_reg_read(p, Reg_l, &get_data_l);
+		if (ret < 0) {
+			printf("power_check_fuel_gauge_reg(): Error in reading the register\n");
+			return ret;
+		}
+
+		current_data = ((get_data_h & 0xff) << 8) | (get_data_l & 0xff);
+		current_data = (current_data & enable_bit);
+
+		if (current_data == old_data)
+			return current_data;
+		else
+			old_data = current_data;
+	}
+
+	return current_data;
+}
+
+static int power_check_ibatt(struct pmic *p, struct pmic *bat)
+{
+	int ret = 0;
+
+	ret =  power_check_fuel_gauge_reg(p, NXE2000_REG_CC_AVERREG1, NXE2000_REG_CC_AVERREG0, 0x3fff);
+	if (ret < 0) {
+		printf("power_check_ibatt(): Error in reading the fuel gauge register\n");
+		return ret;
+	}
+
+	ret = (ret > 0x1fff) ? (ret - 0x4000) : ret;
+	return ret;
+}
 
 static int power_update_battery(struct pmic *p, struct pmic *bat)
 {
@@ -72,6 +121,7 @@ static int power_update_battery(struct pmic *p, struct pmic *bat)
 static int power_check_battery(struct pmic *p, struct pmic *bat)
 {
 	struct power_battery *pb = bat->pbat;
+	unsigned int voltage_uV = 0, count;
 	unsigned int val;
 	int ret = 0;
 
@@ -99,7 +149,17 @@ static int power_check_battery(struct pmic *p, struct pmic *bat)
 	ret |= pmic_reg_read(p, NXE2000_REG_LSIVER, &val);
 	pb->bat->version = val;
 
-	power_update_battery(p, bat);
+	for (count = 0; count < 2; count++) {
+		power_update_battery(p, bat);
+		mdelay(50);
+	}
+	for (count = 0; count < 3; count++) {
+		power_update_battery(p, bat);
+		voltage_uV += pb->bat->voltage_uV;
+		mdelay(10);
+	}
+	pb->bat->voltage_uV = (voltage_uV / 3);
+
 	debug("fg ver: 0x%x\n", pb->bat->version);
 	printf("BAT: state_of_charge(SOC):%d%%\n",
 	       pb->bat->state_of_chrg);
@@ -122,6 +182,7 @@ static int power_check_battery(struct pmic *p, struct pmic *bat)
 static struct power_fg power_fg_ops = {
 	.fg_battery_check = power_check_battery,
 	.fg_battery_update = power_update_battery,
+	.fg_ibatt = power_check_ibatt,
 };
 
 int power_fg_init(unsigned char bus)

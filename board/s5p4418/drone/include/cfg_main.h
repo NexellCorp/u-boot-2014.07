@@ -28,8 +28,8 @@
 /*------------------------------------------------------------------------------
  * 	System Name
  */
-#define	CFG_SYS_CPU_NAME						"nxp4330q"
-#define	CFG_SYS_BOARD_NAME						"nxp4330-drone"
+#define	CFG_SYS_CPU_NAME						"s5p4418"
+#define	CFG_SYS_BOARD_NAME						"s5p4418-drone"
 
 /*------------------------------------------------------------------------------
  * 	Debug Uart

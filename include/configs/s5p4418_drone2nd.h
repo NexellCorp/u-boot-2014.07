@@ -118,7 +118,7 @@
 #define CONFIG_GATEWAYIP				192.168.1.254
 #define CONFIG_BOOTFILE					"uImage"  		/* File to load	*/
 
-#define CONFIG_BOOTCOMMAND "ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 root.img.gz;bootm 0x48000000"
+#define CONFIG_BOOTCOMMAND "ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 root.img.gz;bootm 0x48000000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -471,20 +471,20 @@
 	#define HAVE_BLOCK_DEVICE
 
 	#define CONFIG_MMC0_ATTACH      	TRUE    /* 0 = MMC0 : BOOT */
-	#define CONFIG_MMC1_ATTACH      	TRUE    /* 1 = MMC1 : External */
-	#define CONFIG_MMC2_ATTACH      	FALSE   /* 2 = MMC2 */
+	#define CONFIG_MMC1_ATTACH      	FALSE   /* 1 = MMC1 : External */
+	#define CONFIG_MMC2_ATTACH      	TRUE    /* 2 = MMC2 */
 
 	#define CONFIG_MMC0_CLOCK			50000000
 	#define CONFIG_MMC0_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0x1c) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(1)
 
-	#define CONFIG_MMC1_CLOCK			50000000
-	#define CONFIG_MMC1_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0x1c) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(1)
+	#define CONFIG_MMC2_CLOCK			50000000
+	#define CONFIG_MMC2_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0x1c) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(1)
 
 	#define CONFIG_DWMMC
 	#define CONFIG_NXP_DWMMC
 	#define CONFIG_MMC_PARTITIONS
 	#define CONFIG_CMD_MMC_UPDATE
-	#define CONFIG_SYS_MMC_BOOT_DEV  	(0)		/* BOOT MMC DEVICE NUM */
+	#define CONFIG_SYS_MMC_BOOT_DEV  	(2)		/* BOOT MMC DEVICE NUM */
 
 	#if defined(CONFIG_ENV_IS_IN_MMC)
 	#define	CONFIG_ENV_OFFSET			512*1024				/* 0x00080000 */
@@ -557,14 +557,14 @@
 #define CFG_FASTBOOT_TRANSFER_BUFFER_SIZE	(CFG_MEM_PHY_SYSTEM_SIZE - CFG_FASTBOOT_TRANSFER_BUFFER)
 
 #define	FASTBOOT_PARTS_DEFAULT		\
-			"flash=mmc,0:2ndboot:2nd:0x200,0x4000;"	\
-			"flash=mmc,0:bootloader:boot:0x8000,0x70000;"	\
-			"flash=mmc,0:boot:ext4:0x00100000,0x04000000;"		\
-			"flash=mmc,0:system:ext4:0x04100000,0x28E00000;"	\
-			"flash=mmc,0:cache:ext4:0x2CF00000,0x21000000;"		\
-			"flash=mmc,0:misc:emmc:0x4E000000,0x00800000;"		\
-			"flash=mmc,0:recovery:emmc:0x4E900000,0x01600000;"	\
-			"flash=mmc,0:userdata:ext4:0x50000000,0x0;"
+			"flash=mmc,2:2ndboot:2nd:0x200,0x4000;"	\
+			"flash=mmc,2:bootloader:boot:0x8000,0x70000;"	\
+			"flash=mmc,2:boot:ext4:0x00100000,0x04000000;"		\
+			"flash=mmc,2:system:ext4:0x04100000,0x28E00000;"	\
+			"flash=mmc,2:cache:ext4:0x2CF00000,0x21000000;"		\
+			"flash=mmc,2:misc:emmc:0x4E000000,0x00800000;"		\
+			"flash=mmc,2:recovery:emmc:0x4E900000,0x01600000;"	\
+			"flash=mmc,2:userdata:ext4:0x50000000,0x0;"
 #endif
 
 /*-----------------------------------------------------------------------
@@ -590,14 +590,14 @@
 	/* Logo command: board.c */
 	#if defined(CONFIG_LOGO_DEVICE_NAND)
 	/* From NAND */
-    #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 2:1 0x47000000 logo.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 2:1 0x47000000 battery.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 2:1 0x47000000 update.bmp; drawbmp 0x47000000"
 	#else
 	/* From MMC */
-    #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 2:1 0x47000000 logo.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 2:1 0x47000000 battery.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 2:1 0x47000000 update.bmp; drawbmp 0x47000000"
 	#endif
 #endif
 

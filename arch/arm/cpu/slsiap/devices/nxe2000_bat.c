@@ -22,11 +22,12 @@
  */
 
 #include <common.h>
+#include <errno.h>
 #include <power/pmic.h>
 #include <power/battery.h>
-#include <nxe2000_power.h>
-#include <errno.h>
 #include "nxe2000-private.h"
+
+#include <nxe2000_power.h>
 
 static struct battery battery_nxe2000;
 
@@ -92,8 +93,11 @@ int power_bat_init(unsigned char bus)
 
 	debug("Board BAT init\n");
 
-	p->interface = PMIC_NONE;
 	p->name = name;
+	p->interface = PMIC_I2C;
+	p->number_of_regs = NXE2000_NUM_OF_REGS;
+	p->hw.i2c.addr = NXE2000_I2C_ADDR;
+	p->hw.i2c.tx_num = 1;
 	p->bus = bus;
 
 	p->pbat = &power_bat_nxe2000;

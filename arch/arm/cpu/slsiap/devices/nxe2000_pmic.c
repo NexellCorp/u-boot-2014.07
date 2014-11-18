@@ -22,14 +22,14 @@
  */
 
 #include <common.h>
+#include <errno.h>
+#include <i2c.h>
 #include <asm/io.h>
 #include <asm/gpio.h>
 #include <power/pmic.h>
-#include <i2c.h>
-#include <errno.h>
 
-#include <nxe2000_power.h>
 #include "nxe2000-private.h"
+#include <nxe2000_power.h>
 
 static int nxe2000_get_enable_reg(
 		int pwr_src, u32 *reg, u32 *mask)

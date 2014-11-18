@@ -36,10 +36,10 @@
 /*-----------------------------------------------------------------------
  *  u-boot-2014.07
  */
-#define CONFIG_SYS_LDSCRIPT "arch/arm/cpu/nexell/u-boot.lds"
+#define CONFIG_SYS_LDSCRIPT "arch/arm/cpu/slsiap/u-boot.lds"
 #define CONFIG_SYS_GENERIC_BOARD
 
-#define	CONFIG_MACH_NXP5430
+#define	CONFIG_MACH_S5P6818
 
 /*-----------------------------------------------------------------------
  *  FIT
@@ -137,7 +137,7 @@
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
  */
-#define CONFIG_SYS_PROMPT				"nxp5430# "     									/* Monitor Command Prompt   */
+#define CONFIG_SYS_PROMPT				"s5p6818# "     									/* Monitor Command Prompt   */
 #define CONFIG_SYS_LONGHELP				       												/* undef to save memory	   */
 #define CONFIG_SYS_CBSIZE		   		1024		   											/* Console I/O Buffer Size  */
 #define CONFIG_SYS_PBSIZE		   		(CONFIG_SYS_CBSIZE+sizeof(CONFIG_SYS_PROMPT)+16) 	/* Print Buffer Size */

@@ -200,10 +200,10 @@ static int disp_lvds_setup(int module, int input, struct disp_vsync_info *psync,
 	/*
 	 * LVDS PHY Reset, make sure last.
 	 */
-#if defined(CONFIG_MACH_NXP4330)
+#if defined(CONFIG_MACH_S5P4418)
 	NX_RSTCON_SetnRST(rstnum, RSTCON_nDISABLE);
 	NX_RSTCON_SetnRST(rstnum, RSTCON_nENABLE);
-#elif defined(CONFIG_MACH_NXP5430)
+#elif defined(CONFIG_MACH_S5P6818)
 	NX_RSTCON_SetRST(rstnum, RSTCON_ASSERT);
 	NX_RSTCON_SetRST(rstnum, RSTCON_NEGATE);
 #endif

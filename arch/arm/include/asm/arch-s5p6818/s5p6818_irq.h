@@ -21,8 +21,8 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __NXP5430_INTR_H__
-#define __NXP5430_INTR_H__
+#ifndef __S5P6818_INTR_H__
+#define __S5P6818_INTR_H__
 
 /*
  * Physical Interrupt Number 64 (0~63)
@@ -137,4 +137,4 @@
 #define IRQ_TOTAL_MAX_COUNT  	(IRQ_SYSTEM_END + IRQ_SYSTEM_RESERVED)
 
 
-#endif //__NXP5430_INTR_H__
+#endif //__S5P6818_INTR_H__

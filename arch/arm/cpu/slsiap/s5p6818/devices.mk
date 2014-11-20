@@ -1,7 +1,7 @@
 
 obj-$(CONFIG_S5P_SERIAL)			+= ../devices/serial_s5p.o
 obj-$(CONFIG_PWM)					+= ../devices/pwm.o
-obj-$(CONFIG_MTD_NAND_NEXELL)		+= ../devices/nand.o
+obj-$(CONFIG_MTD_NAND_NXP)		+= ../devices/nand.o
 obj-$(CONFIG_MTD_NAND_ECC_HW)		+= ../devices/nand_ecc.o
 obj-$(CONFIG_CMD_I2C)				+= ../devices/i2c_gpio.o
 obj-$(CONFIG_LCD)					+= ../devices/lcd.o

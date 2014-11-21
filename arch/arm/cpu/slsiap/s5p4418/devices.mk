@@ -21,4 +21,4 @@ obj-$(CONFIG_GPIOLIB_NXP)			+= ../devices/gpio_nxp.o
 obj-$(CONFIG_NXP_RTC_USE)			+= ../devices/rtc_nxp.o
 obj-$(CONFIG_NXP_DWC_OTG) 			+= ../devices/dwc_otg_hs.o
 obj-$(CONFIG_NXP_DWC_OTG_PHY)		+= ../devices/dwc_otg_phy.o
-
+obj-$(CONFIG_USB_EHCI_SYNOPSYS)		+= ../devices/ehci-hcd-hsic.o ../devices/ehci-synop.o

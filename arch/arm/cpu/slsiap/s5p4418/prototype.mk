@@ -9,6 +9,8 @@ obj-y += $(PROTOTYPE)/$(MODULES)/nx_alive.o
 obj-y += $(PROTOTYPE)/$(MODULES)/nx_gpio.o
 obj-y += $(PROTOTYPE)/$(MODULES)/nx_pwm.o
 
+obj-y += $(PROTOTYPE)/$(MODULES)/nx_usb20host.o
+obj-y += $(PROTOTYPE)/$(MODULES)/nx_usb20otg.o
 obj-y += $(PROTOTYPE)/$(MODULES)/nx_tieoff.o
 
 obj-$(CONFIG_CMD_MMC)				+= $(PROTOTYPE)/$(MODULES)/nx_sdmmc.o

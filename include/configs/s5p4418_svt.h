@@ -488,7 +488,6 @@
 
 #if defined(CONFIG_CMD_MMC)
 
-	#define CONFIG_BOUNCE_BUFFER
 	#define	CONFIG_MMC
 	#define CONFIG_GENERIC_MMC
 	#define HAVE_BLOCK_DEVICE

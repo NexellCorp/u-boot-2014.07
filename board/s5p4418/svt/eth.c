@@ -20,18 +20,19 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
  */
-#include <common.h>
-#include <miiphy.h>
 #include <netdev.h>
 
 /*------------------------------------------------------------------------------
  * u-boot eth interface
  */
 #include <net.h>
+#include <phy.h>
 
 #ifdef CONFIG_CMD_NET
 
 #if defined(CONFIG_PHY_MICREL)
+#include <common.h>
+#include <miiphy.h>
 #include <micrel.h>
 
 int micrel_rgmii_rework(struct phy_device *phydev)
@@ -88,17 +89,17 @@ int micrel_rgmii_rework(struct phy_device *phydev)
 }
 #endif
 
+#if defined(CONFIG_DESIGNWARE_ETH)
 int board_phy_config(struct phy_device *phydev)
 {
-#if defined(CONFIG_PHY_MICREL)
+	#if defined(CONFIG_PHY_MICREL)
 	micrel_rgmii_rework(phydev);
-#endif
-
+	#endif
 	if (phydev->drv->config)
 		phydev->drv->config(phydev);
-
 	return 0;
 }
+#endif
 
 int board_eth_init(bd_t *bis)
 {

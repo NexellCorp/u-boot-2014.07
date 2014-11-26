@@ -74,7 +74,7 @@
 #define CFG_DISP_OUTPUT_MODOLE           		0	// 0 : Primary, 1 : Secondary
 
 #define CFG_DISP_PRI_SCREEN_LAYER               0
-#define CFG_DISP_PRI_SCREEN_RGB_FORMAT          MLC_RGBFMT_A8B8G8R8
+#define CFG_DISP_PRI_SCREEN_RGB_FORMAT          MLC_RGBFMT_A8R8G8B8
 #define CFG_DISP_PRI_SCREEN_PIXEL_BYTE	        4
 #define CFG_DISP_PRI_SCREEN_COLOR_KEY	        0x090909
 
@@ -87,16 +87,16 @@
 #define CFG_DISP_PRI_RESOL_HEIGHT				 600	// Y Resolution
 
 #define CFG_DISP_PRI_HSYNC_SYNC_WIDTH           20
-#define CFG_DISP_PRI_HSYNC_BACK_PORCH           160
+#define CFG_DISP_PRI_HSYNC_BACK_PORCH           140
 #define CFG_DISP_PRI_HSYNC_FRONT_PORCH          160
 #define CFG_DISP_PRI_HSYNC_ACTIVE_HIGH          CTRUE
 #define CFG_DISP_PRI_VSYNC_SYNC_WIDTH           3
-#define CFG_DISP_PRI_VSYNC_BACK_PORCH           23
+#define CFG_DISP_PRI_VSYNC_BACK_PORCH           20
 #define CFG_DISP_PRI_VSYNC_FRONT_PORCH          12
 #define CFG_DISP_PRI_VSYNC_ACTIVE_HIGH 	        CTRUE
 
 #define CFG_DISP_PRI_CLKGEN0_SOURCE             DPC_VCLK_SRC_PLL2
-#define CFG_DISP_PRI_CLKGEN0_DIV                12
+#define CFG_DISP_PRI_CLKGEN0_DIV                16
 #define CFG_DISP_PRI_CLKGEN0_DELAY              0
 #define CFG_DISP_PRI_CLKGEN0_INVERT				0
 #define CFG_DISP_PRI_CLKGEN1_SOURCE             DPC_VCLK_SRC_VCLK2

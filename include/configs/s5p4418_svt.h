@@ -118,7 +118,7 @@
 #define CONFIG_GATEWAYIP				192.168.1.254
 #define CONFIG_BOOTFILE					"uImage"  		/* File to load	*/
 
-#define CONFIG_BOOTCOMMAND "fatload mmc 0:1 0x48000000 uImage;fatload mmc 0:1 0x49000000 root.img.gz;bootm 0x48000000"
+#define CONFIG_BOOTCOMMAND "udown 0x48000000;bootm 0x48000000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -174,43 +174,59 @@
  * Ethernet configuration
  * depend on CONFIG_CMD_NET
  */
-#define CONFIG_DESIGNWARE_ETH			1
+#define CONFIG_DRIVER_DM9000
+//#define CONFIG_DESIGNWARE_ETH
 
 #if defined(CONFIG_CMD_NET)
-
-#define CONFIG_PHY_REALTEK
-//#define CONFIG_PHY_MICREL
-//#define CONFIG_PHY_MICREL_KSZ9031
-
-	/* DWC Ethernet driver configuration */
+	/*
+	 * DWC Ethernet driver configuration
+	 */
 	#if defined(CONFIG_DESIGNWARE_ETH)
-	#define CONFIG_PHYLIB
-	#define CONFIG_DWCGMAC_BASE			IO_ADDRESS(PHY_BASEADDR_GMAC)
-#if defined(CONFIG_PHY_REALTEK)
-	#define CONFIG_ETHPRIME				"RTL8211"
-	#define CONFIG_PHY_ADDR				3           /* RTL8211 PHY address */
-#endif
-#if defined(CONFIG_PHY_MICREL)
-	#define CONFIG_ETHPRIME				"KSZ9031"
-	#define CONFIG_PHY_ADDR				7           /* KSZ9031 PHY address */
-#endif
-	#define CONFIG_PHY_RESET_DELAY		10000       /* in usec */
+		#define CONFIG_PHY_REALTEK
+		//#define CONFIG_PHY_MICREL
+		//#define CONFIG_PHY_MICREL_KSZ9031
 
-	#define CONFIG_DW_ALTDESCRIPTOR
-	#define CONFIG_DW_SEARCH_PHY
-//	#define CONFIG_DW_AUTONEG
-//	#define CONFIG_DW_SPEED1000M		/* #ifndef CONFIG_DW_AUTONEG */
-//	#define CONFIG_DW_SPEED100M			/* #ifndef CONFIG_DW_AUTONEG */
-//	#define CONFIG_DW_SPEED10M			/* #ifndef CONFIG_DW_AUTONEG */
-//	#define CONFIG_DW_DUPLEXHALF		/* #ifndef CONFIG_DW_AUTONEG */
+		#define CONFIG_DWCGMAC_BASE			IO_ADDRESS(PHY_BASEADDR_GMAC)
 
-	#define CONFIG_PHY_GIGE			/* Include GbE speed/duplex detection */
-	#define CONFIG_PHY_DYNAMIC_ANEG		1
-	#define CONFIG_MII
-	#define CONFIG_CMD_MII
+		#if defined(CONFIG_PHY_REALTEK)
+			#define CONFIG_ETHPRIME				"RTL8211"
+			#define CONFIG_PHY_ADDR				3           /* RTL8211 PHY address */
+		#endif
+		#if defined(CONFIG_PHY_MICREL)
+			#define CONFIG_ETHPRIME				"KSZ9031"
+			#define CONFIG_PHY_ADDR				7           /* KSZ9031 PHY address */
+		#endif
+
+		#define CONFIG_PHYLIB
+		#define CONFIG_PHY_RESET_DELAY		10000       /* in usec */
+		#define CONFIG_DW_ALTDESCRIPTOR
+		#define CONFIG_DW_SEARCH_PHY
+	//	#define CONFIG_DW_AUTONEG
+	//	#define CONFIG_DW_SPEED1000M		/* #ifndef CONFIG_DW_AUTONEG */
+	//	#define CONFIG_DW_SPEED100M			/* #ifndef CONFIG_DW_AUTONEG */
+	//	#define CONFIG_DW_SPEED10M			/* #ifndef CONFIG_DW_AUTONEG */
+	//	#define CONFIG_DW_DUPLEXHALF		/* #ifndef CONFIG_DW_AUTONEG */
+
+		#define CONFIG_PHY_GIGE			/* Include GbE speed/duplex detection */
+		#define CONFIG_PHY_DYNAMIC_ANEG		1
+		#define CONFIG_MII
+		#define CONFIG_CMD_MII
+	/*
+	 * DM90000
+	 */
+	#elif defined(CONFIG_DRIVER_DM9000)
+		#define CONFIG_DM9000_BASE	   		CFG_ETHER_EXT_PHY_BASEADDR		/* DM9000: 0x04000000(CS1) */
+		#define DM9000_IO	   				CONFIG_DM9000_BASE
+		#define DM9000_DATA	   				(CONFIG_DM9000_BASE + 0x4)
+	//	#define CONFIG_DM9000_DEBUG
+	#endif
+
+	/*
+	 * Net command
+	 */
 	#define CONFIG_CMD_PING
 //	#define CONFIG_CMD_DHCP
-	#endif
+
 #endif
 
 /*-----------------------------------------------------------------------
@@ -610,8 +626,9 @@
 
 	/* Logo command: board.c */
 	/* From MMC */
-    #define CONFIG_CMD_LOGO_WALLPAPERS "fatload mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_BATTERY "fatload mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_WALLPAPERS 	"fatload mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_BATTERY 	"fatload mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_UPDATE 		"fatload mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
 
 #endif
 

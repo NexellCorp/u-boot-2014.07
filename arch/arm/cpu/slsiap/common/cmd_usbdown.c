@@ -522,8 +522,8 @@ static S32 nx_usb_set_init(void)
 	 */
 	ECID = readl(IO_ADDRESS(PHY_BASEADDR_ECID_MODULE + (3<<2)));
     if (ECID & 0xFFFF) {
-    	VID = (ECID >> 16) & 0xFFFF;	/* 0x1234 */
-    	PID = (ECID & 0xFFFF);			/* 0x04E8 */
+    	VID = 0x1234;	/* 0x1234 */
+    	PID = 0x04E8;	/* 0x04E8 */
     	gs_DeviceDescriptorHS[ 8] = gs_DeviceDescriptorFS[ 8] = (U8)(VID & 0xff);
     	gs_DeviceDescriptorHS[ 9] = gs_DeviceDescriptorFS[ 9] = (U8)(VID >> 8);
     	gs_DeviceDescriptorHS[10] = gs_DeviceDescriptorFS[10] = (U8)(PID & 0xff);

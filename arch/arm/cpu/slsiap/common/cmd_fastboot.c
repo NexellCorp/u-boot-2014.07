@@ -1485,16 +1485,24 @@ static int fboot_interface_init(void)
 
 void fboot_usb_descriptor(descriptors_t *desc)
 {
+	U16	VID = USB_VENDOR_ID, PID = USB_PRODUCT_ID;
+	U32 ECID;
+
 	if (android_drvier) {
 		desc->dev.idVendorL  = ANDROID_VENDOR_ID	& 0xff;	//0xB4;	/**/
 		desc->dev.idVendorH  = ANDROID_VENDOR_ID	>>8;	//0x0B;	/**/
 		desc->dev.idProductL = ANDROID_PRODUCT_ID	& 0xff;	//0xFF; /**/
 		desc->dev.idProductH = ANDROID_PRODUCT_ID	>>8;	//0x0F; /**/
 	} else {
-		desc->dev.idVendorL  = USB_VENDOR_ID  	& 0xff;	//0xB4;	/**/
-		desc->dev.idVendorH  = USB_VENDOR_ID		>>8;	//0x0B;	/**/
-		desc->dev.idProductL = USB_PRODUCT_ID	& 0xff;	//0xFF; /**/
-		desc->dev.idProductH = USB_PRODUCT_ID	>>8;	//0x0F; /**/
+		ECID = readl(IO_ADDRESS(PHY_BASEADDR_ECID_MODULE + (3<<2)));
+    	if (ECID & 0xFFFF) {
+    		VID = (ECID >> 16) & 0xFFFF;	/* 0x1234 */
+    		PID = (ECID & 0xFFFF);			/* 0x04E8 */
+		}
+		desc->dev.idVendorL  = VID & 0xff;	//0xB4;	/**/
+		desc->dev.idVendorH  = VID >>8;		//0x0B;	/**/
+		desc->dev.idProductL = PID & 0xff;	//0xFF; /**/
+		desc->dev.idProductH = PID >>8;		//0x0F; /**/
 	}
 }
 

@@ -35,8 +35,8 @@
 #endif
 
 
-#define USBD_VID			0x2375
-#define USBD_PID			0x4330
+#define USBD_VID		0x2375
+#define USBD_PID		0x4330
 
 static volatile struct NX_RSTCON_RegisterSet *pRSTCONReg =
 				(struct NX_RSTCON_RegisterSet *)PHY_BASEADDR_RSTCON_MODULE;
@@ -46,7 +46,7 @@ static volatile struct NX_USB_OTG_RegisterSet *pUOReg =
 				(struct NX_USB_OTG_RegisterSet *)PHY_BASEADDR_USB20OTG_MODULE_AHBS0;
 static volatile USBBOOTSTATUS * pUSBBootStatus;
 
-static const U8 __attribute__((aligned(4))) gs_DeviceDescriptorFS[DEVICE_DESCRIPTOR_SIZE] =
+static U8 __attribute__((aligned(4))) gs_DeviceDescriptorFS[DEVICE_DESCRIPTOR_SIZE] =
 {
 	18,							//	0 desc size
 	(U8)(DESCRIPTORTYPE_DEVICE),//	1 desc type (DEVICE)
@@ -68,7 +68,7 @@ static const U8 __attribute__((aligned(4))) gs_DeviceDescriptorFS[DEVICE_DESCRIP
 	0x01						// 17 num of possible configurations
 };
 
-static const U8 __attribute__((aligned(4))) gs_DeviceDescriptorHS[DEVICE_DESCRIPTOR_SIZE] =
+static U8 __attribute__((aligned(4))) gs_DeviceDescriptorHS[DEVICE_DESCRIPTOR_SIZE] =
 {
 	18,							//	0 desc size
 	(U8)(DESCRIPTORTYPE_DEVICE),//	1 desc type (DEVICE)
@@ -491,6 +491,8 @@ static void nx_usb_reset(void)
 static S32 nx_usb_set_init(void)
 {
 	U32 status = pUOReg->DCSR.DSTS; /* System status read */
+	U16	VID = USBD_VID, PID = USBD_PID;
+	U32 ECID;
 
 	/* Set if Device is High speed or Full speed */
 	if (((status & 0x6) >> 1) == USB_HIGH) {
@@ -514,6 +516,19 @@ static S32 nx_usb_set_init(void)
 	}
 
 	pUSBBootStatus->iRxSize = 512;
+
+	/*
+	 * READ ECID for Product and Vendor ID
+	 */
+	ECID = readl(IO_ADDRESS(PHY_BASEADDR_ECID_MODULE + (3<<2)));
+    if (ECID & 0xFFFF) {
+    	VID = (ECID >> 16) & 0xFFFF;	/* 0x1234 */
+    	PID = (ECID & 0xFFFF);			/* 0x04E8 */
+    	gs_DeviceDescriptorHS[ 8] = gs_DeviceDescriptorFS[ 8] = (U8)(VID & 0xff);
+    	gs_DeviceDescriptorHS[ 9] = gs_DeviceDescriptorFS[ 9] = (U8)(VID >> 8);
+    	gs_DeviceDescriptorHS[10] = gs_DeviceDescriptorFS[10] = (U8)(PID & 0xff);
+     	gs_DeviceDescriptorHS[11] = gs_DeviceDescriptorFS[11] = (U8)(PID >> 8);
+	}
 
 	/* set endpoint */
 	/* Unmask NX_OTG_DAINT source */

@@ -213,6 +213,8 @@ int board_early_init_f(void)
 
 int board_init(void)
 {
+	DBGOUT("%s : done board init ...\n", CFG_SYS_BOARD_NAME);
+	return 0;
 }
 
 static int auto_update(void)

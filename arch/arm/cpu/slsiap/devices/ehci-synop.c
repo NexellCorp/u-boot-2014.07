@@ -77,17 +77,22 @@ int ehci_hcd_init(int index, enum usb_init_type init,
 	//9. resetcon
 	writel(readl(0xc0012004) & ~(1<<24), 0xc0012004);			// reset on
 
+#if defined( CONFIG_USB_HSIC_MODE )
 	// GPIO Reset
 	NX_GPIO_SetPadFunction( 4, 22, 0 );
 	NX_GPIO_SetOutputEnable( 4, 22, CTRUE );
+#if defined( CONFIG_MACH_S5P4418 )
 	NX_GPIO_SetPullSelect( 4, 22, CTRUE );
 	NX_GPIO_SetPullEnable( 4, 22, CFALSE );
+#else
+	NX_GPIO_SetPullEnable( 4, 22, NX_GPIO_PULL_UP );
+#endif
 	NX_GPIO_SetOutputValue( 4, 22, CTRUE );
 	udelay( 100 );
 	NX_GPIO_SetOutputValue( 4, 22, CFALSE );
 	udelay( 100 );
 	NX_GPIO_SetOutputValue( 4, 22, CTRUE );
-
+#endif
 
 	// Release common reset of host controller
 	writel(readl(0xc0012004) |  (1<<24), 0xc0012004);			// reset off

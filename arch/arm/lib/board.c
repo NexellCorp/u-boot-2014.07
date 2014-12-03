@@ -550,7 +550,10 @@ void board_init_r(gd_t *id, ulong dest_addr)
 #ifdef CONFIG_ARCH_EARLY_INIT_R
 	arch_early_init_r();
 #endif
+
+#ifndef CONFIG_NXE2000_REG_DUMP
 	power_init_board();
+#endif
 
 #if !defined(CONFIG_SYS_NO_FLASH)
 	puts("Flash: ");
@@ -623,6 +626,10 @@ void board_init_r(gd_t *id, ulong dest_addr)
 #endif
 
 	console_init_r();	/* fully init console as a device */
+
+#ifdef CONFIG_NXE2000_REG_DUMP
+	power_init_board();
+#endif
 
 #ifdef CONFIG_DISPLAY_BOARDINFO_LATE
 # ifdef CONFIG_OF_CONTROL

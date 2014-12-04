@@ -628,13 +628,13 @@ int board_late_init(void)
 		char *str_lowbatt  		= " Low Battery...";
 		char *str_nobatt  		= " No Battery... ";
 
-
 		clr_str_size = max(strlen(str_charging), strlen(str_lowbatt));
 		sx = (lcdw - bmpw)/2 + bx;
 		sy = (lcdh - bmph)/2 + by;
 		dy = sy + (bh+4)*3;
 		str_dy = dy;
 
+		printf(".");
 		pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &back_reg);
 		temp_reg = back_reg | (1 << NXE2000_POS_CHGCTL1_CHGCMP_DIS);
 		//temp_reg |= (1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
@@ -679,6 +679,7 @@ int board_late_init(void)
 
 		while(!ctrlc())
 		{
+			printf(".");
 			if (nxp_rtc_get() > (time_pwr_prev + 4))
 			{
 				time_pwr_prev = nxp_rtc_get();
@@ -704,6 +705,7 @@ int board_late_init(void)
 
 				gpio_set_int_clear(CFG_KEY_POWER);
 
+#if 0
 				p_fg->fg->fg_battery_check(p_fg, p_bat);
 
 				if(p_muic)
@@ -723,11 +725,13 @@ int board_late_init(void)
 				{
 					shutdown_ilim_uV = NXE2000_DEF_LOWBAT_BATTERY_VOL;
 				}
+#endif
 
 				if (power_key_depth > 1)
 				{
 					if (pb->bat->voltage_uV >= shutdown_ilim_uV)
 					{
+						printf("\n");
 						break;
 					}
 				}
@@ -745,6 +749,7 @@ int board_late_init(void)
 				else
 				{
 					dy = sy + (bh+4)*3;
+					printf("\n");
 					lcd_draw_boot_logo(CONFIG_FB_ADDR, CFG_DISP_PRI_RESOL_WIDTH, CFG_DISP_PRI_RESOL_HEIGHT, CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
 					i = 0;
 				}
@@ -764,6 +769,7 @@ int board_late_init(void)
 
 			if(!power_depth)
 			{
+				printf("\n");
 				goto enter_shutdown;
 			}
 
@@ -781,6 +787,11 @@ skip_bat_animation:
 	//pmic_reg_write(p_chrg, NXE2000_REG_GPLED_FUNC, chg_led_mode);
 #endif	/* CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE */
 #endif  /* CONFIG_DISPLAY_OUT */
+
+	if(p_muic)
+		chrg = p_muic->chrg->chrg_type(p_muic, 1);
+	else
+		chrg = p_chrg->chrg->chrg_type(p_chrg, 1);
 
 	/* Temp check gpio to update */
 	if (chrg == CHARGER_USB)
@@ -803,6 +814,12 @@ enter_shutdown:
 	//chg_led_mode &= ~0x04;
 	//pmic_reg_write(p_chrg, NXE2000_REG_GPLED_FUNC, chg_led_mode);
 #endif	/* CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE */
+
+	if(p_muic)
+		chrg = p_muic->chrg->chrg_type(p_muic, 1);
+	else
+		chrg = p_chrg->chrg->chrg_type(p_chrg, 1);
+
 
 #if defined(CONFIG_NXE2000_REG_DUMP)
 	nxe2000_register_dump(&nxe_power_config);

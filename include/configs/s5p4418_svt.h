@@ -422,6 +422,9 @@
 // #define CONFIG_NXE2000_REG_DUMP
 #endif
 
+/*-----------------------------------------------------------------------
+ * BATTERY CHECK (FUEL GAUGE)
+ */
 #if defined(CONFIG_HAVE_BATTERY)
 
 //#define CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE

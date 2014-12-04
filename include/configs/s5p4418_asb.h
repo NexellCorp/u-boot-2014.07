@@ -226,7 +226,7 @@
 	#define CONFIG_SYS_NAND_ONFI_DETECTION
 	#define CONFIG_CMD_NAND_TRIMFFS
 
-	#define	CONFIG_MTD_NAND_NEXELL
+	#define	CONFIG_MTD_NAND_NXP
 //	#define	CONFIG_MTD_NAND_ECC_BCH															/* sync kernel config */
 	#define	CONFIG_MTD_NAND_ECC_HW
 //	#define	CONFIG_MTD_NAND_VERIFY_WRITE

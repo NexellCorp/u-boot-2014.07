@@ -636,6 +636,12 @@
 #endif
 
 /*-----------------------------------------------------------------------
+ * for SVT Test
+ */
+
+#define CONFIG_ASB_TEST
+
+/*-----------------------------------------------------------------------
  * Debug message
  */
 //#define DEBUG							/* u-boot debug macro, nand, ethernet,... */

@@ -842,6 +842,23 @@ int board_late_init(void)
 	run_command(boot, 0);
 #endif
 
+//<= add miip reset for svt test by hsjung
+    int index = 0;
+
+    NX_TIEOFF_Set(TIEOFFINDEX_OF_MIPI0_NX_DPSRAM_1R1W_EMAA, 3); 
+    NX_TIEOFF_Set(TIEOFFINDEX_OF_MIPI0_NX_DPSRAM_1R1W_EMAB, 3); 
+
+    NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber(index, NX_MIPI_RST       ) , RSTCON_nDISABLE);
+    NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber(index, NX_MIPI_RST_DSI_I ) , RSTCON_nDISABLE);
+    NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber(index, NX_MIPI_RST_CSI_I ) , RSTCON_nDISABLE);
+    NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber(index, NX_MIPI_RST_PHY_S ) , RSTCON_nDISABLE);
+    NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber(index, NX_MIPI_RST_PHY_M ) , RSTCON_nDISABLE);
+    NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber(index, NX_MIPI_RST       ) , RSTCON_nENABLE);
+    NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber(index, NX_MIPI_RST_DSI_I ) , RSTCON_nENABLE);
+    NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber(index, NX_MIPI_RST_PHY_S ) , RSTCON_nENABLE);
+    NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber(index, NX_MIPI_RST_PHY_M ) , RSTCON_nENABLE);
+//=> add miip reset for svt test by hsjung
+
 #if defined(CONFIG_DISPLAY_OUT)
 	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 #endif

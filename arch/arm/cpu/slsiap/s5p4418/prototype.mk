@@ -24,7 +24,6 @@ obj-$(CONFIG_DISPLAY_OUT)			+= 	$(PROTOTYPE)/$(MODULES)/nx_displaytop.o		\
 
 obj-$(CONFIG_DISPLAY_OUT_LVDS)	+= $(PROTOTYPE)/$(MODULES)/nx_lvds.o
 obj-$(CONFIG_DISPLAY_OUT_MIPI)	+= $(PROTOTYPE)/$(MODULES)/nx_mipi.o
-obj-$(CONFIG_ASB_TEST)			+= $(PROTOTYPE)/$(MODULES)/nx_mipi.o
 obj-$(CONFIG_DISPLAY_OUT_RESCONV)	+= $(PROTOTYPE)/$(MODULES)/nx_resconv.o
 
 obj-$(CONFIG_DISPLAY_OUT_HDMI)	+= $(PROTOTYPE)/$(MODULES)/nx_hdmi.o

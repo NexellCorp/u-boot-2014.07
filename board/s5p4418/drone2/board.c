@@ -775,6 +775,7 @@ int board_late_init(void)
 
 			mdelay(1000);
 		}
+		printf("\n");
 		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 	}
 

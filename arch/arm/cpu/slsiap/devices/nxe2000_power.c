@@ -372,7 +372,7 @@ int nxe2000_param_setup(struct nxe2000_power *power)
 
 	/* Charge current setting register. */
 	cache[NXE2000_REG_REGISET1]	= (NXE2000_DEF_LIMIT_ADP_AMP / 100000) - 1;
-	cache[NXE2000_REG_REGISET2]	= (NXE2000_DEF_LIMIT_USBDATA_AMP / 100000) - 1;
+	cache[NXE2000_REG_REGISET2]	= 0xE0|((NXE2000_DEF_LIMIT_USBDATA_AMP / 100000) - 1);
 
 #if defined(CONFIG_SW_UBC_DETECT)
 	cache[NXE2000_REG_CHGISET]	=   ( (CHARGER_CURRENT_COMPLETE << NXE2000_POS_CHGISET_ICCHG) |
@@ -544,7 +544,8 @@ int nxe2000_device_setup(struct nxe2000_power *power)
 	nxe2000_i2c_write(NXE2000_REG_BATSET2	, cache[NXE2000_REG_BATSET2]	, power);
 
 	/* Redetect for UBC */
-	nxe2000_i2c_write(NXE2000_REG_EXTIF_GCHGDET,    0x01,   power);
+	//nxe2000_i2c_write(NXE2000_REG_EXTIF_GCHGDET,    0x01,   power);
+	//nxe2000_i2c_write(NXE2000_REG_EXTIF_PCHGDET,    0x01,   power);
 
 	nxe2000_i2c_write(NXE2000_REG_DIESET	, cache[NXE2000_REG_DIESET]		, power);
 

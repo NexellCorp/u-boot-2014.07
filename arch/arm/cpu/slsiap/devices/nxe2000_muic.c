@@ -68,6 +68,10 @@ static int muic_chrg_get_type(struct pmic *p, u32 ctrl_en)
 	u32 val = 0, tmp = 0;
 	u32 chg_state;
 	unsigned char charger;
+#if 0
+	u32 tmp1 = 0;
+	u8 i, j;
+#endif
 
 	if (pmic_probe(p))
 		return CHARGER_NO;
@@ -111,6 +115,75 @@ static int muic_chrg_get_type(struct pmic *p, u32 ctrl_en)
 	}
 #endif
 
+#if 0
+#if 0
+	for(j=0; j<30; j++)
+	{
+		pmic_reg_read(p, NXE2000_REG_EXTIF_GCHGDET, &tmp1);
+		pmic_reg_read(p, NXE2000_REG_EXTIF_PCHGDET, &tmp);
+		printf("EXTIF_GCHGDET:0x%02x, EXTIF_PCHGDET:0x%02x \n", tmp1, tmp);
+    	tmp1 = ((tmp >> NXE2000_POS_PCHGDET_PC_DET) & NXE2000_PCHGDET_PC_DET_MASK);
+	    if(tmp1 == NXE2000_PCHGDET_PC_DET_COMPLETE)
+	    {
+			break;
+	    }
+		mdelay(100);
+	}
+#else
+	for(i=0; i<6; i++)
+	{
+		mdelay(1000);
+
+		pmic_reg_read(p, NXE2000_REG_EXTIF_GCHGDET, &tmp);
+		pmic_reg_read(p, NXE2000_REG_EXTIF_PCHGDET, &tmp1);
+		printf("EXTIF_GCHGDET:0x%02x, EXTIF_PCHGDET:0x%02x \n", tmp, tmp1);
+
+    	tmp1 = ((tmp >> NXE2000_POS_GCHGDET_GC_DET) & NXE2000_GCHGDET_GC_DET_MASK);
+	    if(tmp1 == NXE2000_GCHGDET_GC_DET_COMPLETE )
+	    {
+
+			tmp = 15;
+			printf("tmp:%d\n", tmp);
+			val = 0xE0 | ((tmp < 15) ? (tmp - 1) : 14);
+			pmic_reg_write(p, NXE2000_REG_REGISET2, val);
+#if 0
+		   	tmp1 = ((tmp >> NXE2000_POS_GCHGDET_VBUS_TYPE) & NXE2000_GCHGDET_VBUS_TYPE_MASK);
+			if((tmp >> NXE2000_POS_GCHGDET_DCD_TIMEOUT) && (tmp1 == NXE2000_GCHGDET_VBUS_TYPE_SDP))
+			{
+				printf("Start the PC detection \n");
+				pmic_reg_write(p, NXE2000_REG_EXTIF_PCHGDET, 0x01); // restart
+
+				for(j=0; j<30; j++)
+				{
+					pmic_reg_read(p, NXE2000_REG_EXTIF_GCHGDET, &tmp1);
+					pmic_reg_read(p, NXE2000_REG_EXTIF_PCHGDET, &tmp);
+					printf("EXTIF_GCHGDET:0x%02x, EXTIF_PCHGDET:0x%02x \n", tmp1, tmp);
+			    	tmp1 = ((tmp >> NXE2000_POS_PCHGDET_PC_DET) & NXE2000_PCHGDET_PC_DET_MASK);
+				    if(tmp1 == NXE2000_PCHGDET_PC_DET_COMPLETE)
+				    {
+						//pmic_reg_write(p, NXE2000_REG_EXTIF_GCHGDET, 0x01); // restart
+						mdelay(100);
+						break;
+				    }
+					mdelay(10);
+				}
+			}
+#endif 
+
+			break;
+	    }
+		else if((tmp1 == NXE2000_GCHGDET_GC_DET_IDLE)||(tmp1 == NXE2000_GCHGDET_GC_DET_RESERVED))
+		{
+			;//printf("Restart the GC detection \n");
+			//pmic_reg_write(p, NXE2000_REG_EXTIF_GCHGDET, 0x01); // restart
+		}
+	}
+#endif 
+	pmic_reg_read(p, NXE2000_REG_REGISET2, &tmp);
+	printf("NXE2000_REG_REGISET2:%d\n", tmp);			
+
+#endif
+
 	s_otg_bind_status = otg_bind_check(500);
 	s_otg_bind_flag = 1;
 
@@ -130,6 +203,15 @@ static int muic_chrg_get_type(struct pmic *p, u32 ctrl_en)
 #endif
 
 	pmic_reg_read(p, NXE2000_REG_CHGSTATE, &chg_state);
+#if 0
+	pmic_reg_read(p, NXE2000_REG_EXTIF_GCHGDET, &tmp);
+	pmic_reg_read(p, NXE2000_REG_EXTIF_PCHGDET, &tmp1);
+	printf("EXTIF_GCHGDET:0x%02x, EXTIF_PCHGDET:0x%02x\n", tmp, tmp1);
+
+	pmic_reg_read(p, NXE2000_REG_CHGEXTIF_IRR, &tmp);
+	tmp	&= ~(0x3);
+	pmic_reg_write(p, NXE2000_REG_CHGEXTIF_IRR, tmp);
+#endif
 
 	if (s_otg_bind_status == 1) {
 		tmp = (NXE2000_DEF_LIMIT_USBDATA_AMP / 100000);

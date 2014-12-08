@@ -627,7 +627,6 @@ int board_late_init(void)
 		char *str_discharging	= " Discharging...";
 		char *str_lowbatt  		= " Low Battery...";
 		char *str_nobatt  		= " No Battery... ";
-		
 
 		clr_str_size = max(strlen(str_charging), strlen(str_lowbatt));
 		sx = (lcdw - bmpw)/2 + bx;
@@ -635,6 +634,7 @@ int board_late_init(void)
 		dy = sy + (bh+4)*3;
 		str_dy = dy;
 
+		printf(".");
 		pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &back_reg);
 		temp_reg = back_reg | (1 << NXE2000_POS_CHGCTL1_CHGCMP_DIS);
 		//temp_reg |= (1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
@@ -679,6 +679,7 @@ int board_late_init(void)
 
 		while(!ctrlc())
 		{
+			printf(".");
 			if (nxp_rtc_get() > (time_pwr_prev + 4))
 			{
 				time_pwr_prev = nxp_rtc_get();
@@ -730,6 +731,7 @@ int board_late_init(void)
 				{
 					if (pb->bat->voltage_uV >= shutdown_ilim_uV)
 					{
+						printf("\n");
 						break;
 					}
 				}
@@ -747,6 +749,7 @@ int board_late_init(void)
 				else
 				{
 					dy = sy + (bh+4)*3;
+					printf("\n");
 					lcd_draw_boot_logo(CONFIG_FB_ADDR, CFG_DISP_PRI_RESOL_WIDTH, CFG_DISP_PRI_RESOL_HEIGHT, CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
 					i = 0;
 				}
@@ -766,11 +769,13 @@ int board_late_init(void)
 
 			if(!power_depth)
 			{
+				printf("\n");
 				goto enter_shutdown;
 			}
 
 			mdelay(1000);
 		}
+		printf("\n");
 		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 	}
 

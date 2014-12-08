@@ -740,11 +740,13 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 			if (HCS_PPC(ehci_readl(&ctrl->hccr->cr_hcsparams))) {
 				reg |= EHCI_PS_PP;
 				ehci_writel(status_reg, reg);
+#if defined( CONFIG_USB_HSIC_MODE )
 				if( (unsigned long)status_reg == 0xc0030058 )
 				{
 					reg2 |= 0x02;
 					ehci_writel(status_reg2, reg2);
 				}
+#endif
 			}
 			break;
 		case USB_PORT_FEAT_RESET:

@@ -97,6 +97,8 @@ int ehci_hcd_init(int index, enum usb_init_type init,
 	// Release common reset of host controller
 	writel(readl(0xc0012004) |  (1<<24), 0xc0012004);			// reset off
 	NX_CONSOLE_Printf( "\nRSTCON[24](0xc0012004) set 1'b1 0x%08x\n", readl( 0xc0012004 ) );
+
+#if defined( CONFIG_USB_HSIC_MODE )
 	// HSIC 12M rerference Clock setting
 	writel( 0x02, 0xc006b000 );
 	writel( 0x0C, 0xc006b004 );	// 8 : ok, c : no
@@ -111,6 +113,7 @@ int ehci_hcd_init(int index, enum usb_init_type init,
 	// 2. HSIC Enable in PORT1 of LINK
 	writel(readl(0xc0011014) & ~(7<<14), 0xc0011014);
 	writel(readl(0xc0011014) |  (2<<14), 0xc0011014);
+#endif
 
 	// Program AHB Burst type
 	writel(readl(0xc001101c) & ~(7<<25), 0xc001101c);

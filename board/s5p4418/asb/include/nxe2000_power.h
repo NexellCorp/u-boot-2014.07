@@ -46,7 +46,7 @@
  *	Default Value
  */
 
-#define	NXE2000_DEF_OFF_PRESS_TIME			5		/* VAL = 0:0, 1:1, 2:2, 3:4, 4:6, 5:8, 6:10, 7:12 sec */
+#define	NXE2000_DEF_OFF_PRESS_TIME			1		/* VAL = 0:0, 1:1, 2:2, 3:4, 4:6, 5:8, 6:10, 7:12 sec */
 
 #define NXE2000_DEF_LIMIT_ADP_AMP			2500000	/* VAL(mA), MAX = 2500mA */
 #define NXE2000_DEF_LIMIT_USB_AMP			1500000	/* VAL(mA), MAX = 1500mA */

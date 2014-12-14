@@ -639,8 +639,6 @@
  */
 #define	CONFIG_EXTRA_ENV_SETTINGS		\
 								"boot0=fatload mmc 0:1 0x48000000 uImage;fatload mmc 0:1 0x49000000 root.img.gz;bootm 0x48000000\0"	\
-								"boot1=fatload mmc 0:1 0x48000000 uImage_n3;fatload mmc 0:1 0x49000000 root.img.gz;bootm 0x48000000\0"	\
-								"boot2=fatload mmc 0:1 0x48000000 uImage_n5;fatload mmc 0:1 0x49000000 root.img.gz;bootm 0x48000000\0"	\
 
 /*-----------------------------------------------------------------------
  * Debug message

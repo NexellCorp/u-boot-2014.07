@@ -28,6 +28,7 @@
 #include <asm/gpio.h>
 
 #include <platform.h>
+#include <tags.h>
 #include <mach-api.h>
 #include <rtc_nxp.h>
 #include <pm.h>
@@ -59,6 +60,58 @@ DECLARE_GLOBAL_DATA_PTR;
 #define CFG_KEY_POWER       (PAD_GPIO_ALV + 0)
 #endif
 
+
+void setup_board_tags(struct tag **tmp)
+{
+	struct tag *params = *tmp;
+	struct tag_asv_margin *t;
+
+	char *p = getenv("margin");
+	char *s = p;
+	int value = 0;
+	int minus = 0, percent = 0;
+
+	s = strchr(s, '-');
+	if (s)
+		minus = true;
+	else
+		s = strchr(s, '+');
+
+	if (!s)
+		s = p;
+	else
+		s++;
+
+	if (strchr(p, '%'))
+		percent = 1;
+
+	value = simple_strtol(s, NULL, 10);
+	printf("ASV Margin:%s%d%s\n", minus?"-":"+", value, percent?"%":"mV");
+
+	/* set ARM margin */
+	params->hdr.tag = ATAG_ARM_MARGIN;
+	params->hdr.size = tag_size(tag_asv_margin);
+	t = (struct tag_asv_margin *)&params->u;
+	t->value = value;
+	t->minus = minus;
+	t->percent = percent;
+
+	params = tag_next(params);
+	*tmp = params;
+
+	/* set ARM margin */
+	params = *tmp;
+
+	params->hdr.tag = ATAG_CORE_MARGIN;
+	params->hdr.size = tag_size(tag_asv_margin);
+	t = (struct tag_asv_margin *)&params->u;
+	t->value = value;
+	t->minus = minus;
+	t->percent = percent;
+
+	params = tag_next(params);
+	*tmp = params;
+}
 
 /*------------------------------------------------------------------------------
  * intialize nexell soc and board status.
@@ -667,7 +720,7 @@ int board_late_init(void)
 			lcd_draw_text(str_nobatt, (lcdw - strlen(str_lowbatt)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
 		else if(show_bat_state == 2)
 			lcd_draw_text(str_lowbatt, (lcdw - strlen(str_lowbatt)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
-		else 
+		else
 		{
 			if(chrg == CHARGER_NO || chrg == CHARGER_UNKNOWN)
 				lcd_draw_text(str_discharging, (lcdw - strlen(str_discharging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
@@ -758,7 +811,7 @@ int board_late_init(void)
 					lcd_draw_text(str_nobatt, (lcdw - strlen(str_lowbatt)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
 				else if(show_bat_state == 2)
 					lcd_draw_text(str_lowbatt, (lcdw - strlen(str_lowbatt)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
-				else 
+				else
 				{
 					if(chrg == CHARGER_NO || chrg == CHARGER_UNKNOWN)
 						lcd_draw_text(str_discharging, (lcdw - strlen(str_discharging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
@@ -848,8 +901,8 @@ int board_late_init(void)
 #endif
 
 	// mipi reset
-    NX_TIEOFF_Set(TIEOFFINDEX_OF_MIPI0_NX_DPSRAM_1R1W_EMAA, 3); 
-    NX_TIEOFF_Set(TIEOFFINDEX_OF_MIPI0_NX_DPSRAM_1R1W_EMAB, 3); 
+    NX_TIEOFF_Set(TIEOFFINDEX_OF_MIPI0_NX_DPSRAM_1R1W_EMAA, 3);
+    NX_TIEOFF_Set(TIEOFFINDEX_OF_MIPI0_NX_DPSRAM_1R1W_EMAB, 3);
 
 	NX_RSTCON_SetnRST(RESET_ID_MIPI, RSTCON_nDISABLE);
 	NX_RSTCON_SetnRST(RESET_ID_MIPI_DSI, RSTCON_nDISABLE);

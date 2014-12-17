@@ -223,6 +223,8 @@ U_BOOT_CMD(
 	"    - update 'mem' data 'length' to uboot address defined at config.h.\n"
 	"update_eeprom uboot 'mem' 'addr' 'length'\n"
 	"    - update 'mem' data 'length' to device 'addr'.\n"
+	"update_eeprom uboot 'mem' 'addr' 'length' 'load addr'\n"
+	"    - update 'mem' data 'length' to device 'addr' and set 'load ddr'.\n"
 	"update_eeprom raw 'mem' 'addr' 'length'\n"
 	"    - update 'mem' data 'length' to device 'addr'.\n"
 	"Note.\n"

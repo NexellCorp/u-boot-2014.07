@@ -103,7 +103,7 @@
 #define	CONFIG_ARCH_MISC_INIT													/* board_init_r, call arch_misc_init */
 //#define	CONFIG_SYS_ICACHE_OFF
 
-#define CONFIG_MMU_ENABLE
+//#define CONFIG_MMU_ENABLE
 #ifdef  CONFIG_MMU_ENABLE
 #undef  CONFIG_SYS_DCACHE_OFF
 #endif
@@ -403,7 +403,7 @@
 //#define CONFIG_POWER_BATTERY_SMALL
 
 #ifndef CONFIG_POWER_BATTERY_SMALL
-#define CONFIG_BAT_CHECK
+//#define CONFIG_BAT_CHECK
 #define CONFIG_FAST_BOOTUP
 #endif
 

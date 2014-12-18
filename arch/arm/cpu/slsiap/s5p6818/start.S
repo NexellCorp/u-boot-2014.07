@@ -46,19 +46,22 @@ _fiq:			.word fiq
  *************************************************************************
  */
 
-	.globl TEXT_BASE
+.globl TEXT_BASE
 TEXT_BASE:
 	.word	CONFIG_SYS_TEXT_BASE
 
-	.globl _bss_start_ofs
+/*
+ * These are defined in the board-specific linker script.
+ */
+.globl _bss_start_ofs
 _bss_start_ofs:
 	.word __bss_start - _stext
 
-	.globl _bss_end_ofs
+.globl _bss_end_ofs
 _bss_end_ofs:
 	.word __bss_end - _stext
 
-	.globl _end_ofs
+.globl _end_ofs
 _end_ofs:
 	.word _end - _stext
 

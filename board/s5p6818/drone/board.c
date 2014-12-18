@@ -26,6 +26,7 @@
 #include <pwm.h>
 #include <asm/io.h>
 #include <asm/gpio.h>
+//#include <asm/sections.h>
 
 #include <platform.h>
 #include <mach-api.h>
@@ -603,8 +604,6 @@ int board_late_init(void)
 		dy = sy + (bh+4)*3;
 		str_dy = dy;
 
-		printf(".");
-
 		pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &back_reg);
 		temp_reg = back_reg | (1 << NXE2000_POS_CHGCTL1_CHGCMP_DIS);
 		//temp_reg |= (1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
@@ -649,7 +648,6 @@ int board_late_init(void)
 
 		while(!ctrlc())
 		{
-			printf(".");
 			if (nxp_rtc_get() > (time_pwr_prev + 4))
 			{
 				time_pwr_prev = nxp_rtc_get();

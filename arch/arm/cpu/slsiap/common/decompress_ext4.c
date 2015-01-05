@@ -11,6 +11,7 @@
 #include <asm/types.h>
 #include <environment.h>
 #include <command.h>
+#include <fastboot.h>
 
 #include <asm/errno.h>
 #include <decompress_ext4.h>
@@ -21,6 +22,13 @@
 #define ext4_printf(args, ...)
 
 static int write_raw_chunk(char* data, unsigned int sector, unsigned int sector_size);
+static WRITE_RAW_CHUNK_CB write_raw_chunk_cb = write_raw_chunk;
+
+int set_write_raw_chunk_cb(WRITE_RAW_CHUNK_CB cb) {
+	write_raw_chunk_cb = cb;
+
+	return 0;
+}
 
 
 int check_compress_ext4(char *img_base, unsigned long long parti_size) {
@@ -97,7 +105,7 @@ int write_compressed_ext4(char* img_base, unsigned int sector_base) {
 		{
 		case EXT4_CHUNK_TYPE_RAW:
 			ext4_printf("raw_chunk \n");
-			write_raw_chunk(img_base + EXT4_CHUNK_HEADER_SIZE,
+			write_raw_chunk_cb(img_base + EXT4_CHUNK_HEADER_SIZE,
 							sector_base, sector_size);
 			sector_base += sector_size;
 			break;

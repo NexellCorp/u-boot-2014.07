@@ -274,7 +274,7 @@ int do_new_cmd (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		return 0;
 	}
 
-#if defined(CONFIG_CMD_NAND)
+#if defined(CONFIG_CMD_NAND) && defined (CONFIG_MTD_NAND)
 	if (strcmp(cmd, "nandbad") == 0) {
 		int i, n;
 		int count = 0;

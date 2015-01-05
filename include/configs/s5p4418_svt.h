@@ -46,12 +46,12 @@
  */
 #define CONFIG_RELOC_TO_TEXT_BASE												/* Relocate u-boot code to TEXT_BASE */
 
-#define	CONFIG_SYS_TEXT_BASE 			0x42C00000
+#define	CONFIG_SYS_TEXT_BASE 			0x40C00000
 #define	CONFIG_SYS_INIT_SP_ADDR			CONFIG_SYS_TEXT_BASE					/* init and run stack pointer */
 
 /* malloc() pool */
-#define	CONFIG_MEM_MALLOC_START			0x43000000
-#define CONFIG_MEM_MALLOC_LENGTH		32*1024*1024							/* more than 2M for ubifs: MAX 16M */
+#define	CONFIG_MEM_MALLOC_START			0x41000000
+#define CONFIG_MEM_MALLOC_LENGTH		64*1024*1024							/* more than 2M for ubifs: MAX 16M */
 
 /* when CONFIG_LCD */
 #define CONFIG_FB_ADDR					0x46000000
@@ -232,13 +232,36 @@
 /*-----------------------------------------------------------------------
  * NAND FLASH
  */
-//#define CONFIG_CMD_NAND
+#define CONFIG_CMD_NAND
+#define CONFIG_NAND_FTL
+//#define CONFIG_NAND_MTD
 //#define CONFIG_ENV_IS_IN_NAND
 
+#if defined(CONFIG_NAND_FTL) && defined(CONFIG_NAND_MTD)
+#error "Duplicated config for NAND Driver!!!"
+#endif
+
+#if defined(CONFIG_NAND_FTL)
+#define HAVE_BLOCK_DEVICE
+#endif
+
 #if defined(CONFIG_CMD_NAND)
+	#if !defined(CONFIG_NAND_FTL) && !defined(CONFIG_NAND_MTD)
+	#error "Select FTL or MTD for NAND Driver!!!"
+	#endif
+
 	#define CONFIG_SYS_MAX_NAND_DEVICE		(1)
 	#define CONFIG_SYS_NAND_MAX_CHIPS   	(1)
 	#define CONFIG_SYS_NAND_BASE		   	PHY_BASEADDR_CS_NAND							/* Nand data register, nand->IO_ADDR_R/_W */
+
+	#if defined(CONFIG_ENV_IS_IN_NAND)
+		#define	CONFIG_ENV_OFFSET			(0x1000000)									/* 4MB */
+		#define CONFIG_ENV_SIZE           	(0x100000)									/* 1 block size */
+		#define CONFIG_ENV_RANGE			(0x400000)		 							/* avoid bad block */
+	#endif
+#endif
+
+#if defined(CONFIG_NAND_MTD)
 	#define CONFIG_SYS_NAND_ONFI_DETECTION
 	#define CONFIG_CMD_NAND_TRIMFFS
 
@@ -255,11 +278,6 @@
 		#define	CONFIG_NAND_ECC_BCH
 	#endif
 
-	#if defined(CONFIG_ENV_IS_IN_NAND)
-		#define	CONFIG_ENV_OFFSET			(0x400000)									/* 4MB */
-		#define CONFIG_ENV_SIZE           	(0x100000)									/* 1 block size */
-		#define CONFIG_ENV_RANGE			(0x400000)		 							/* avoid bad block */
-	#endif
 
 	#undef  CONFIG_CMD_IMLS
 
@@ -287,9 +305,9 @@
  * EEPROM
  */
 
-#define CONFIG_CMD_EEPROM
-#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
-#define CONFIG_ENV_IS_IN_EEPROM
+//#define CONFIG_CMD_EEPROM
+//#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
+//#define CONFIG_ENV_IS_IN_EEPROM
 
 #if defined(CONFIG_CMD_EEPROM)
 
@@ -333,7 +351,7 @@
 			#define	CONFIG_2STBOOT_OFFSET				0
 			#define	CONFIG_2STBOOT_SIZE					16*1024
 			#define	CONFIG_UBOOT_OFFSET					64*1024
-			#define	CONFIG_UBOOT_SIZE					(512-64)*1024
+			#define	CONFIG_UBOOT_SIZE					(4096-64)*1024
 		#endif
 		#if defined(CONFIG_ENV_IS_IN_EEPROM)
 			#define	CONFIG_ENV_OFFSET					32*1024	/* 16 ~ 20K Environment */
@@ -503,7 +521,7 @@
  *
  */
 #define	CONFIG_CMD_MMC
-//#define CONFIG_ENV_IS_IN_MMC
+#define CONFIG_ENV_IS_IN_MMC
 
 #if defined(CONFIG_CMD_MMC)
 

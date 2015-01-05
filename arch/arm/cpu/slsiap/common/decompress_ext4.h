@@ -42,3 +42,5 @@ typedef struct _ext4_chunk_header {
 int write_compressed_ext4(char* img_base, unsigned int sector_base);
 int check_compress_ext4(char *img_base, unsigned long long parti_size);
 
+typedef int (*WRITE_RAW_CHUNK_CB)(char* data, unsigned int sector, unsigned int sector_size);
+int set_write_raw_chunk_cb(WRITE_RAW_CHUNK_CB cb);

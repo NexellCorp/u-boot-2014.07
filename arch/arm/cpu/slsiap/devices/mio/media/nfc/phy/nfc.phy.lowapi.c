@@ -544,7 +544,7 @@ int NFC_PHY_LOWAPI_read(unsigned int block_ofs, unsigned int page_ofs, unsigned 
     unsigned int retryable = 0;
 
     max_retry_cnt = NFC_PHY_READRETRY_GetTotalReadRetryCount(channel, way);
-
+    
     NfcEccStatus.level_error[way][channel] = 0;
     NfcEccStatus.error[way][channel] = 0;
     NfcEccStatus.correct_sector[way][channel] = 0;

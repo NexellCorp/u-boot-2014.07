@@ -144,8 +144,6 @@ int mio_format(int _format_type)
     /**************************************************************************
      * FTL Need Leaner Buffer
      **************************************************************************/
-    if (Exchange.debug.misc.uboot_format) { Exchange.sys.fn.print("MIO.FORMAT: Memory Pool Pre-Allocation\n"); }
-
     Exchange.buffer.mpool_size  = 0;
     Exchange.buffer.mpool_size += 1 * 4 * (4<<20); // 1CH x 4WAY x 4MB (Page Map Table per Lun)
     Exchange.buffer.mpool_size += 1 * 4 * (1<<20); // 1CH x 4WAY x 1MB (Update Map Table per Lun)
@@ -345,6 +343,8 @@ int mio_deinit(void)
 /*******************************************************************************
  *
  *******************************************************************************/
+extern unsigned int rand(void);
+
 int mio_init_rwtest_buffer(void)
 {
     if (!gstRW.uiDataSize)
@@ -377,9 +377,9 @@ int mio_init_rwtest_buffer(void)
 
             if (!ui_ofs)
             {
-                randValue = (U32)0xAAAA5555; //rand();
+                randValue = rand();
             }
-        
+
             if (ui_ofs < 8) //if (ui_ofs < 8)
             {
                 ((U32 *)gstRW.pucWData)[i] = i/(512/4);
@@ -615,7 +615,6 @@ int get_mio_capacity(void)
 
     return 1;
 }
-
 
 /*******************************************************************************
  * mio_read()
@@ -1175,4 +1174,3 @@ int mio_rwtest(ulong ulTestSectors, ulong ulCapacity, unsigned char ucWriteRatio
 #endif
     return 0;
 }
-

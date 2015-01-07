@@ -564,6 +564,12 @@ typedef struct __ExSYS__
     // function
     struct
     {
+        // Kernel Object
+        void (*slock)(void);
+        void (*sunlock)(void);
+        void (*mlock)(void);
+        void (*munlock)(void);
+
         // Kernel Schedule
         void (*usleep)(unsigned long, unsigned long);
         void (*msleep)(unsigned int);

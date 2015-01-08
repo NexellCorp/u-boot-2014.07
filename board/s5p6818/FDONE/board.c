@@ -311,7 +311,7 @@ int power_init_board(void)
 	int ret;
 #if 0
 
-	
+
 #ifdef CONFIG_NXE2000_REG_DUMP
 	bd_pmic_init();
 #endif
@@ -356,7 +356,7 @@ static void auto_update(int io, int wait)
 		mdelay(1);
 	}
 
-	
+
 
 	if (i == wait)
 		run_command (cmd, 0);
@@ -428,7 +428,7 @@ int board_late_init(void)
 	u8 power_state = 0;
 	u8 power_depth = 3;
 
-	
+
 #if defined(CONFIG_SYS_MMC_BOOT_DEV)
 	char boot[16];
 	sprintf(boot, "mmc dev %d", CONFIG_SYS_MMC_BOOT_DEV);
@@ -573,7 +573,7 @@ int board_late_init(void)
     writel((-1UL), SCR_RESET_SIG_RESET);
 #endif
 
-	
+
 	/*===========================================================*/
     if (power_key_depth > 1)
     {
@@ -829,6 +829,11 @@ int board_late_init(void)
 	//while(1) printf(" gui0 Test \n");
 #if defined(CONFIG_DISPLAY_OUT)
 	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+#endif
+
+#if defined(CONFIG_VIP)
+    camera_run();
+    camera_preview();
 #endif
 
 	/* Temp check gpio to update */

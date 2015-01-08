@@ -462,6 +462,10 @@
 	#define	CONFIG_I2C2_NEXELL								/* 1 = i2c 1 */
 	#define	CONFIG_I2C2_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
 
+    // workaround for i2c ch1 sda, scl schematic bug : sda, scl changed
+    #define CFG_IO_I2C1_SCL             ((PAD_GPIO_D + 5) | PAD_FUNC_ALT0)
+    #define CFG_IO_I2C1_SDA             ((PAD_GPIO_D + 4) | PAD_FUNC_ALT0)
+
 #endif
 
 /*-----------------------------------------------------------------------
@@ -647,6 +651,23 @@
  * Debug message
  */
 //#define DEBUG							/* u-boot debug macro, nand, ethernet,... */
+
+#define CONFIG_VIP
+#define CONFIG_MLC_VIDEO
+
+#if defined(CONFIG_VIP)
+// start address must be checked by kernel booting
+// each address must be aligned 4K
+#if 0
+#define CONFIG_VIP_LU_ADDR          0x7FEF2000
+#define CONFIG_VIP_CB_ADDR          0x7FF62800
+#define CONFIG_VIP_CR_ADDR          0x7FF79000
+#else
+#define CONFIG_VIP_LU_ADDR          0x7FD28000
+#define CONFIG_VIP_CB_ADDR          0x7FD98800
+#define CONFIG_VIP_CR_ADDR          0x7FDAF000
+#endif
+#endif
 
 #endif /* __CONFIG_H__ */
 

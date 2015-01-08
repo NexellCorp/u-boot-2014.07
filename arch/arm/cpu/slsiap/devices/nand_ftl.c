@@ -19,6 +19,7 @@
 
 #include <common.h>
 #include <malloc.h>
+#include <errno.h>
 #include <part.h>
 #include <mio.uboot.h>
 #include <nand_ftl.h>
@@ -54,10 +55,40 @@ block_dev_desc_t *nand_get_dev(int dev)
 		return NULL;
 
 	nand_drv_register(nand);
-	printf("========================================\n");
-	printf("lba: 0x%lx\n", nand->block_dev.lba);
+	nx_debug("get nand. (lba: 0x%lx)\n", nand->block_dev.lba);
 
 	return &nand->block_dev;
+}
+
+int nand_select_hwpart(int dev_num, int hwpart)
+{
+	struct nand_ftl *nand = find_nand_device(dev_num);
+	int ret;
+
+	if (!nand)
+		return -ENODEV;
+
+	if (nand->part_num == hwpart)
+		return 0;
+
+	ret = nand_switch_part(dev_num, hwpart);
+	if (ret)
+		return ret;
+
+	nand->part_num = hwpart;
+
+	return 0;
+}
+
+int nand_switch_part(int dev_num, unsigned int part_num)
+{
+	struct nand_ftl *nand = find_nand_device(dev_num);
+
+	if (!nand)
+		return -1;
+
+	return 0;
+	//return nand_set_capacity(mmc, part_num);
 }
 
 static int nand_drv_register(struct nand_ftl *nand)
@@ -76,7 +107,7 @@ static int nand_drv_register(struct nand_ftl *nand)
 #endif
 
 		/* get NAND info */
-		get_mio_capacity();
+		get_mio_capacity();		// fill nand->capacity;
 		nand->block_dev.lba = nand->capacity;
 	}
 

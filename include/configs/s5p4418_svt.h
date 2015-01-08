@@ -576,7 +576,7 @@
 /*-----------------------------------------------------------------------
  * FAT Partition
  */
-#if defined(CONFIG_MMC) || defined(CONFIG_CMD_USB)
+#if defined(CONFIG_MMC) || defined(CONFIG_CMD_USB) || defined(CONFIG_NAND_FTL)
 	#define CONFIG_DOS_PARTITION
 
 	#define CONFIG_CMD_FAT
@@ -633,7 +633,11 @@
  */
 #define CONFIG_DISPLAY_OUT
 
-#define CONFIG_LOGO_DEVICE_MMC
+#define CONFIG_LOGO_DEVICE_NAND
+
+#if defined(CONFIG_LOGO_DEVICE_MMC) && defined(CONFIG_LOGO_DEVICE_NAND)
+#error "Duplicated config for logo device!!!"
+#endif
 
 #if	defined(CONFIG_DISPLAY_OUT)
 	#define	CONFIG_PWM			/* backlight */
@@ -646,10 +650,18 @@
 //	#define CONFIG_CMD_LOGO_LOAD
 
 	/* Logo command: board.c */
+	#if defined(CONFIG_LOGO_DEVICE_NAND)
+	/* From NAND */
+    #define CONFIG_CMD_LOGO_WALLPAPERS	"ext4load nand 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_BATTERY		"ext4load nand 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_UPDATE 		"ext4load nand 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
+	#else
 	/* From MMC */
     #define CONFIG_CMD_LOGO_WALLPAPERS 	"fatload mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
     #define CONFIG_CMD_LOGO_BATTERY 	"fatload mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
     #define CONFIG_CMD_LOGO_UPDATE 		"fatload mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
+	#endif
+
 
 #endif
 /*-----------------------------------------------------------------------

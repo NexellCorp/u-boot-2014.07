@@ -53,6 +53,7 @@ struct nand_ftl {
 
 	/* ftl driver info. */
 	block_dev_desc_t block_dev;
+	char part_num;
 	uint32_t version;
 	uint32_t ftl_status;
 
@@ -73,6 +74,7 @@ struct nand_ftl {
 /* block driver */
 struct nand_ftl *find_nand_device(int dev_num);
 block_dev_desc_t *nand_get_dev(int dev);
+int nand_switch_part(int dev_num, unsigned int part_num);
 
 unsigned long nand_bread(int dev, lbaint_t start, lbaint_t blkcnt, void *buffer);
 unsigned long nand_bwrite(int dev, lbaint_t start, lbaint_t blkcnt, const void *buffer);

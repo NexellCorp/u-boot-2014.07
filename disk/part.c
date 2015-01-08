@@ -52,7 +52,11 @@ static const struct block_drvr block_drvr[] = {
 	{ .name = "host", .get_dev = host_get_dev, },
 #endif
 #if defined(CONFIG_NAND_FTL)
-	{ .name = "nand", .get_dev = nand_get_dev, },
+	{
+		.name = "nand",
+		.get_dev = nand_get_dev,
+//		.select_hwpart = nand_select_hwpart,
+	},
 #endif
 	{ },
 };

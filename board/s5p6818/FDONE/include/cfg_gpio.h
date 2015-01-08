@@ -44,7 +44,7 @@
 #define PAD_GPIOA15     (PAD_MODE_OUT  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[14]         ,2:_                    ,3:_                    =
 #define PAD_GPIOA16     (PAD_MODE_OUT  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[15]         ,2:_                    ,3:-                    =
 #define PAD_GPIOA17     (PAD_MODE_OUT  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[16]         ,2:_                    ,3:_                    =
-#define PAD_GPIOA18     (PAD_MODE_OUT  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[17]         ,2:_                    ,3:_                    =
+#define PAD_GPIOA18     (PAD_MODE_OUT  | PAD_FUNC_ALT0 | PAD_LEVEL_HIGH  | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[17]         ,2:_                    ,3:_                    =
 #define PAD_GPIOA19     (PAD_MODE_OUT  | PAD_FUNC_ALT0 | PAD_LEVEL_HIGH   | PAD_PULL_UP | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[18]         ,2:_                    ,3:_                    =
 #define PAD_GPIOA20     (PAD_MODE_OUT  | PAD_FUNC_ALT0 | PAD_LEVEL_HIGH  | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[19]         ,2:_                    ,3:_                    =
 #define PAD_GPIOA21     (PAD_MODE_OUT  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[20]         ,2:_                    ,3:_                    =
@@ -247,10 +247,10 @@
 #define CFG_IO_SPI_EEPROM_WP				((PAD_GPIO_B + 23) | PAD_FUNC_ALT1)		/* GPIO */
 
 
-#define CFG_IO_EMMC2_RESET				((PAD_GPIO_B + 14) | PAD_FUNC_ALT1 ) 
+#define CFG_IO_EMMC2_RESET				((PAD_GPIO_B + 14) | PAD_FUNC_ALT1 )
 
-#define CFG_IO_OTG_PWREN					((PAD_GPIO_A + 19) | PAD_FUNC_ALT0 ) 
-#define CFG_IO_OTG_ITDID_CTRL				((PAD_GPIO_B + 27) | PAD_FUNC_ALT1 ) 
+#define CFG_IO_OTG_PWREN					((PAD_GPIO_A + 19) | PAD_FUNC_ALT0 )
+#define CFG_IO_OTG_ITDID_CTRL				((PAD_GPIO_B + 27) | PAD_FUNC_ALT1 )
 
 
 #endif	/* __CFG_GPIO_H__ */

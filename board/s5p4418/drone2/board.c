@@ -595,6 +595,9 @@ int board_late_init(void)
     writel((-1UL), SCR_RESET_SIG_RESET);
 #endif
 
+    // psw0523 for cts
+    power_key_depth = 2;
+
 	/*===========================================================*/
     if (power_key_depth > 1)
     {

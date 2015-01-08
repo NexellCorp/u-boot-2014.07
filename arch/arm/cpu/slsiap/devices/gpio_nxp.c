@@ -108,3 +108,29 @@ void gpio_set_int_clear(int gpio)
 	else
 		NX_ALIVE_ClearInterruptPending(bit);
 }
+
+void gpio_set_alt(int gpio, int mode)
+{
+	int grp, bit;
+
+	if (gpio > (PAD_GPIO_ALV - 1) )
+		return;
+
+	grp = PAD_GET_GROUP(gpio);
+	bit = PAD_GET_BITNO(gpio);
+
+	NX_GPIO_SetPadFunction(grp, bit, (NX_GPIO_PADFUNC)mode);
+}
+
+int gpio_get_alt(int gpio)
+{
+	int grp, bit;
+
+	if (gpio > (PAD_GPIO_ALV - 1) )
+		return -1;
+
+	grp = PAD_GET_GROUP(gpio);
+	bit = PAD_GET_BITNO(gpio);
+
+	return (int) NX_GPIO_GetPadFunction(grp, bit);
+}

@@ -112,7 +112,7 @@
  *	U-Boot default cmd
  */
 #define CONFIG_CMD_MEMORY   /* md mm nm mw cp cmp crc base loop mtest */
-#define CONFIG_CMD_NET      /* bootp, tftpboot, rarpboot    */
+//#define CONFIG_CMD_NET      [> bootp, tftpboot, rarpboot    <]
 #define CONFIG_CMD_RUN      /* run command in env variable  */
 #define CONFIG_CMD_SAVEENV  /* saveenv          */
 #define CONFIG_CMD_SOURCE   /* "source" command support */
@@ -186,7 +186,7 @@
  * Ethernet configuration
  * depend on CONFIG_CMD_NET
  */
-#define CONFIG_DRIVER_DM9000			1
+//#define CONFIG_DRIVER_DM9000			1
 
 #if defined(CONFIG_CMD_NET)
 	/* DM9000 Ethernet device */
@@ -347,7 +347,7 @@
  * #> fatls   usb 0 "directory"
  * #> fatload usb 0  0x.....	"file"
  */
-#define CONFIG_CMD_USB
+//#define CONFIG_CMD_USB
 #if defined(CONFIG_CMD_USB)
 	#define CONFIG_USB_EHCI_SYNOPSYS
 	#define CONFIG_USB_EHCI_MODE

@@ -232,7 +232,7 @@
 /*-----------------------------------------------------------------------
  * NAND FLASH
  */
-//#define CONFIG_CMD_NAND
+#define CONFIG_CMD_NAND
 //#define CONFIG_ENV_IS_IN_NAND
 
 #if defined(CONFIG_CMD_NAND)

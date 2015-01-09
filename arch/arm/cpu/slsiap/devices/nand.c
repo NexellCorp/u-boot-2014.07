@@ -321,7 +321,7 @@ static int nexell_nand_timing_set(struct mtd_info *mtd)
  */
 static void nxp_wp_enable(void)
 {
-	nxp_gpio_set_value(CFG_IO_NAND_nWP, 0);
+	gpio_set_value(CFG_IO_NAND_nWP, 0);
 }
 
 /*
@@ -329,7 +329,7 @@ static void nxp_wp_enable(void)
  */
 static void nxp_wp_disable(void)
 {
-	nxp_gpio_set_value(CFG_IO_NAND_nWP, 1);
+	gpio_set_value(CFG_IO_NAND_nWP, 1);
 }
 
 
@@ -349,7 +349,7 @@ static void nand_dev_init(struct mtd_info *mtd)
 	NX_MCUS_SetNFBank(0);
 	NX_MCUS_SetNFCSEnable(CFALSE);
 
-	nxp_gpio_direction_output (CFG_IO_NAND_nWP, 1);
+	gpio_direction_output (CFG_IO_NAND_nWP, 1);
 }
 
 /*------------------------------------------------------------------------------

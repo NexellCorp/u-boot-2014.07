@@ -81,10 +81,12 @@ static void dw_mci_clk_delay(int val ,int regbase )
 
 static void dw_mci_reset(int ch )
 {
+#ifdef CONFIG_MACH_S5P4418
 	int rst_id = RESET_ID_SDMMC0 + ch;
     
-	NX_RSTCON_SetnRST(rst_id, RSTCON_nDISABLE);
-    NX_RSTCON_SetnRST(rst_id, RSTCON_nENABLE);
+	NX_RSTCON_SetnRST(rst_id, 0);
+    NX_RSTCON_SetnRST(rst_id, 1 );
+#endif
 }
 static int dw_mci_init(u32 regbase, int bus_width, int index, int max_clock)
 {

@@ -232,8 +232,8 @@
 /*-----------------------------------------------------------------------
  * NAND FLASH
  */
-//#define CONFIG_CMD_NAND
-//#define CONFIG_NAND_FTL
+#define CONFIG_CMD_NAND
+#define CONFIG_NAND_FTL
 //#define CONFIG_NAND_MTD
 //#define CONFIG_ENV_IS_IN_NAND
 
@@ -633,8 +633,8 @@
  */
 #define CONFIG_DISPLAY_OUT
 
-#define CONFIG_LOGO_DEVICE_MMC
-//#define CONFIG_LOGO_DEVICE_NAND
+//#define CONFIG_LOGO_DEVICE_MMC
+#define CONFIG_LOGO_DEVICE_NAND
 
 #if defined(CONFIG_LOGO_DEVICE_MMC) && defined(CONFIG_LOGO_DEVICE_NAND)
 #error "Select one LOGO DEVICE!"
@@ -652,9 +652,9 @@
 
 	/* Logo command: board.c */
 	/* From MMC */
-    #define CONFIG_CMD_LOGO_WALLPAPERS 	"fatload mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_BATTERY 	"fatload mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_UPDATE 		"fatload mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_WALLPAPERS 	"ext4load nand 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_BATTERY 	"ext4load nand 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_UPDATE 		"ext4load nand 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
 
 
 #endif

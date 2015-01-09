@@ -89,7 +89,7 @@
 #define CFG_DISP_PRI_VSYNC_ACTIVE_HIGH 	        CTRUE
 
 #define CFG_DISP_PRI_CLKGEN0_SOURCE             DPC_VCLK_SRC_PLL0
-#define CFG_DISP_PRI_CLKGEN0_DIV                20 //15//12
+#define CFG_DISP_PRI_CLKGEN0_DIV                15 //20
 #define CFG_DISP_PRI_CLKGEN0_DELAY              0
 #define CFG_DISP_PRI_CLKGEN0_INVERT				0
 #define CFG_DISP_PRI_CLKGEN1_SOURCE             DPC_VCLK_SRC_VCLK2

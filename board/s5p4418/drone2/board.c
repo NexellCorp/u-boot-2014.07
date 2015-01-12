@@ -597,7 +597,7 @@ int board_late_init(void)
 #endif
 
     // psw0523 for cts
-    power_key_depth = 2;
+    // power_key_depth = 2;
 
 	/*===========================================================*/
     if (power_key_depth > 1)

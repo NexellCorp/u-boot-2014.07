@@ -51,6 +51,65 @@ DECLARE_GLOBAL_DATA_PTR;
 #endif
 
 /*------------------------------------------------------------------------------
+ * BUS Configure
+ */
+#if (CFG_BUS_RECONFIG_ENB == 1)
+#include <asm/arch/s5p4418_bus.h>
+
+const u16 g_DrexQoS[2] = {
+	0x100,		// S0
+	0xFFF		// S1, Default value
+};
+
+const u8 g_TopBusSI[8] = {
+	TOPBUS_SI_SLOT_DMAC0,
+	TOPBUS_SI_SLOT_USBOTG,
+	TOPBUS_SI_SLOT_USBHOST0,
+	TOPBUS_SI_SLOT_DMAC1,
+	TOPBUS_SI_SLOT_SDMMC,
+	TOPBUS_SI_SLOT_USBOTG,
+	TOPBUS_SI_SLOT_USBHOST1,
+	TOPBUS_SI_SLOT_USBOTG
+};
+
+const u8 g_BottomBusSI[8] = {
+	BOTBUS_SI_SLOT_1ST_ARM,
+	BOTBUS_SI_SLOT_MALI,
+	BOTBUS_SI_SLOT_DEINTERLACE,
+	BOTBUS_SI_SLOT_1ST_CODA,
+	BOTBUS_SI_SLOT_2ND_ARM,
+	BOTBUS_SI_SLOT_SCALER,
+	BOTBUS_SI_SLOT_TOP,
+	BOTBUS_SI_SLOT_2ND_CODA
+};
+
+#if 0
+// default
+const u8 g_BottomQoSSI[2] = {
+	1,	// Tidemark
+	(1<<BOTBUS_SI_SLOT_1ST_ARM) |	// Control
+	(1<<BOTBUS_SI_SLOT_2ND_ARM) |
+	(1<<BOTBUS_SI_SLOT_MALI) |
+	(1<<BOTBUS_SI_SLOT_TOP) |
+	(1<<BOTBUS_SI_SLOT_DEINTERLACE) |
+	(1<<BOTBUS_SI_SLOT_1ST_CODA)
+};
+#else
+const u8 g_BottomQoSSI[2] = {
+	1,	// Tidemark
+	(1<<BOTBUS_SI_SLOT_TOP)	// Control
+};
+#endif
+
+const u8 g_DispBusSI[3] = {
+	DISBUS_SI_SLOT_1ST_DISPLAY,
+	DISBUS_SI_SLOT_2ND_DISPLAY,
+	DISBUS_SI_SLOT_GMAC
+};
+#endif	/* #if (CFG_BUS_RECONFIG_ENB == 1) */
+
+
+/*------------------------------------------------------------------------------
  * intialize nexell soc and board status.
  */
 #if defined(CONFIG_PMIC_NXE2000)

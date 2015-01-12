@@ -233,12 +233,35 @@
  * NAND FLASH
  */
 #define CONFIG_CMD_NAND
+//#define CONFIG_NAND_FTL
+#define CONFIG_NAND_MTD
 //#define CONFIG_ENV_IS_IN_NAND
 
+#if defined(CONFIG_NAND_FTL) && defined(CONFIG_NAND_MTD)
+#error "Duplicated config for NAND Driver!!!"
+#endif
+
+#if defined(CONFIG_NAND_FTL)
+#define HAVE_BLOCK_DEVICE
+#endif
+
 #if defined(CONFIG_CMD_NAND)
+	#if !defined(CONFIG_NAND_FTL) && !defined(CONFIG_NAND_MTD)
+	#error "Select FTL or MTD for NAND Driver!!!"
+	#endif
+
 	#define CONFIG_SYS_MAX_NAND_DEVICE		(1)
 	#define CONFIG_SYS_NAND_MAX_CHIPS   	(1)
 	#define CONFIG_SYS_NAND_BASE		   	PHY_BASEADDR_CS_NAND							/* Nand data register, nand->IO_ADDR_R/_W */
+
+	#if defined(CONFIG_ENV_IS_IN_NAND)
+		#define	CONFIG_ENV_OFFSET			(0x1000000)									/* 4MB */
+		#define CONFIG_ENV_SIZE           	(0x100000)									/* 1 block size */
+		#define CONFIG_ENV_RANGE			(0x400000)		 							/* avoid bad block */
+	#endif
+#endif
+
+#if defined(CONFIG_NAND_MTD)
 	#define CONFIG_SYS_NAND_ONFI_DETECTION
 	#define CONFIG_CMD_NAND_TRIMFFS
 
@@ -255,11 +278,6 @@
 		#define	CONFIG_NAND_ECC_BCH
 	#endif
 
-	#if defined(CONFIG_ENV_IS_IN_NAND)
-		#define	CONFIG_ENV_OFFSET			(0x400000)									/* 4MB */
-		#define CONFIG_ENV_SIZE           	(0x100000)									/* 1 block size */
-		#define CONFIG_ENV_RANGE			(0x400000)		 							/* avoid bad block */
-	#endif
 
 	#undef  CONFIG_CMD_IMLS
 

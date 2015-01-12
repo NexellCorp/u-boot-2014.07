@@ -445,10 +445,8 @@ int board_late_init(void)
 	struct pmic *p_fg, *p_chrg, *p_muic, *p_bat;
 	int show_bat_state = 0;
 	int power_key_depth = 0;
-	u32 time_key_pev = 0;
-	unsigned int sum_voltage = 0, avg_voltage = 0;
 	int i=0;
-	u8 power_state = 0;
+	u32 time_key_pev = 0, sum_voltage = 0, avg_voltage = 0, ilim_adp = 0, ilim_usb = 0, ichg = 0;
 	u8 power_depth = 3;
 
 
@@ -465,24 +463,25 @@ int board_late_init(void)
 
 	p_fg = pmic_get("FG_NXE2000");
 	if (!p_fg) {
-		puts("FG_NXE2000: Not found\n");
+		printf("FG_NXE2000: Not found\n");
 		return -ENODEV;
 	}
 
 	p_chrg = pmic_get("PMIC_NXE2000");
 	if (!p_chrg) {
-		puts("PMIC_NXE2000: Not found\n");
+		printf("PMIC_NXE2000: Not found\n");
 		return -ENODEV;
 	}
 
 	p_muic = pmic_get("MUIC_NXE2000");
 	if (!p_muic) {
-		puts("MUIC_NXE2000: Not found\n");
+		printf("MUIC_NXE2000: Not found\n");
+		return -ENODEV;
 	}
 
 	p_bat = pmic_get("BAT_NXE2000");
 	if (!p_bat) {
-		puts("BAT_NXE2000: Not found\n");
+		printf("BAT_NXE2000: Not found\n");
 		return -ENODEV;
 	}
 
@@ -502,12 +501,6 @@ int board_late_init(void)
 	else
 		chrg = p_chrg->chrg->chrg_type(p_chrg, 1);
 
-	if (!p_chrg->chrg->chrg_bat_present(p_chrg))
-	{
-		puts("No battery detected\n");
-		return -1;
-	}
-
 	/*===========================================================*/
 #if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
 	//if(CHARGER_NO < chrg || chrg < CHARGER_UNKNOWN)
@@ -526,6 +519,14 @@ int board_late_init(void)
 		p_fg->fg->fg_battery_check(p_fg, p_bat);
 		sum_voltage += pb->bat->voltage_uV;
 	}
+
+#if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+	pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, chgctl_reg_val);
+	//pmic_reg_read(p_chrg, NXE2000_REG_GPLED_FUNC, &chg_led_mode);
+	//chg_led_mode &= ~0x04;
+	//pmic_reg_write(p_chrg, NXE2000_REG_GPLED_FUNC, chg_led_mode);
+#endif	/* CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE */
+
 	avg_voltage = sum_voltage/3;
 
 	pmic_reg_read(p_chrg, NXE2000_REG_CHGSTATE, &chg_state);
@@ -557,7 +558,7 @@ int board_late_init(void)
 
 	printf("poweroff_his : 0x%02x \n", poweroff_his);
 	printf("poweron_his  : 0x%02x \n", poweron_his);
-	printf("chg_state    : 0x%02x,    chrg_type        : %d\n", chg_state, chrg);
+	printf("chg_state    : 0x%02x,    chrg_type        : %s\n", chg_state, (chrg == CHARGER_USB ? "VUSB" : (chrg == CHARGER_TA ? "VADP" : "NONE")));
 	printf("avg_voltage  : %d, shutdown_ilim_uV : %d\n", avg_voltage, shutdown_ilim_uV);
 
 	if(avg_voltage < NXE2000_DEF_CUTOFF_VOL)
@@ -784,7 +785,7 @@ int board_late_init(void)
 
 skip_bat_animation:
 
-#if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+#if 0//!defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
 	pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, chgctl_reg_val);
 	//pmic_reg_read(p_chrg, NXE2000_REG_GPLED_FUNC, &chg_led_mode);
 	//chg_led_mode &= ~0x04;
@@ -804,7 +805,12 @@ skip_bat_animation:
 #if defined(CONFIG_NXE2000_REG_DUMP)
 	nxe2000_register_dump(&nxe_power_config);
 #endif
-	printf("## chrg:%d, power_state:%d, power_depth:%d, power_key_depth:%d\n", chrg, power_state, power_depth, power_key_depth);
+	pmic_reg_read(p_chrg, NXE2000_REG_REGISET1, &ilim_adp);
+	pmic_reg_read(p_chrg, NXE2000_REG_REGISET2, &ilim_usb);
+	pmic_reg_read(p_chrg, NXE2000_REG_CHGISET, &ichg);
+	printf("## ilim_adp:0x%x, ilim_usb:0x%x, ichg:0x%x \n", ilim_adp, ilim_usb, ichg);
+	printf("## chrg:%s, power_depth:%d, power_key_depth:%d\n", (chrg == CHARGER_USB ? "VUSB" : (chrg == CHARGER_TA ? "VADP" : "NONE")), 
+																				power_depth, power_key_depth);
 	printf("## voltage_uV:%d, shutdown_ilim_uV:%d \n", pb->bat->voltage_uV, shutdown_ilim_uV);
 
 	return 0;
@@ -812,7 +818,7 @@ skip_bat_animation:
 
 enter_shutdown:
 
-#if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+#if 0//!defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
 	pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, chgctl_reg_val);
 	//pmic_reg_read(p_chrg, NXE2000_REG_GPLED_FUNC, &chg_led_mode);
 	//chg_led_mode &= ~0x04;
@@ -829,12 +835,16 @@ enter_shutdown:
 	nxe2000_register_dump(&nxe_power_config);
 #endif
 
-	printf("## chrg:%d, power_state:%d, power_depth:%d, power_key_depth:%d\n", chrg, power_state, power_depth, power_key_depth);
+	pmic_reg_read(p_chrg, NXE2000_REG_REGISET1, &ilim_adp);
+	pmic_reg_read(p_chrg, NXE2000_REG_REGISET2, &ilim_usb);
+	pmic_reg_read(p_chrg, NXE2000_REG_CHGISET, &ichg);
+	printf("## ilim_adp:0x%x, ilim_usb:0x%x, ichg:0x%x \n", ilim_adp, ilim_usb, ichg);
+	printf("## chrg:%s, power_depth:%d, power_key_depth:%d\n", (chrg == CHARGER_USB ? "VUSB" : (chrg == CHARGER_TA ? "VADP" : "NONE")), 
+																				power_depth, power_key_depth);
 	printf("## voltage_uV:%d, shutdown_ilim_uV:%d \n", pb->bat->voltage_uV, shutdown_ilim_uV);
 	printf("Power Off\n");
 
 	mdelay(500);
-
 	pmic_reg_write(p_chrg, NXE2000_REG_SLPCNT, 0x01);
 
 	while(1);

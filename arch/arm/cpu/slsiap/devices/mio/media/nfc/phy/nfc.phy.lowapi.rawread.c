@@ -61,8 +61,8 @@
 #include <linux/gfp.h>
 #include <linux/math64.h>
 
-#define DBG_PHY_LOWAPI_RAW(fmt, args...) printk(fmt, ##args)
-//#define DBG_PHY_LOWAPI_RAW(fmt, args...)
+//#define DBG_PHY_LOWAPI_RAW(fmt, args...) printk(fmt, ##args)
+#define DBG_PHY_LOWAPI_RAW(fmt, args...)
 
 #elif defined (__BUILD_MODE_ARM_UBOOT_DEVICE_DRIVER__)
 #include <div64.h>
@@ -70,8 +70,8 @@
 #include <common.h>
 #include <malloc.h>
 
-#define DBG_PHY_LOWAPI_RAW(fmt, args...) printf(fmt, ##args)
-//#define DBG_PHY_LOWAPI_RAW(fmt, args...)
+//#define DBG_PHY_LOWAPI_RAW(fmt, args...) printf(fmt, ##args)
+#define DBG_PHY_LOWAPI_RAW(fmt, args...)
 
 #else
 #error "nfc.phy.lowapi.rawread.c: error! not defined build mode!"
@@ -102,6 +102,7 @@ static volatile unsigned char *pNFADDR = (unsigned char *)(0x2C000000 + 0x18);
 static void NFC_PHY_LOW_API_RAW_ChipSelect(unsigned int channel, unsigned int way, unsigned int select);
 static int NFC_PHY_LOW_API_RAW_read(const MIO_NAND_RAW_INFO *info, unsigned int block_ofs, unsigned int page_ofs, unsigned int byte_ofs, unsigned int bytes_to_read, void *buf);
 static int NFC_PHY_LOW_API_RAW_write(const MIO_NAND_RAW_INFO *info, unsigned int block_ofs, unsigned int bytes_to_write, void *buf);
+static int NFC_PHY_LOW_API_RAW_erase(const MIO_NAND_RAW_INFO *info, unsigned int block_ofs, unsigned int block_cnt);
 
 /******************************************************************************
  * extern functions
@@ -157,6 +158,25 @@ int NFC_PHY_LOWAPI_nand_raw_write(const MIO_NAND_RAW_INFO *info, loff_t ofs, siz
     *len = (size_t)bytes_to_write;
 
     return curr_blockindex;
+}
+
+int NFC_PHY_LOWAPI_nand_raw_erase(const MIO_NAND_RAW_INFO *info, loff_t ofs, size_t size)
+{
+    loff_t ofs_org = ofs;
+    unsigned int block_ofs=0, page_ofs=0, byte_ofs=0;
+    unsigned int end_block_ofs=0, block_cnt=0;
+
+    byte_ofs  = ofs & (info->bytes_per_page - 1);  ofs = div_u64(ofs, info->bytes_per_page);  //ofs /= info->bytes_per_page;
+    page_ofs  = ofs & (info->pages_per_block - 1); ofs = div_u64(ofs, info->pages_per_block); //ofs /= info->pages_per_block;
+    block_ofs = ofs;
+
+    ofs = ofs_org + size - 1;
+    byte_ofs  = ofs & (info->bytes_per_page - 1);  ofs = div_u64(ofs, info->bytes_per_page);  //ofs /= info->bytes_per_page;
+    page_ofs  = ofs & (info->pages_per_block - 1); ofs = div_u64(ofs, info->pages_per_block); //ofs /= info->pages_per_block;
+    end_block_ofs = ofs;
+    block_cnt = end_block_ofs - block_ofs + 1;
+
+    return NFC_PHY_LOW_API_RAW_erase(info, block_ofs, block_cnt);
 }
 
 #if 0 // No Need
@@ -272,7 +292,8 @@ int NFC_PHY_LOW_API_RAW_read(const MIO_NAND_RAW_INFO *info, unsigned int block_o
         {
             if (curr_blockindex >= info->blocks_per_lun)
             {
-                return -1;
+                curr_blockindex = -1;
+                break;
             }
 
             failed = 0;
@@ -373,7 +394,8 @@ int NFC_PHY_LOW_API_RAW_write(const MIO_NAND_RAW_INFO *info, unsigned int block_
         {
             if (curr_blockindex >= info->blocks_per_lun)
             {
-                return -1;
+                curr_blockindex = -1;
+                break;
             }
 
             failed = 0;
@@ -457,3 +479,72 @@ int NFC_PHY_LOW_API_RAW_write(const MIO_NAND_RAW_INFO *info, unsigned int block_
     return curr_blockindex;
 }
 
+int NFC_PHY_LOW_API_RAW_erase(const MIO_NAND_RAW_INFO *info, unsigned int block_ofs, unsigned int block_cnt)
+{
+    unsigned char channel = info->channel;
+    unsigned char phyway = info->phyway;
+    unsigned int pages_per_block = info->pages_per_block;
+    unsigned int row=0;
+    unsigned char status;
+    unsigned int curr_blockindex = block_ofs;
+
+    if (!block_cnt)
+    {
+        return -1;
+    }
+
+    NFC_PHY_LOW_API_RAW_ChipSelect(channel, phyway, 1);
+    {
+        while (block_cnt)
+        {
+            if (curr_blockindex >= info->blocks_per_lun)
+            {
+                curr_blockindex = -1;
+                break;
+            }
+        
+            row = curr_blockindex * pages_per_block;
+
+            DBG_PHY_LOWAPI_RAW("NFC_PHY_LOW_API_RAW_erase (blk:%4d) ", curr_blockindex);
+
+            /******************************************************************
+             * 1st : erase
+             ******************************************************************/
+            *pNFCMD = 0x60; // ERASE 1ST
+            *pNFADDR = ((row&0x000000FF) >> 0);
+            *pNFADDR = ((row&0x0000FF00) >> 8);
+            *pNFADDR = ((row&0x00FF0000) >> 16);
+            *pNFCMD = 0xD0; // ERASE 2ST
+            NFC_PHY_LOW_API_RAW_tDelay(500);    // tWB
+
+            /******************************************************************
+             * 2nd : wait
+             ******************************************************************/
+            *pNFCMD = 0x70; // STATUS
+            NFC_PHY_LOW_API_RAW_tDelay(500);   // tWHR
+            do
+            {
+                status = *pNFDATA;
+            }while (!(status & (1 << 6)));
+
+            // if failed, go next block.
+            if (status & (1 << 0))
+            {
+                DBG_PHY_LOWAPI_RAW("failed!\n");
+                curr_blockindex += 1;
+                continue;
+            }
+
+            DBG_PHY_LOWAPI_RAW("done\n");
+
+            block_cnt -= 1;
+            if (block_cnt)
+            {
+                curr_blockindex += 1;
+            }
+        }
+    }
+    NFC_PHY_LOW_API_RAW_ChipSelect(channel, phyway, 0);
+
+    return curr_blockindex;
+}

@@ -72,6 +72,7 @@ static void mio_deinit_rwtest_buffer(void);
  * local functions
  *******************************************************************************/
 static unsigned char is_mio_init = 0;
+static unsigned char is_autosend_standbycmd = 1;
 
 static S32 mio_cmd_to_ftl(U16 usCommand, U8 ucFeature, U32 uiAddress, U32 uiLength);
 static void mio_fill_read_buffer(void *pvBuff, U32 uiSectors);
@@ -130,6 +131,7 @@ int mio_format(int _format_type)
   //Exchange.debug.nfc.phy.info_readretry = 1;
   //Exchange.debug.nfc.phy.info_readretry_table = 1;
   //Exchange.debug.nfc.phy.info_readretry_otp_table = 1;
+    Exchange.debug.nfc.phy.info_lowapi = 1;
     Exchange.debug.nfc.phy.warn_prohibited_block_access = 1;
   //Exchange.debug.nfc.phy.warn_ecc_uncorrectable = 1;
   //Exchange.debug.nfc.phy.warn_ecc_uncorrectable_show = 1;
@@ -144,6 +146,8 @@ int mio_format(int _format_type)
     /**************************************************************************
      * FTL Need Leaner Buffer
      **************************************************************************/
+    if (Exchange.debug.misc.uboot_format) { Exchange.sys.fn.print("MIO.FORMAT: Memory Pool Pre-Allocation\n"); }
+
     Exchange.buffer.mpool_size  = 0;
     Exchange.buffer.mpool_size += 1 * 4 * (4<<20); // 1CH x 4WAY x 4MB (Page Map Table per Lun)
     Exchange.buffer.mpool_size += 1 * 4 * (1<<20); // 1CH x 4WAY x 1MB (Update Map Table per Lun)
@@ -187,7 +191,7 @@ int mio_format(int _format_type)
 int mio_init(void)
 {
 #if defined (__MEDIA_ON_NAND__)
-	struct nand_ftl * nx_nand;
+    struct nand_ftl * nx_nand;
 
     int resp = -1;
     int capacity = -1;
@@ -231,6 +235,7 @@ int mio_init(void)
   //Exchange.debug.nfc.phy.info_readretry = 1;
   //Exchange.debug.nfc.phy.info_readretry_table = 1;
   //Exchange.debug.nfc.phy.info_readretry_otp_table = 1;
+    Exchange.debug.nfc.phy.info_lowapi = 1;
     Exchange.debug.nfc.phy.warn_prohibited_block_access = 1;
   //Exchange.debug.nfc.phy.warn_ecc_uncorrectable = 1;
   //Exchange.debug.nfc.phy.warn_ecc_uncorrectable_show = 1;
@@ -293,10 +298,10 @@ int mio_init(void)
 
     NFC_PHY_LOWAPI_init();
 
-	/* change ftl status */
-	nx_nand = find_nand_device(0);
-	if (nx_nand)
-		nx_nand->ftl_status = 0;
+    /* change ftl status */
+    nx_nand = find_nand_device(0);
+    if (nx_nand)
+        nx_nand->ftl_status = 0;
 
 #if defined (MEDIA_READ_WRITE_TEST)
     /**************************************************************************
@@ -316,7 +321,7 @@ int mio_deinit(void)
 #if defined (__MEDIA_ON_NAND__)
     if (is_mio_init)
     {
-		struct nand_ftl *nx_nand;
+        struct nand_ftl *nx_nand;
 
         Exchange.ftl.fnClose();
         free(Exchange.buffer.mpool);
@@ -325,10 +330,10 @@ int mio_deinit(void)
 
         NFC_PHY_LOWAPI_deinit();
 
-		/* change ftl status */
-		nx_nand = find_nand_device(0);
-		if (nx_nand)
-			nx_nand->ftl_status = 0;
+        /* change ftl status */
+        nx_nand = find_nand_device(0);
+        if (nx_nand)
+            nx_nand->ftl_status = 0;
 
 #if defined (MEDIA_READ_WRITE_TEST)
         mio_deinit_rwtest_buffer();
@@ -343,8 +348,6 @@ int mio_deinit(void)
 /*******************************************************************************
  *
  *******************************************************************************/
-extern unsigned int rand(void);
-
 int mio_init_rwtest_buffer(void)
 {
     if (!gstRW.uiDataSize)
@@ -377,10 +380,10 @@ int mio_init_rwtest_buffer(void)
 
             if (!ui_ofs)
             {
-                randValue = rand();
+                randValue = 0xAAAA5555;     //(U32)rand();
             }
-
-            if (ui_ofs < 8) //if (ui_ofs < 8)
+        
+            if (ui_ofs < 8)
             {
                 ((U32 *)gstRW.pucWData)[i] = i/(512/4);
             }
@@ -589,7 +592,7 @@ int get_mio_capacity(void)
 {
     int resp = 0;
     NAND nand;
-	struct nand_ftl *nx_nand;
+    struct nand_ftl *nx_nand;
 
     if (!is_mio_init)
     {
@@ -606,15 +609,16 @@ int get_mio_capacity(void)
     }
 
 
-	/* fill nand_ftl info : capacity */
-	nx_nand = find_nand_device(0);
-	if (nx_nand) {
-		nx_nand->capacity = *Exchange.ftl.Capacity;
-		printf("found device. Capacity is %x\n", nx_nand->capacity);
-	}
+    /* fill nand_ftl info : capacity */
+    nx_nand = find_nand_device(0);
+    if (nx_nand) {
+        nx_nand->capacity = *Exchange.ftl.Capacity;
+        printf("found device. Capacity is %x\n", nx_nand->capacity);
+    }
 
     return 1;
 }
+
 
 /*******************************************************************************
  * mio_read()
@@ -808,10 +812,26 @@ ulong mio_write(ulong blknr, lbaint_t blkcnt, const void *pvBuffer)
             }
         }
     }
-    
-    mio_standby();
+
+    if (is_autosend_standbycmd)
+    {
+        mio_standby();
+    }
 
     return (stFtl.uiPartialAddr - uiAddress);
+}
+
+/*******************************************************************************
+ * enable/disable to autosend standby command after each mio write.
+ *******************************************************************************/
+void mio_set_autosend_standbycmd(int enable)
+{
+    is_autosend_standbycmd = (enable)? 1: 0;
+}
+
+int mio_get_autosend_standbycmd(void)
+{
+    return is_autosend_standbycmd;
 }
 
 /*******************************************************************************
@@ -910,7 +930,7 @@ int mio_deinit_without_ftl(void)
     mio_deinit_rwtest_buffer();
 #endif
 
-	return 0;
+    return 0;
 }
 
 int mio_nand_write(loff_t ofs, size_t *len, u_char *buf)
@@ -963,11 +983,11 @@ int mio_nand_raw_write(loff_t ofs, size_t *len, u_char *buf)
     int ret = 0;
     MIO_NAND_RAW_INFO info;
 
-	info.channel = 0;
-	info.phyway = 0;
-	info.pages_per_block = 256;
-	info.bytes_per_page = 16384; //8192;
-	info.blocks_per_lun = 4096;
+    info.channel = 0;
+    info.phyway = 0;
+    info.pages_per_block = 256;
+    info.bytes_per_page = 8192;
+    info.blocks_per_lun = 4096;
 
     /*******************************************************************************
      * NFC_PHY_LOWAPI_nand_raw_write() function has no prerequisite including 
@@ -983,17 +1003,37 @@ int mio_nand_raw_read(loff_t ofs, size_t *len, u_char *buf)
     int ret = 0;
     MIO_NAND_RAW_INFO info;
 
-	info.channel = 0;
-	info.phyway = 0;
-	info.pages_per_block = 256;
-	info.bytes_per_page = 16384; //8192;
-	info.blocks_per_lun = 4096;
+    info.channel = 0;
+    info.phyway = 0;
+    info.pages_per_block = 256;
+    info.bytes_per_page = 8192;
+    info.blocks_per_lun = 4096;
 
     /*******************************************************************************
      * NFC_PHY_LOWAPI_nand_raw_read() function has no prerequisite including 
      * the NFC_PHY_LOWAPI_init() function.
      *******************************************************************************/
     ret = NFC_PHY_LOWAPI_nand_raw_read(&info, ofs, len, buf);
+
+    return ret;
+}
+
+int mio_nand_raw_erase(loff_t ofs, size_t size)
+{
+    int ret = 0;
+    MIO_NAND_RAW_INFO info;
+
+    info.channel = 0;
+    info.phyway = 0;
+    info.pages_per_block = 256;
+    info.bytes_per_page = 8192;
+    info.blocks_per_lun = 4096;
+
+    /*******************************************************************************
+     * NFC_PHY_LOWAPI_nand_raw_read() function has no prerequisite including 
+     * the NFC_PHY_LOWAPI_init() function.
+     *******************************************************************************/
+    ret = NFC_PHY_LOWAPI_nand_raw_erase(&info, ofs, size);
 
     return ret;
 }
@@ -1008,19 +1048,19 @@ static S32 mio_cmd_to_ftl(U16 usCommand, U8 ucFeature, U32 uiAddress, U32 uiLeng
     U8 ucIsNeedRetry = 0;
     U8 ucIsWaitForDone = 0;
 
-	switch (usCommand)
-	{
+    switch (usCommand)
+    {
         case IO_CMD_READ_DIRECT:
         case IO_CMD_WRITE_DIRECT:
         case IO_CMD_DATA_SET_MANAGEMENT:
         case IO_CMD_FLUSH:
         case IO_CMD_STANDBY:
-		case IO_CMD_SWITCH_PARTITION:
+        case IO_CMD_SWITCH_PARTITION:
         case IO_CMD_POWER_DOWN:
-		{
-			ucIsNeedRetry = 1;
-			ucIsWaitForDone = 1;
-		} break;
+        {
+            ucIsNeedRetry = 1;
+            ucIsWaitForDone = 1;
+        } break;
     }
 
     do
@@ -1174,3 +1214,4 @@ int mio_rwtest(ulong ulTestSectors, ulong ulCapacity, unsigned char ucWriteRatio
 #endif
     return 0;
 }
+

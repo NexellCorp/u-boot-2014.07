@@ -17,6 +17,10 @@
 #include <nand_ftl.h>
 #include <mio.uboot.h>
 
+//#define DBG_CMD_MIO(fmt, args...) printf(fmt, ##args)
+#define DBG_CMD_MIO(fmt, args...)
+
+
 int get_number(void)
 {
     int number = 0xFFFFFFFF;
@@ -149,9 +153,9 @@ static int do_mio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
         {
             if (strncmp(argv[1], "init", 4) == 0)
             {
-				struct nand_ftl *nand;
-				nand = find_nand_device(0);
-				nand_startup(nand);			//mio_init();
+                struct nand_ftl *nand;
+                nand = find_nand_device(0);
+                nand_startup(nand);            //mio_init();
                 return 0;
             }
             if (strncmp(argv[1], "info", 4) == 0)
@@ -162,6 +166,19 @@ static int do_mio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
             if (strncmp(argv[1], "format", 6) == 0)
             {
                 do_mio_format();
+                return 0;
+            }
+            if (strncmp(argv[1], "standby_autosend", 16) == 0)
+            {
+                int enable = mio_get_autosend_standbycmd();
+                printf("MIO standby_autosend is %s\n", ((enable)? "enabled.": "disabled.") );
+                return 0;
+            }
+            if (strncmp(argv[1], "standby", 7) == 0)
+            {
+                DBG_CMD_MIO("MIO standby ...");
+                mio_standby();
+                DBG_CMD_MIO("done\n");
                 return 0;
             }
 
@@ -178,6 +195,15 @@ static int do_mio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
                 return 0;
             }
 
+            if (strncmp(argv[1], "standby_autosend", 16) == 0)
+            {
+                int enable = (int)simple_strtoul(argv[2], NULL, 16);
+
+                mio_set_autosend_standbycmd(enable);
+
+                return 0;
+            }
+
             return CMD_RET_USAGE;
 
         } break;
@@ -190,9 +216,21 @@ static int do_mio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
                 size_t size = (size_t)simple_strtoul(argv[3], NULL, 16);
                 ulong n = 0;
 
-                printf("MIO nanderase:ofs %llu size %u ...", ofs, size);
+                DBG_CMD_MIO("MIO nanderase:ofs %llu size %u ...", ofs, size);
                 n = mio_nand_erase(ofs, size);
-                printf("last block: %ld\n", n);
+                DBG_CMD_MIO("last block: %ld\n", n);
+                return 0;
+            }
+
+            if (strcmp(argv[1], "nandrawerase") == 0)
+            {
+                loff_t ofs = (loff_t)simple_strtoull(argv[2], NULL, 16);
+                size_t size = (size_t)simple_strtoul(argv[3], NULL, 16);
+                ulong n = 0;
+
+                DBG_CMD_MIO("MIO nandrawerase:ofs %llu size %u ...", ofs, size);
+                n = mio_nand_raw_erase(ofs, size);
+                DBG_CMD_MIO("last block: %ld\n", n);
                 return 0;
             }
 
@@ -209,9 +247,9 @@ static int do_mio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
                 ulong seccnt = simple_strtoul(argv[4], NULL, 16);
                 ulong n = 0;
 
-                printf("MIO read: block# %lu seccnt %lu addr %lXh ...", blk, seccnt, addr);
+                DBG_CMD_MIO("MIO read: block# %lu seccnt %lu addr %lXh ...", blk, seccnt, addr);
                 n = mio_read(blk, seccnt, (ulong *)addr);
-                printf("%ld sectors read: %s\n", n, (n == seccnt) ? "OK" : "ERROR");
+                DBG_CMD_MIO("%ld sectors read: %s\n", n, (n == seccnt) ? "OK" : "ERROR");
                 return 0;
             }
             else if (strcmp(argv[1], "write") == 0)
@@ -220,9 +258,9 @@ static int do_mio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
                 ulong blk = simple_strtoul(argv[3], NULL, 16);
                 ulong seccnt = simple_strtoul(argv[4], NULL, 16);
                 ulong n = 0;
-                printf("MIO write: block# %lu seccnt %lu addr %lX ...", blk, seccnt, addr);
+                DBG_CMD_MIO("MIO write: block# %lu seccnt %lu addr %lX ...", blk, seccnt, addr);
                 n = mio_write(blk, seccnt, (ulong *)addr);
-                printf("%ld sectors write: %s\n", n, (n == seccnt) ? "OK" : "ERROR");
+                DBG_CMD_MIO("%ld sectors write: %s\n", n, (n == seccnt) ? "OK" : "ERROR");
                 return 0;
             }
             else if (strcmp(argv[1], "nandread") == 0)
@@ -231,9 +269,9 @@ static int do_mio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
                 loff_t ofs = (loff_t)simple_strtoull(argv[3], NULL, 16);
                 size_t len = (size_t)simple_strtoul(argv[4], NULL, 16);
                 ulong n = 0;
-                printf("MIO nandread: ofs %llu len %u addr %lX ...", ofs, len, addr);
+                DBG_CMD_MIO("MIO nandread: ofs %llu len %u addr %lX ...", ofs, len, addr);
                 n = mio_nand_read(ofs, &len, (u_char *)addr);
-                printf("last block: %ld\n", n);
+                DBG_CMD_MIO("last block: %ld\n", n);
                 return 0;
             }
             else if (strcmp(argv[1], "nandwrite") == 0)
@@ -242,9 +280,9 @@ static int do_mio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
                 loff_t ofs = (loff_t)simple_strtoull(argv[3], NULL, 16);
                 size_t len = (size_t)simple_strtoul(argv[4], NULL, 16);
                 ulong n = 0;
-                printf("MIO nandwrite: ofs %llu len %u addr %lX ...", ofs, len, addr);
+                DBG_CMD_MIO("MIO nandwrite: ofs %llu len %u addr %lX ...", ofs, len, addr);
                 n = mio_nand_write(ofs, &len, (u_char *)addr);
-                printf("last block: %ld\n", n);
+                DBG_CMD_MIO("last block: %ld\n", n);
                 return 0;
             }
             else if (strcmp(argv[1], "nandrawread") == 0)
@@ -253,9 +291,9 @@ static int do_mio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
                 loff_t ofs = (loff_t)simple_strtoull(argv[3], NULL, 16);
                 size_t len = (size_t)simple_strtoul(argv[4], NULL, 16);
                 ulong n = 0;
-                printf("MIO nandrawread: ofs %llu len %u addr %lX ...", ofs, len, addr);
+                DBG_CMD_MIO("MIO nandrawread: ofs %llu len %u addr %lX ...", ofs, len, addr);
                 n = mio_nand_raw_read(ofs, &len, (u_char *)addr);
-                printf("last block: %ld\n", n);
+                DBG_CMD_MIO("last block: %ld\n", n);
                 return 0;
             }
             else if (strcmp(argv[1], "nandrawwrite") == 0)
@@ -264,9 +302,9 @@ static int do_mio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
                 loff_t ofs = (loff_t)simple_strtoull(argv[3], NULL, 16);
                 size_t len = (size_t)simple_strtoul(argv[4], NULL, 16);
                 ulong n = 0;
-                printf("MIO nandrawwrite: ofs %llu len %u addr %lX ...", ofs, len, addr);
+                DBG_CMD_MIO("MIO nandrawwrite: ofs %llu len %u addr %lX ...", ofs, len, addr);
                 n = mio_nand_raw_write(ofs, &len, (u_char *)addr);
-                printf("last block: %ld\n", n);
+                DBG_CMD_MIO("last block: %ld\n", n);
                 return 0;
             }
 
@@ -320,5 +358,10 @@ U_BOOT_CMD(mio, 9, 0, do_mio,
            "mio nandread addr ofs len\n"
            "mio nanderase ofs size\n"
            "mio nandrawwrite addr ofs len\n"
-           "mio nandrawread addr ofs len\n");
+           "mio nandrawread addr ofs len\n"
+           "mio nandrawerase ofs size\n"
+           "mio standby - send a standby command to the FTL.\n"
+           "mio standby_autosend <0 | 1> - enable(1)/disable(0) to auto-send standby command after every mio write.\n"
+           "                               the default is 1 (enabled).")
+
 

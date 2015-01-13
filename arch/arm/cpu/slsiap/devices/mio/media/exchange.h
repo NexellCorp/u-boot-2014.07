@@ -667,7 +667,8 @@ typedef struct __ExDEBUG__
             unsigned int info_readretry           : 1;
             unsigned int info_readretry_table     : 1;
             unsigned int info_readretry_otp_table : 1;
-            unsigned int _rsvd1                   : 16 - 8;
+            unsigned int info_lowapi              : 1;
+            unsigned int _rsvd1                   : 16 - 9;
 
             // Error, Warnning
             unsigned int warn_prohibited_block_access : 1;

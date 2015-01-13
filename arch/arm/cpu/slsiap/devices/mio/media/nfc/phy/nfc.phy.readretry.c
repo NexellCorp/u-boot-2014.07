@@ -209,7 +209,7 @@ int NFC_PHY_HYNIX_READRETRY_Init(unsigned int _max_channels, unsigned int _max_w
     Exchange.nfc.fnReadRetry_GetAddress = NFC_PHY_HYNIX_READRETRY_GetAddress;
     Exchange.nfc.fnReadRetry_GetRegDataAddress = NFC_PHY_HYNIX_READRETRY_GetRegDataAddress;
     Exchange.nfc.fnReadRetry_ClearAllCurrReadRetryCount = NFC_PHY_HYNIX_READRETRY_ClearAllCurrReadRetryCount;
-    Exchange.nfc.fnReadRetry_PrintTable = NFC_PHY_HYNIX_READRETRY_PrintTable;
+    Exchange.nfc.fnReadRetry_PrintTable = NFC_PHY_READRETRY_PrintTable;
 
     NFC_PHY_HYNIX_READRETRY_DeInit();
 
@@ -834,7 +834,10 @@ int NFC_PHY_HYNIX_READRETRY_MakeReg(unsigned int _channel, unsigned int _phyway,
             Exchange.sys.fn.print(" ##################################################\n");
         }
 
-        NFC_PHY_HYNIX_READRETRY_PrintTable();
+        if (Exchange.debug.nfc.phy.info_readretry_table)
+        {
+            NFC_PHY_READRETRY_PrintTable();
+        }
     }
     else
     {
@@ -858,47 +861,44 @@ int NFC_PHY_HYNIX_READRETRY_MakeReg(unsigned int _channel, unsigned int _phyway,
 
 void NFC_PHY_HYNIX_READRETRY_PrintTable(void)
 {
-    if (Exchange.debug.nfc.phy.info_readretry_table)
+    int channel = 0;
+    int way = 0;
+
+    Exchange.sys.fn.print(" ##################################################\n");
+    Exchange.sys.fn.print(" #             HYNIX READ RETRY TABLE              \n");
+    Exchange.sys.fn.print(" # max_channels:%d, max_ways:%d\n", hynix_readretry.max_channels, hynix_readretry.max_ways);
+    Exchange.sys.fn.print(" # reg_addr.addr: ");
+
+    for (channel=0; channel < NAND_PHY_HYNIX_READRETRY_REG_CNT; channel++)
+        Exchange.sys.fn.print("%02x ", hynix_readretry.reg_addr.addr[channel]);
+
+    Exchange.sys.fn.print("\n");
+
+    for (channel=0; channel < hynix_readretry.max_channels; channel++)
     {
-        int channel = 0;
-        int way = 0;
-
-        Exchange.sys.fn.print(" ##################################################\n");
-        Exchange.sys.fn.print(" #             HYNIX READ RETRY TABLE              \n");
-        Exchange.sys.fn.print(" # max_channels:%d, max_ways:%d\n", hynix_readretry.max_channels, hynix_readretry.max_ways);
-        Exchange.sys.fn.print(" # reg_addr.addr: ");
-
-        for (channel=0; channel < NAND_PHY_HYNIX_READRETRY_REG_CNT; channel++)
-            Exchange.sys.fn.print("%02x ", hynix_readretry.reg_addr.addr[channel]);
-
-        Exchange.sys.fn.print("\n");
-
-        for (channel=0; channel < hynix_readretry.max_channels; channel++)
+        for (way=0; way < hynix_readretry.max_ways; way++)
         {
-            for (way=0; way < hynix_readretry.max_ways; way++)
+            NAND_HYNIX_READRETRY_REG_DATA *reg_data = &hynix_readretry.reg_data[way][channel];
+            int m=0, n=0;
+
+            Exchange.sys.fn.print(" #\n");
+            Exchange.sys.fn.print(" # table of channel(%d), way(%d)\n", channel, way);
+            Exchange.sys.fn.print(" #  total_readretry_cnt:%d, readretry_reg_cnt:%d, curr_readretry_cnt:%d\n", reg_data->total_readretry_cnt, reg_data->readretry_reg_cnt, reg_data->curr_readretry_cnt);
+            Exchange.sys.fn.print(" #           reg1 reg2 reg3 reg4 reg5 reg6 reg7 reg8 reg9 reg10\n");
+
+            for (m=0; m < reg_data->total_readretry_cnt; m++)
             {
-                NAND_HYNIX_READRETRY_REG_DATA *reg_data = &hynix_readretry.reg_data[way][channel];
-                int m=0, n=0;
+                Exchange.sys.fn.print(" #  [Step%2d]", m);
 
-                Exchange.sys.fn.print(" #\n");
-                Exchange.sys.fn.print(" # table of channel(%d), way(%d)\n", channel, way);
-                Exchange.sys.fn.print(" #  total_readretry_cnt:%d, readretry_reg_cnt:%d, curr_readretry_cnt:%d\n", reg_data->total_readretry_cnt, reg_data->readretry_reg_cnt, reg_data->curr_readretry_cnt);
-                Exchange.sys.fn.print(" #           reg1 reg2 reg3 reg4 reg5 reg6 reg7 reg8 reg9 reg10\n");
-
-                for (m=0; m < reg_data->total_readretry_cnt; m++)
+                for (n=0; n < reg_data->readretry_reg_cnt; n++)
                 {
-                    Exchange.sys.fn.print(" #  [Step%2d]", m);
-
-                    for (n=0; n < reg_data->readretry_reg_cnt; n++)
-                    {
-                        Exchange.sys.fn.print("  %02x ", reg_data->table[m][n]);
-                    }   Exchange.sys.fn.print("\n");
-                }
+                    Exchange.sys.fn.print("  %02x ", reg_data->table[m][n]);
+                }   Exchange.sys.fn.print("\n");
             }
         }
-
-        Exchange.sys.fn.print(" ##################################################\n");
     }
+
+    Exchange.sys.fn.print(" ##################################################\n");
 }
 
 
@@ -929,7 +929,7 @@ int NFC_PHY_TOSHIBA_READRETRY_Init(unsigned int _max_channels, unsigned int _max
     unsigned int way=0;
     unsigned char param_idx=0;
 
-    Exchange.nfc.fnReadRetry_PrintTable = NFC_PHY_TOSHIBA_READRETRY_PrintTable;
+    Exchange.nfc.fnReadRetry_PrintTable = NFC_PHY_READRETRY_PrintTable;
 
     NFC_PHY_TOSHIBA_READRETRY_DeInit();
 
@@ -1157,69 +1157,66 @@ void NFC_PHY_TOSHIBA_READRETRY_ExitReadRetryMode(unsigned int _channel, unsigned
 
 void NFC_PHY_TOSHIBA_READRETRY_PrintTable(void)
 {
-    if (Exchange.debug.nfc.phy.info_readretry_table)
+    int channel = 0;
+    int way = 0;
+
+    Exchange.sys.fn.print(" ##################################################\n");
+    Exchange.sys.fn.print(" #            TOSHIBA READ RETRY TABLE             \n");
+    Exchange.sys.fn.print(" # max_channels:%d, max_ways:%d\n", toshiba_readretry->max_channels, toshiba_readretry->max_ways);
+
+    for (channel=0; channel < toshiba_readretry->max_channels; channel++)
     {
-        int channel = 0;
-        int way = 0;
-
-        Exchange.sys.fn.print(" ##################################################\n");
-        Exchange.sys.fn.print(" #            TOSHIBA READ RETRY TABLE             \n");
-        Exchange.sys.fn.print(" # max_channels:%d, max_ways:%d\n", toshiba_readretry->max_channels, toshiba_readretry->max_ways);
-
-        for (channel=0; channel < toshiba_readretry->max_channels; channel++)
+        for (way=0; way < toshiba_readretry->max_ways; way++)
         {
-            for (way=0; way < toshiba_readretry->max_ways; way++)
+            int m=0, n=0;
+
+            Exchange.sys.fn.print(" #\n");
+            Exchange.sys.fn.print(" # table of channel(%d), way(%d)\n", channel, way);
+            Exchange.sys.fn.print(" #  total_readretry_cnt:%d, curr_readretry_cnt:%d\n", toshiba_readretry->total_readretry_cnt, toshiba_readretry->curr_readretry_cnt[way][channel]);
+            Exchange.sys.fn.print(" #           NoP |");
+            
+            Exchange.sys.fn.print(" ADDR");
+            for (n=1; n < toshiba_readretry->param[0].addr_cnt; n++)
             {
-                int m=0, n=0;
+                Exchange.sys.fn.print("   ");
+            }
+            Exchange.sys.fn.print("| DATA");
+            for (n=1; n < toshiba_readretry->param[0].addr_cnt; n++)
+            {
+                Exchange.sys.fn.print("   ");
+            }
+            Exchange.sys.fn.print("| NOC | CMD");
+            Exchange.sys.fn.print("\n");
 
-                Exchange.sys.fn.print(" #\n");
-                Exchange.sys.fn.print(" # table of channel(%d), way(%d)\n", channel, way);
-                Exchange.sys.fn.print(" #  total_readretry_cnt:%d, curr_readretry_cnt:%d\n", toshiba_readretry->total_readretry_cnt, toshiba_readretry->curr_readretry_cnt[way][channel]);
-                Exchange.sys.fn.print(" #           NoP |");
-                
-                Exchange.sys.fn.print(" ADDR");
-                for (n=1; n < toshiba_readretry->param[0].addr_cnt; n++)
+            for (m=0; m < (toshiba_readretry->total_readretry_cnt - 1); m++)
+            {
+                Exchange.sys.fn.print(" #  [Step%2d]", m);
+
+                Exchange.sys.fn.print("  %02d | ", toshiba_readretry->param[m].addr_cnt);
+
+                for (n=0; n < toshiba_readretry->param[m].addr_cnt; n++)
                 {
-                    Exchange.sys.fn.print("   ");
+                    Exchange.sys.fn.print(" %02x", toshiba_readretry->param[m].addr[n]);
                 }
-                Exchange.sys.fn.print("| DATA");
-                for (n=1; n < toshiba_readretry->param[0].addr_cnt; n++)
+                Exchange.sys.fn.print(" | ");
+
+                for (n=0; n < toshiba_readretry->param[m].addr_cnt; n++)
                 {
-                    Exchange.sys.fn.print("   ");
+                    Exchange.sys.fn.print(" %02x", toshiba_readretry->param[m].data[n]);
                 }
-                Exchange.sys.fn.print("| NOC | CMD");
+
+                Exchange.sys.fn.print(" |  %02d |", toshiba_readretry->param[m].command_cnt);
+
+                for (n=0; n < toshiba_readretry->param[m].command_cnt; n++)
+                {
+                    Exchange.sys.fn.print("  %02x ", toshiba_readretry->param[m].command[n]);
+                }
+
                 Exchange.sys.fn.print("\n");
-
-                for (m=0; m < (toshiba_readretry->total_readretry_cnt - 1); m++)
-                {
-                    Exchange.sys.fn.print(" #  [Step%2d]", m);
-
-                    Exchange.sys.fn.print("  %02d | ", toshiba_readretry->param[m].addr_cnt);
-                    
-                    for (n=0; n < toshiba_readretry->param[m].addr_cnt; n++)
-                    {
-                        Exchange.sys.fn.print(" %02x", toshiba_readretry->param[m].addr[n]);
-                    }
-                    Exchange.sys.fn.print(" | ");
-
-                    for (n=0; n < toshiba_readretry->param[m].addr_cnt; n++)
-                    {
-                        Exchange.sys.fn.print(" %02x", toshiba_readretry->param[m].data[n]);
-                    }
-
-                    Exchange.sys.fn.print(" |  %02d |", toshiba_readretry->param[m].command_cnt);
-
-                    for (n=0; n < toshiba_readretry->param[m].command_cnt; n++)
-                    {
-                        Exchange.sys.fn.print("  %02x ", toshiba_readretry->param[m].command[n]);
-                    }
-
-                    Exchange.sys.fn.print("\n");
-                }
             }
         }
-        Exchange.sys.fn.print(" ##################################################\n");
     }
+    Exchange.sys.fn.print(" ##################################################\n");
 }
 
 

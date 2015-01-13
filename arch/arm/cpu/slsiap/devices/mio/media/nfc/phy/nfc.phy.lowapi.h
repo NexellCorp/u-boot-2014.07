@@ -72,4 +72,5 @@ typedef struct __MIO_NAND_RAW_INFO__
 
 NFC_PHY_LOWAPI_EXT int NFC_PHY_LOWAPI_nand_raw_write(const MIO_NAND_RAW_INFO *info, loff_t ofs, size_t *len, u_char *buf);
 NFC_PHY_LOWAPI_EXT int NFC_PHY_LOWAPI_nand_raw_read(const MIO_NAND_RAW_INFO *info, loff_t ofs, size_t *len, u_char *buf);
+NFC_PHY_LOWAPI_EXT int NFC_PHY_LOWAPI_nand_raw_erase(const MIO_NAND_RAW_INFO *info, loff_t ofs, size_t size);
 

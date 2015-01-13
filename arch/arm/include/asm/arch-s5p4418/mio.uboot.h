@@ -43,6 +43,8 @@ MIO_UBOOT_EXT int get_mio_capacity(void);
  ******************************************************************************/
 MIO_UBOOT_EXT ulong mio_read(ulong blknr, lbaint_t blkcnt, void *buffer);
 MIO_UBOOT_EXT ulong mio_write(ulong blknr, lbaint_t blkcnt, const void *buffer);
+MIO_UBOOT_EXT void mio_set_autosend_standbycmd(int enable);
+MIO_UBOOT_EXT int mio_get_autosend_standbycmd(void);
 MIO_UBOOT_EXT int mio_flush(void);
 MIO_UBOOT_EXT int mio_standby(void);
 MIO_UBOOT_EXT int mio_powerdown(void);
@@ -62,6 +64,7 @@ MIO_UBOOT_EXT int mio_nand_erase(loff_t ofs, size_t size);
  ******************************************************************************/
 MIO_UBOOT_EXT int mio_nand_raw_write(loff_t ofs, size_t *len, u_char *buf);
 MIO_UBOOT_EXT int mio_nand_raw_read(loff_t ofs, size_t *len, u_char *buf);
+MIO_UBOOT_EXT int mio_nand_raw_erase(loff_t ofs, size_t size);
 
 /******************************************************************************
  * etc

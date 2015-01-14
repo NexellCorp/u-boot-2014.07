@@ -9,4 +9,5 @@ obj-$(CONFIG_FASTBOOT)				+= cmd_fastboot.o otg_bind_chk.o
 obj-$(CONFIG_CMD_MMC_UPDATE)		+= cmd_mmc_update.o
 obj-$(CONFIG_CMD_UPDATE_SDCARD)		+= cmd_update_sdcard.o
 obj-$(CONFIG_CMD_EXT4) 				+= decompress_ext4.o
+obj-$(CONFIG_VIP)					+= camera.o
 

@@ -79,6 +79,15 @@ static void dw_mci_clk_delay(int val ,int regbase )
 	writel(val, regbase + DWMCI_CLKCTRL);
 }
 
+static void dw_mci_reset(int ch )
+{
+#ifdef CONFIG_MACH_S5P4418
+	int rst_id = RESET_ID_SDMMC0 + ch;
+    
+	NX_RSTCON_SetnRST(rst_id, 0);
+    NX_RSTCON_SetnRST(rst_id, 1 );
+#endif
+}
 static int dw_mci_init(u32 regbase, int bus_width, int index, int max_clock)
 {
 	struct dwmci_host *host = NULL;
@@ -102,6 +111,7 @@ static int dw_mci_init(u32 regbase, int bus_width, int index, int max_clock)
 
 	add_dwmci(host, max_clock, 400000);
 
+	dw_mci_reset(index);
 	return 0;
 }
 int board_mmc_init(bd_t *bis)

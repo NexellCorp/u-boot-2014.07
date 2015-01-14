@@ -16,18 +16,8 @@ struct nxp_mlc_video_param {
     u32 hue;
 };
 
-struct nxp_mlc_rgb_overlay_param {
-    u32 format;
-    u32 width;
-    u32 height;
-    u32 addr;
-};
-
 void nxp_mlc_video_set_param(int module, struct nxp_mlc_video_param *param);
 void nxp_mlc_video_set_addr(int module, u32 lu_a, u32 cb_a, u32 cr_a, u32 lu_s, u32 cb_s, u32 cr_s);
 void nxp_mlc_video_run(int module);
-
-void nxp_mlc_rgb_overlay_set_param(int module, struct nxp_mlc_rgb_overlay_param *param);
-void nxp_mlc_rgb_overlay_run(int module);
 
 #endif

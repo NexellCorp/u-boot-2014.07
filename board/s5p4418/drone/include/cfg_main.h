@@ -32,6 +32,17 @@
 #define	CFG_SYS_BOARD_NAME						"s5p4418-drone"
 
 /*------------------------------------------------------------------------------
+ * 	BUS config
+ */
+#define CFG_BUS_RECONFIG_ENB					0		/* if want bus reconfig, select this first */
+
+#define CFG_BUS_RECONFIG_DREXQOS				0
+#define CFG_BUS_RECONFIG_TOPBUSSI				0
+#define CFG_BUS_RECONFIG_BOTTOMBUSSI			0
+#define CFG_BUS_RECONFIG_BOTTOMBUSQOS			0
+#define CFG_BUS_RECONFIG_DISPBUSSI				0
+
+/*------------------------------------------------------------------------------
  * 	Debug Uart
  */
 #define CFG_UART_DEBUG_CH						0
@@ -88,8 +99,8 @@
 #define CFG_DISP_PRI_VSYNC_FRONT_PORCH          12
 #define CFG_DISP_PRI_VSYNC_ACTIVE_HIGH 	        CTRUE
 
-#define CFG_DISP_PRI_CLKGEN0_SOURCE             DPC_VCLK_SRC_PLL0
-#define CFG_DISP_PRI_CLKGEN0_DIV                15//12
+#define CFG_DISP_PRI_CLKGEN0_SOURCE             DPC_VCLK_SRC_PLL2
+#define CFG_DISP_PRI_CLKGEN0_DIV                12 // even divide
 #define CFG_DISP_PRI_CLKGEN0_DELAY              0
 #define CFG_DISP_PRI_CLKGEN0_INVERT				0
 #define CFG_DISP_PRI_CLKGEN1_SOURCE             DPC_VCLK_SRC_VCLK2

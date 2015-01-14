@@ -33,6 +33,17 @@
 #define	CFG_SYS_BOARD_NAME						"nxp4330-svt"
 
 /*------------------------------------------------------------------------------
+ * 	BUS config
+ */
+#define CFG_BUS_RECONFIG_ENB					0		/* if want bus reconfig, select this first */
+
+#define CFG_BUS_RECONFIG_DREXQOS				0
+#define CFG_BUS_RECONFIG_TOPBUSSI				0
+#define CFG_BUS_RECONFIG_BOTTOMBUSSI			0
+#define CFG_BUS_RECONFIG_BOTTOMBUSQOS			0
+#define CFG_BUS_RECONFIG_DISPBUSSI				0
+
+/*------------------------------------------------------------------------------
  * 	Debug Uart
  */
 #define CFG_UART_DEBUG_CH						0

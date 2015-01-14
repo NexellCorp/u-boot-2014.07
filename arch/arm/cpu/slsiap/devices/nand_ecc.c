@@ -76,10 +76,11 @@ static uint8_t *verify_buf;
 /*
  * u-boot nand hw ecc
  */
-static int iNX_BCH_VAR_K	 = ECC_PAGE_SIZE;			/* 512 or 1024 */
-static int iNX_BCH_VAR_M	 = 14;			/* 13 or 14 */
-static int iNX_BCH_VAR_T	 = ECC_HW_BITS;	/* 4, 8, 12, 16, 24, 40, 60 ... */
-static int iNX_BCH_VAR_TMAX  = 24;			/* eccsize == 512 ? 24 : 60 */
+static int iNX_BCH_VAR_K	 = ECC_PAGE_SIZE;	/* 512 or 1024 */
+static int iNX_BCH_VAR_M	 = 14;				/* 13 or 14 */
+static int iNX_BCH_VAR_T	 = 60;				/* 4, 8, 12, 16, 24, 40, 60 ... */
+static int iNX_BCH_VAR_R	 = 104;				/* (iNX_BCH_VAR_K * iNX_BCH_VAR_M) / 8 - 1 */
+static int iNX_BCH_VAR_TMAX  = 60;				/* eccsize == 512 ? 24 : 60 */
 
 static struct NX_MCUS_RegisterSet * const _pNCTRL =
 	(struct NX_MCUS_RegisterSet *)IO_ADDRESS(PHY_BASEADDR_MCUSTOP_MODULE);
@@ -93,8 +94,6 @@ static void __ecc_reset_decoder(void)
 
 static void __ecc_decode_enable(int eccsize)	/* 512 or 1024 */
 {
-	int iNX_BCH_VAR_R = (((iNX_BCH_VAR_M * iNX_BCH_VAR_T)/8) - 1);
-
 	// connect syndrome path
 	_pNCTRL->NFECCAUTOMODE = (_pNCTRL->NFECCAUTOMODE & ~(NX_NFACTRL_ELP | NX_NFACTRL_SYN));
 
@@ -134,8 +133,6 @@ static unsigned int __ecc_decode_error(void)
 
 static void __ecc_start_correct(int eccsize)
 {
-	int iNX_BCH_VAR_R = (((iNX_BCH_VAR_M * iNX_BCH_VAR_T)/8) - 1);
-
 	// load elp
 	_pNCTRL->NFECCCTRL =
 		(0 << NX_NFECCCTRL_RUNECC_W)   |
@@ -176,8 +173,6 @@ static int __ecc_get_err_location(unsigned int *pLocation)
 
 static void __ecc_setup_encoder(void)
 {
-	int iNX_BCH_VAR_R = (((iNX_BCH_VAR_M * iNX_BCH_VAR_T)/8) - 1);
-
     NX_MCUS_SetNANDRWDataNum(iNX_BCH_VAR_K);
     NX_MCUS_SetParityCount(iNX_BCH_VAR_R);
     NX_MCUS_SetNumOfELP(iNX_BCH_VAR_T);
@@ -368,7 +363,7 @@ retry_rd:
 	return ret;
 }
 
-static void nand_hw_ecc_write_page(struct mtd_info *mtd, struct nand_chip *chip,
+static int nand_hw_ecc_write_page(struct mtd_info *mtd, struct nand_chip *chip,
 				  const uint8_t *buf, int oob_required)
 {
 	int i, n;
@@ -403,6 +398,8 @@ static void nand_hw_ecc_write_page(struct mtd_info *mtd, struct nand_chip *chip,
 
 	/* write oob */
 	chip->write_buf(mtd, chip->oob_poi, mtd->oobsize);
+
+	return 0;
 }
 
 static int nand_hw_write_page(struct mtd_info *mtd, struct nand_chip *chip,
@@ -648,11 +645,12 @@ int nand_hw_ecc_init_device(struct mtd_info *mtd)
 	}
 
 
-	iNX_BCH_VAR_M	 = eccidx;			/* 13 or 14 */
-	iNX_BCH_VAR_T	 = ECC_HW_BITS;	/* 4, 8, 12, 16, 24, 40, 60 ... */
-	iNX_BCH_VAR_TMAX = (eccsize == 512 ? 24 : 60);
-	DBGOUT("%s ecc %d bit, eccsize=%d, eccbyte=%d, eccindex=%d\n",
-		__func__, ECC_HW_BITS, eccsize, eccbyte, eccidx);
+	iNX_BCH_VAR_M			= eccidx;			/* 13 or 14 */
+	iNX_BCH_VAR_T			= ECC_HW_BITS;		/* 4, 8, 12, 16, 24, 40, 60 ... */
+	iNX_BCH_VAR_R			= ((iNX_BCH_VAR_M * iNX_BCH_VAR_T * 10)/8 - 1)/10;
+	iNX_BCH_VAR_TMAX		= (eccsize == 512 ? 24 : 60);
+	DBGOUT("%s ecc %d bit, eccsize=%d, parity=%d, eccbyte=%d, eccindex=%d\n",
+		__func__, ECC_HW_BITS, eccsize, iNX_BCH_VAR_R, eccbyte, eccidx);
 
 	chip->ecc.mode 			= NAND_ECC_HW;
 	chip->ecc.size 			= eccsize;			/* per 512 or 1024 bytes */

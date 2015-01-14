@@ -36,7 +36,9 @@
 #endif
 #include "fastboot.h"
 
+/*
 #define	debug	printf
+*/
 
 #ifndef FASTBOOT_PARTS_DEFAULT
 #error "Not default FASTBOOT_PARTS_DEFAULT"
@@ -413,6 +415,7 @@ static int nand_part_write(struct fastboot_part *fpart, void *buf, uint64_t leng
 
 extern ulong nand_bwrite(int dev_num, lbaint_t start, lbaint_t blkcnt, const void *src);
 extern int nand_get_part_table(block_dev_desc_t *desc, uint64_t (*parts)[2], int *count);
+extern void mio_set_autosend_standbycmd(int enable);
 
 static inline int nand_make_parts(int dev, uint64_t (*parts)[2], int count)
 {
@@ -554,7 +557,11 @@ static int nand_part_write(struct fastboot_part *fpart, void *buf, uint64_t leng
  	if ((fpart->fs_type & FASTBOOT_FS_EXT4) &&
  		(0 == check_compress_ext4((char*)buf, fpart->length))) {
 		debug("write compressed ext4 ...\n");
-		return write_compressed_ext4((char*)buf, fpart->start/blk_size);
+
+		mio_set_autosend_standbycmd(0);
+		ret = write_compressed_ext4((char*)buf, fpart->start/blk_size);
+		mio_set_autosend_standbycmd(1);
+		return ret;
 	}
 
 	blk = fpart->start/blk_size ;
@@ -563,7 +570,9 @@ static int nand_part_write(struct fastboot_part *fpart, void *buf, uint64_t leng
 	printf("write image to 0x%llx(0x%x), 0x%llx(0x%x)\n",
 		fpart->start, (unsigned int)blk, length, (unsigned int)blk);
 
+	mio_set_autosend_standbycmd(0);
 	ret = nand_bwrite(dev, blk, cnt, buf);
+	mio_set_autosend_standbycmd(1);
 
 	return (0 > ret ? ret : 0);
 }

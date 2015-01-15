@@ -647,7 +647,7 @@ int nand_hw_ecc_init_device(struct mtd_info *mtd)
 
 	iNX_BCH_VAR_M			= eccidx;			/* 13 or 14 */
 	iNX_BCH_VAR_T			= ECC_HW_BITS;		/* 4, 8, 12, 16, 24, 40, 60 ... */
-	iNX_BCH_VAR_R			= ((iNX_BCH_VAR_M * iNX_BCH_VAR_T * 10)/8 - 1)/10;
+	iNX_BCH_VAR_R			= DIV_ROUND_UP(iNX_BCH_VAR_M * iNX_BCH_VAR_T, 8) - 1;
 	iNX_BCH_VAR_TMAX		= (eccsize == 512 ? 24 : 60);
 	DBGOUT("%s ecc %d bit, eccsize=%d, parity=%d, eccbyte=%d, eccindex=%d\n",
 		__func__, ECC_HW_BITS, eccsize, iNX_BCH_VAR_R, eccbyte, eccidx);

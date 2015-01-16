@@ -279,7 +279,7 @@ int nand_make_part_table(block_dev_desc_t *desc,
 
 	for (i = 0; part_tables > i; i++, pt++) {
 		lba_s = (lbaint_t)(parts[i][0] / desc->blksz);
-		lba_l = parts[i][1] ? (lbaint_t)(parts[i][1] / desc->blksz) : (desc->lba - last_lba);
+		lba_l = parts[i][1] ? (lbaint_t)(parts[i][1] / desc->blksz) : (desc->lba - lba_s);
 
 		if (0 == lba_s) {
 			printf("-- Fail: invalid part.%d start 0x%llx --\n", i, parts[i][0]);

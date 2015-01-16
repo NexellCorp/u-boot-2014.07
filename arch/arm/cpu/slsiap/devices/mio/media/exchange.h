@@ -109,7 +109,10 @@ typedef union __NAND__
         unsigned int mainblocks_per_lun;
         unsigned int extendedblocks_per_lun;
         unsigned int next_lun_address;
-        unsigned int over_provisioning; // 8000 ~ 9313
+#define NAND_OVER_PROVISIONING_(X)  (X)
+//#define NAND_OVER_PROVISIONING      NAND_OVER_PROVISIONING_(9313)
+#define NAND_OVER_PROVISIONING      NAND_OVER_PROVISIONING_(8731)
+        unsigned int over_provisioning; // 8000 ~ 9313 (9313 : 93.13%, 8731 : 87.31%)
         unsigned int bits_per_cell;
         unsigned int number_of_bits_ecc_correctability;
         unsigned int maindatabytes_per_eccunit;

@@ -75,14 +75,6 @@
 #endif
 
 /******************************************************************************
- * Optimize Option
- ******************************************************************************/
-#if defined (__COMPILE_MODE_BEST_DEBUGGING__)
-#pragma GCC push_options
-#pragma GCC optimize("O0")
-#endif
-
-/******************************************************************************
  * local
  ******************************************************************************/
 static struct
@@ -782,10 +774,3 @@ int NFC_PHY_LOWAPI_erase(unsigned int block_ofs, unsigned int block_cnt)
 
     return curr_blockindex;
 }
-
-/******************************************************************************
- * Optimize Restore
- ******************************************************************************/
-#if defined (__COMPILE_MODE_BEST_DEBUGGING__)
-#pragma GCC pop_options
-#endif

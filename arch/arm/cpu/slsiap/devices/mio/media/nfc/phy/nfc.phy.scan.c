@@ -484,7 +484,7 @@ unsigned int NFC_PHY_ConfigOnfi(unsigned char * _id, unsigned int _nand, void * 
     nand_config->_f.mainblocks_per_lun     = onfi_param->_f.number_of_blocks_per_lun;
     nand_config->_f.extendedblocks_per_lun = 0;
     nand_config->_f.next_lun_address       = 0;
-    nand_config->_f.over_provisioning      = 9313; // 9313 : 93.13%, 8731 : 87.31%
+    nand_config->_f.over_provisioning      = NAND_OVER_PROVISIONING;
     nand_config->_f.bits_per_cell          = onfi_param->_f.number_of_bits_per_cell;
 
     if (!onfi_param->_f.features_supported.extended_parameter_page)
@@ -987,7 +987,7 @@ unsigned int NFC_PHY_ConfigJedec(unsigned char * _id, unsigned int _nand, void *
     nand_config->_f.extendedblocks_per_lun = jedec_param->_f.memory_organization.number_of_blocks_per_lun - mainblocks[i];
 
     nand_config->_f.next_lun_address       = 0;
-    nand_config->_f.over_provisioning      = 9313; // 9313 : 93.13%, 8731 : 87.31%
+    nand_config->_f.over_provisioning      = NAND_OVER_PROVISIONING;
     nand_config->_f.bits_per_cell          = jedec_param->_f.memory_organization.number_of_bits_per_cell;
 
     {
@@ -1528,7 +1528,7 @@ unsigned int NFC_PHY_ScanSkhynix(unsigned char * _id, unsigned char * _onfi_id, 
                     nand_config->_f.mainblocks_per_lun                = 4096;
                     nand_config->_f.extendedblocks_per_lun            = 84;
                     nand_config->_f.next_lun_address                  = 0;
-                    nand_config->_f.over_provisioning                 = 9313; // 9313 : 93.13%, 8731 : 87.31%
+                    nand_config->_f.over_provisioning                 = NAND_OVER_PROVISIONING;
                     nand_config->_f.bits_per_cell                     = 2;
                     nand_config->_f.number_of_bits_ecc_correctability = 40;
                     nand_config->_f.maindatabytes_per_eccunit         = 1024;
@@ -1665,7 +1665,7 @@ unsigned int NFC_PHY_ScanSkhynix(unsigned char * _id, unsigned char * _onfi_id, 
                     nand_config->_f.mainblocks_per_lun                = 2048;
                     nand_config->_f.extendedblocks_per_lun            = 44;
                     nand_config->_f.next_lun_address                  = 0;
-                    nand_config->_f.over_provisioning                 = 9313; // 9313 : 93.13%, 8731 : 87.31%
+                    nand_config->_f.over_provisioning                 = NAND_OVER_PROVISIONING;
                     nand_config->_f.bits_per_cell                     = 2;
                     nand_config->_f.number_of_bits_ecc_correctability = 40;
                     nand_config->_f.maindatabytes_per_eccunit         = 1024;
@@ -1802,7 +1802,7 @@ unsigned int NFC_PHY_ScanSkhynix(unsigned char * _id, unsigned char * _onfi_id, 
                     nand_config->_f.mainblocks_per_lun                = 2048;
                     nand_config->_f.extendedblocks_per_lun            = 64;
                     nand_config->_f.next_lun_address                  = 0;
-                    nand_config->_f.over_provisioning                 = 9313; // 9313 : 93.13%, 8731 : 87.31%
+                    nand_config->_f.over_provisioning                 = NAND_OVER_PROVISIONING;
                     nand_config->_f.bits_per_cell                     = 2;
                     nand_config->_f.number_of_bits_ecc_correctability = 40;
                     nand_config->_f.maindatabytes_per_eccunit         = 1024;
@@ -1939,7 +1939,7 @@ unsigned int NFC_PHY_ScanSkhynix(unsigned char * _id, unsigned char * _onfi_id, 
                     nand_config->_f.mainblocks_per_lun                = 2048;
                     nand_config->_f.extendedblocks_per_lun            = 72;
                     nand_config->_f.next_lun_address                  = 0;
-                    nand_config->_f.over_provisioning                 = 9313; // 9313 : 93.13%, 8731 : 87.31%
+                    nand_config->_f.over_provisioning                 = NAND_OVER_PROVISIONING;
                     nand_config->_f.bits_per_cell                     = 2;
                     nand_config->_f.number_of_bits_ecc_correctability = 40;
                     nand_config->_f.maindatabytes_per_eccunit         = 1024;

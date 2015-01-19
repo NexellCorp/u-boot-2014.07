@@ -129,6 +129,7 @@ static struct fastboot_fs_type f_part_fs[] = {
 	{ "fat"		, FASTBOOT_FS_FAT		},
 	{ "ext4"	, FASTBOOT_FS_EXT4		},
 	{ "emmc"	, FASTBOOT_FS_RAW_PART	},
+	{ "nand"	, FASTBOOT_FS_RAW_PART	},
 	{ "ubi"		, FASTBOOT_FS_UBI		},
 	{ "ubifs"	, FASTBOOT_FS_UBIFS		},
 };
@@ -558,9 +559,9 @@ static int nand_part_write(struct fastboot_part *fpart, void *buf, uint64_t leng
  		(0 == check_compress_ext4((char*)buf, fpart->length))) {
 		debug("write compressed ext4 ...\n");
 
-		mio_set_autosend_standbycmd(0);
+		//mio_set_autosend_standbycmd(0);
 		ret = write_compressed_ext4((char*)buf, fpart->start/blk_size);
-		mio_set_autosend_standbycmd(1);
+		//mio_set_autosend_standbycmd(1);
 		return ret;
 	}
 
@@ -570,9 +571,9 @@ static int nand_part_write(struct fastboot_part *fpart, void *buf, uint64_t leng
 	printf("write image to 0x%llx(0x%x), 0x%llx(0x%x)\n",
 		fpart->start, (unsigned int)blk, length, (unsigned int)blk);
 
-	mio_set_autosend_standbycmd(0);
+	//mio_set_autosend_standbycmd(0);
 	ret = nand_bwrite(dev, blk, cnt, buf);
-	mio_set_autosend_standbycmd(1);
+	//mio_set_autosend_standbycmd(1);
 
 	return (0 > ret ? ret : 0);
 }
@@ -623,7 +624,8 @@ static struct fastboot_device f_devices[] = {
 		.device 	= "nand",
 		.dev_max	= FASTBOOT_NAND_MAX,
 		.dev_type	= FASTBOOT_DEV_NAND,
-		.fs_support	= (FASTBOOT_FS_2NDBOOT | FASTBOOT_FS_BOOT | FASTBOOT_FS_RAW | FASTBOOT_FS_EXT4),
+		.fs_support	= (FASTBOOT_FS_2NDBOOT | FASTBOOT_FS_BOOT | FASTBOOT_FS_RAW | FASTBOOT_FS_EXT4 |
+						FASTBOOT_FS_RAW_PART),
 	#ifdef CONFIG_CMD_NAND
 		.write_part	= nand_part_write,
 		.capacity	= &nand_part_capacity,

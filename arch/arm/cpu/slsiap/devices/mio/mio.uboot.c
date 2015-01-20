@@ -149,8 +149,8 @@ int mio_format(int _format_type)
     if (Exchange.debug.misc.uboot_format) { Exchange.sys.fn.print("MIO.FORMAT: Memory Pool Pre-Allocation\n"); }
 
     Exchange.buffer.mpool_size  = 0;
-    Exchange.buffer.mpool_size += 1 * 4 * (4<<20); // 1CH x 4WAY x 4MB (Page Map Table per Lun)
-    Exchange.buffer.mpool_size += 1 * 4 * (1<<20); // 1CH x 4WAY x 1MB (Update Map Table per Lun)
+    Exchange.buffer.mpool_size += 1 * 2 * (4<<20); // 1CH x 2WAY x 4MB (Page Map Table per Lun)
+    Exchange.buffer.mpool_size += 1 * 2 * (1<<20); // 1CH x 2WAY x 1MB (Update Map Table per Lun)
     Exchange.buffer.mpool_size += (1<<20);         // 1MB (Misc)
     Exchange.buffer.mpool = (unsigned char *)malloc(Exchange.buffer.mpool_size);
 

@@ -115,6 +115,9 @@ copy_loop_text:
 	mov pc, r1
 
 clear_bss:
+#ifdef CONFIG_MMU_ENABLE
+	bl	mmu_turn_on
+#endif
 	ldr	r0, _bss_start_ofs
 	ldr	r1, _bss_end_ofs
 	ldr	r4, TEXT_BASE			/* text addr */
@@ -126,10 +129,6 @@ clbss_l:str	r2, [r0]			/* clear loop... */
 	add	r0, r0, #4
 	cmp	r0, r1
 	bne	clbss_l
-
-#ifdef CONFIG_MMU_ENABLE
-	bl	mmu_turn_on
-#endif
 
 	ldr	sp, =(CONFIG_SYS_INIT_SP_ADDR)
 	bic	sp, sp, #7					/* 8-byte alignment for ABI compliance */
@@ -168,10 +167,10 @@ ENTRY(c_runtime_cpu_setup)
  */
 #ifndef CONFIG_SYS_ICACHE_OFF
 	mcr	p15, 0, r0, c7, c5, 0	@ invalidate icache
-#ifndef CONFIG_MACH_NXP5430
+#ifndef CONFIG_MACH_S5P6818
 	mcr     p15, 0, r0, c7, c10, 4	@ DSB
-#endif
 	mcr     p15, 0, r0, c7, c5, 4	@ ISB
+#endif
 #endif
 /*
  * Move vector table
@@ -215,10 +214,10 @@ ENTRY(cpu_init_cp15)
 	mcr	p15, 0, r0, c8, c7, 0	@ invalidate TLBs
 	mcr	p15, 0, r0, c7, c5, 0	@ invalidate icache
 	mcr	p15, 0, r0, c7, c5, 6	@ invalidate BP array
-#ifndef CONFIG_MACH_NXP5430
+#ifndef CONFIG_MACH_S5P6818
 	mcr p15, 0, r0, c7, c10, 4	@ DSB
-#endif
 	mcr p15, 0, r0, c7, c5, 4	@ ISB
+#endif
 
 	/*
 	 * disable MMU stuff and caches

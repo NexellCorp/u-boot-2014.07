@@ -103,7 +103,7 @@
 #define	CONFIG_ARCH_MISC_INIT													/* board_init_r, call arch_misc_init */
 //#define	CONFIG_SYS_ICACHE_OFF
 
-//#define CONFIG_MMU_ENABLE
+#define CONFIG_MMU_ENABLE
 #ifdef  CONFIG_MMU_ENABLE
 #undef  CONFIG_SYS_DCACHE_OFF
 #endif
@@ -123,7 +123,7 @@
  *	U-Boot Environments
  */
 /* refer to common/env_common.c	*/
-#define CONFIG_BOOTDELAY	   			2
+#define CONFIG_BOOTDELAY	   			0
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 #define CONFIG_ETHADDR		   			00:e2:1c:ba:e8:60
 #define CONFIG_NETMASK		   			255.255.255.0

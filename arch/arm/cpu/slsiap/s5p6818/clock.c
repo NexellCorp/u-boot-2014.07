@@ -474,7 +474,7 @@ static unsigned long core_get_rate(int type)
 	case 15: rate = core_hz.disp_bclk; 	break;
 	case 16: rate = core_hz.disp_pclk; 	break;
 	case 17: rate = core_hz.hdmi_pclk; 	break;
-	case 18: rate = core_hz.cci4_pclk; 	break;
+	case 18: rate = core_hz.cci4_bclk; 	break;
 	case 19: rate = core_hz.cci4_pclk; 	break;
 	default: printk("unknown core clock type %d ...\n", type);
 			break;

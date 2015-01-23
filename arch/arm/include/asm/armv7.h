@@ -65,7 +65,7 @@
  * However, we use the CP15 based instructtions because we use
  * -march=armv5 in U-Boot
  */
-#ifndef CONFIG_MACH_NXP5430
+#ifndef CONFIG_MACH_S5P6818
 #define CP15ISB	asm volatile ("mcr     p15, 0, %0, c7, c5, 4" : : "r" (0))
 #define CP15DSB	asm volatile ("mcr     p15, 0, %0, c7, c10, 4" : : "r" (0))
 #define CP15DMB	asm volatile ("mcr     p15, 0, %0, c7, c10, 5" : : "r" (0))

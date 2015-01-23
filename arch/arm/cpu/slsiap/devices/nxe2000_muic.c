@@ -29,8 +29,8 @@
 #include <power/pmic.h>
 #include <power/power_chrg.h>
 
-#if defined(CONFIG_OTG_PHY_NEXELL)
-#include <otg_phy.h>
+#if defined(CONFIG_NXP_DWC_OTG_PHY)
+#include <dwc_otg_phy.h>
 #endif
 #include "nxe2000-private.h"
 #include <nxe2000_power.h>
@@ -366,7 +366,7 @@ static int muic_chrg_get_type(struct pmic *p, u32 ctrl_en)
 	pmic_reg_write(p, NXE2000_REG_IOOUT, val);
 	mdelay(10);
 
-#if defined(CONFIG_OTG_PHY_NEXELL)
+#if defined(CONFIG_NXP_DWC_OTG_PHY)
 	otg_clk_disable();
 	otg_phy_off();
 #endif
@@ -437,7 +437,7 @@ static int muic_chrg_get_type(struct pmic *p, u32 ctrl_en)
 	val = (tmp | 0x10) & 0xFF;	// High(Hi-Z)
 	pmic_reg_write(p, NXE2000_REG_IOOUT, val);
 
-#if defined(CONFIG_OTG_PHY_NEXELL)
+#if defined(CONFIG_NXP_DWC_OTG_PHY)
 	otg_phy_init();
 	otg_clk_enable();
 #endif

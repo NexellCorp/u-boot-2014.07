@@ -27,8 +27,8 @@
 #include <asm/io.h>
 #include "dwc_otg_hs.h"
 
-#if defined(CONFIG_OTG_PHY_NEXELL)
-#include <otg_phy.h>
+#if defined(CONFIG_NXP_DWC_OTG_PHY)
+#include <dwc_otg_phy.h>
 #endif
 #include <nx_tieoff.h>
 
@@ -347,7 +347,7 @@ static void s3c_usb_read_out_fifo(u8 *buf, int num);
 /* ghcstop fix */
 static void s3c_usb_init_phy(void)
 {
-#if !defined(CONFIG_OTG_PHY_NEXELL)
+#if !defined(CONFIG_NXP_DWC_OTG_PHY)
 	writel(readl(0xc0012004) & ~(1<<25), 0xc0012004);			// reset on --> ip off state to reset on state
 	writel(readl(0xc0012004) | (1<<25), 0xc0012004);			// reset off  --> reset state is done, goto reset off state
 
@@ -379,7 +379,7 @@ static void s3c_usb_init_phy(void)
 /* ghcstop fix */
 static void s3c_usb_phy_off(void)
 {
-#if !defined(CONFIG_OTG_PHY_NEXELL)
+#if !defined(CONFIG_NXP_DWC_OTG_PHY)
 	pTieoffreg->TIEOFFREG[13] &= ~(1<<3); //nUtmiResetSync = 0
 	pTieoffreg->TIEOFFREG[13] &= ~(1<<2); //nResetSync = 0
 	pTieoffreg->TIEOFFREG[13] |= 3<<7; //POR_ENB=1, POR=1
@@ -487,7 +487,7 @@ int s3c_usbctl_init(void)
 	otg.set_config = 0;
 	otg.ep0_state = EP0_STATE_INIT;
 	otg.ep0_substate = 0;
-#if defined(CONFIG_OTG_PHY_NEXELL)
+#if defined(CONFIG_NXP_DWC_OTG_PHY)
     otg_clk_enable();
 #endif
 	s3c_usb_init_phy();

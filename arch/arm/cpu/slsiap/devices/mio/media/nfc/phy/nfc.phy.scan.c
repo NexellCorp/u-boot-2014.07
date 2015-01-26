@@ -1093,7 +1093,7 @@ unsigned int NFC_PHY_ConfigJedec(unsigned char * _id, unsigned int _nand, void *
 
 /******************************************************************************
  *
- *****************************************************************************/
+ ******************************************************************************/
 unsigned int NFC_PHY_ScanSec(unsigned char * _id, unsigned char * _jedec_id, unsigned int _scan_format)
 {
     unsigned char * id = _id;
@@ -1238,8 +1238,8 @@ unsigned int NFC_PHY_ScanToshiba(unsigned char * _id, unsigned char * _jedec_id,
         NFC_PHY_GetStandardParameter(0, 0, 0x40, (unsigned char *)&phy_features.jedec_param, (unsigned char *)0);
 
         /**********************************************************************
-        * Generation : A19nm (1Ynm)
-        **********************************************************************/
+         * Generation : A19nm (1Ynm)
+         **********************************************************************/
         device_model = phy_features.jedec_param._f.manufacturer_information.device_model;
         
              if (!memcmp((const void *)device_model, (const void *)"TC58TEG6DDKTA00", strlen("TC58TEG6DDKTA00"))) { nand = NAND_TOSHIBA_TC58TEG6DDKTA00; }

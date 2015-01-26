@@ -88,9 +88,169 @@ unsigned int EXCHANGE_GetCRC32(unsigned int _initial, void * _buffer, unsigned i
 /******************************************************************************
  * Definition
  ******************************************************************************/
-unsigned long long __div64(unsigned long long _n, unsigned long long _base)
+void * __memset(void * _p, int _v, unsigned int _n)
 {
-    return div_u64(_n, _base);
+    void * r = 0;
+    
+#if defined (__COMPILE_MODE_ELAPSE_T__)
+    if (Exchange.sys.fn.elapse_t_io_measure_start) { Exchange.sys.fn.elapse_t_io_measure_start(ELAPSE_T_IO_MEMIO_RW, ELAPSE_T_IO_MEMIO_R, ELAPSE_T_IO_MEMIO_W); }
+#endif
+
+    r = memset(_p, _v, _n);
+
+#if defined (__COMPILE_MODE_ELAPSE_T__)
+    if (Exchange.sys.fn.elapse_t_io_measure_end) { Exchange.sys.fn.elapse_t_io_measure_end(ELAPSE_T_IO_MEMIO_RW, ELAPSE_T_IO_MEMIO_R, ELAPSE_T_IO_MEMIO_W); }
+#endif
+
+    return r;
+}
+
+void * __memcpy(void * _d, const void * _s, unsigned int _n)
+{
+    void * r = 0;
+
+#if defined (__COMPILE_MODE_ELAPSE_T__)
+    if (Exchange.sys.fn.elapse_t_io_measure_start) { Exchange.sys.fn.elapse_t_io_measure_start(ELAPSE_T_IO_MEMIO_RW, ELAPSE_T_IO_MEMIO_R, ELAPSE_T_IO_MEMIO_W); }
+#endif
+
+    r = memcpy(_d, _s, _n);
+
+#if defined (__COMPILE_MODE_ELAPSE_T__)
+    if (Exchange.sys.fn.elapse_t_io_measure_end) { Exchange.sys.fn.elapse_t_io_measure_end(ELAPSE_T_IO_MEMIO_RW, ELAPSE_T_IO_MEMIO_R, ELAPSE_T_IO_MEMIO_W); }
+#endif
+
+    return r;
+}
+
+int __memcmp(const void * _p1, const void * _p2, unsigned int _n)
+{
+    int r = 0;
+
+#if defined (__COMPILE_MODE_ELAPSE_T__)
+    if (Exchange.sys.fn.elapse_t_io_measure_start) { Exchange.sys.fn.elapse_t_io_measure_start(ELAPSE_T_IO_MEMIO_RW, ELAPSE_T_IO_MEMIO_R, ELAPSE_T_IO_MEMIO_W); }
+#endif
+
+    r = memcmp(_p1, _p2, _n);
+
+#if defined (__COMPILE_MODE_ELAPSE_T__)
+    if (Exchange.sys.fn.elapse_t_io_measure_end) { Exchange.sys.fn.elapse_t_io_measure_end(ELAPSE_T_IO_MEMIO_RW, ELAPSE_T_IO_MEMIO_R, ELAPSE_T_IO_MEMIO_W); }
+#endif
+
+    return r;
+}
+
+unsigned long long __div64(unsigned long long _dividend, unsigned long long _divisor)
+{
+    return div_u64(_dividend, _divisor);
+}
+
+void __ratio(unsigned char * _sz, unsigned long long _v1, unsigned long long _v2)
+{
+    unsigned long long v1 = 0;
+    unsigned long long v2 = 0;
+
+    unsigned int dividend = 0;
+    unsigned int divisor = 0;
+    unsigned int quotient = 0;
+    unsigned int remainder = 0;
+    unsigned int remainder_tmp = 0;
+    unsigned int looper = 0;
+
+    /**************************************************************************
+     * divisor Must Be Great than dividend
+     **************************************************************************/
+    if (_v1 > _v2)
+    {
+        v2 = _v2; // dividend
+        v1 = _v1; // divisor
+    }
+    else
+    {
+        v2 = _v1; // dividend
+        v1 = _v2; // divisor
+    }
+
+    if (v1)
+    {
+        /**********************************************************************
+         * Type Cast divisor From u64 To u32
+         **********************************************************************/
+        if (v1 > 1000000000000000000ull)
+        {
+            dividend = (unsigned int)__div64(v2, 1000000000000ull*10);
+            divisor = (unsigned int)__div64(v1, 1000000000000ull*10);
+        }
+        else if (v1 > 1000000000000000ull)
+        {
+            dividend = (unsigned int)__div64(v2, 1000000000ull*10);
+            divisor = (unsigned int)__div64(v1, 1000000000ull*10);
+        }
+        else if (v1 > 1000000000000ull)
+        {
+            dividend = (unsigned int)__div64(v2, 1000000*10);
+            divisor = (unsigned int)__div64(v1, 1000000*10);
+        }
+        else if (v1 > 1000000000ull)
+        {
+            dividend = (unsigned int)__div64(v2, 1000*10);
+            divisor = (unsigned int)__div64(v1, 1000*10);
+        }
+        else
+        {
+            dividend = (unsigned int)v2;
+            divisor = (unsigned int)v1;
+        }
+
+        /**********************************************************************
+         * Make Number
+         **********************************************************************/
+        quotient = dividend / divisor;
+        remainder_tmp = dividend % divisor;
+        remainder = 0;
+
+        for (looper = 0; looper < 5; looper++)
+        {
+            if (remainder_tmp)
+            {
+                remainder_tmp *= 10;
+                remainder *= 10;
+                remainder += remainder_tmp / divisor;
+                remainder_tmp = remainder_tmp % divisor;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        /**********************************************************************
+         * Make Ratio Number
+         **********************************************************************/
+        quotient = quotient * 100 + remainder / 1000;
+        remainder_tmp = remainder % 1000;
+        remainder = 0;
+
+        for (looper = 0; looper < 3; looper++)
+        {
+            if (remainder_tmp)
+            {
+                remainder_tmp *= 10;
+                remainder *= 10;
+                remainder += remainder_tmp / 1000;
+                remainder_tmp = remainder_tmp % 1000;
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
+
+    /**************************************************************************
+     * Make Ratio String
+     **************************************************************************/
+    if (!remainder) { sprintf((char*)_sz, "%3d.000 %%", quotient); }
+    else            { sprintf((char*)_sz, "%3d.%03d %%", quotient, remainder); }
 }
 
 /******************************************************************************
@@ -143,10 +303,11 @@ void EXCHANGE_init(void)
     Exchange.sys.fn.print = printk;
     Exchange.sys.fn.sprintf = sprintf;
     Exchange.sys.fn.strlen = strlen;
-    Exchange.sys.fn.memset = memset;
-    Exchange.sys.fn.memcpy = memcpy;
-    Exchange.sys.fn.memcmp = memcmp;
+    Exchange.sys.fn._memset = __memset;
+    Exchange.sys.fn._memcpy = __memcpy;
+    Exchange.sys.fn._memcmp = __memcmp;
     Exchange.sys.fn.div64 = __div64;
+    Exchange.sys.fn.ratio = __ratio;
     Exchange.sys.fn.get_crc16 = EXCHANGE_GetCRC16;
     Exchange.sys.fn.get_crc32 = EXCHANGE_GetCRC32;
 
@@ -170,10 +331,11 @@ void EXCHANGE_init(void)
     Exchange.sys.fn.print = printf;
     Exchange.sys.fn.sprintf = sprintf;
     Exchange.sys.fn.strlen = strlen;
-    Exchange.sys.fn.memset = memset;
-    Exchange.sys.fn.memcpy = memcpy;
-    Exchange.sys.fn.memcmp = memcmp;
+    Exchange.sys.fn._memset = __memset;
+    Exchange.sys.fn._memcpy = __memcpy;
+    Exchange.sys.fn._memcmp = __memcmp;
     Exchange.sys.fn.div64 = __div64;
+    Exchange.sys.fn.ratio = __ratio;
     Exchange.sys.fn.get_crc16 = EXCHANGE_GetCRC16;
     Exchange.sys.fn.get_crc32 = EXCHANGE_GetCRC32;
 

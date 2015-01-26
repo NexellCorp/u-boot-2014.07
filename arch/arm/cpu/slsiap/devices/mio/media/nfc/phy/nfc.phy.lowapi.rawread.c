@@ -11,6 +11,9 @@
  * Description  : NFC Physical For NXP4330
  *
  ******************************************************************************/
+
+#if 0 // obsolute 2015.01.24
+
 #include "nfc.phy.lowapi.h"
 
 #include "nfc.phy.register.h"
@@ -333,9 +336,9 @@ int NFC_PHY_LOW_API_RAW_read(const MIO_NAND_RAW_INFO *info, unsigned int block_o
 
                 DBG_PHY_LOWAPI_RAW("NFC_PHY_LOWAPI_RAW_read: blk:%d, pg:%d, byteofs:%d, bytes:%d, remain_bytes:%d\n", curr_blockindex, curr_pageindex, curr_byte_ofs, curr_bytes, remain_bytes);
 
-                /******************************************************************
+                /**************************************************************
                  * 2nd : read data
-                 ******************************************************************/
+                 **************************************************************/
                 *pNFCMD = 0x00;
                 NFC_PHY_LOW_API_RAW_tDelay(500);  // tWHR
                 data = curr_buff;
@@ -548,3 +551,5 @@ int NFC_PHY_LOW_API_RAW_erase(const MIO_NAND_RAW_INFO *info, unsigned int block_
 
     return curr_blockindex;
 }
+
+#endif

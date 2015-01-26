@@ -28,15 +28,16 @@
 #include <command.h>
 #include <asm/io.h>
 #include "usbdown.h"
+#include "usbid.h"
+
 #if (0)
 #define	NX_DEBUG_MSG(args...) 	printf(args)
 #else
 #define	NX_DEBUG_MSG(args...) 	do{}while(0)
 #endif
 
-
-#define USBD_VID		0x2375
-#define USBD_PID		0x4330
+extern void CalUSBID(U16 *VID, U16 *PID, U32 ECID);
+extern void GetUSBID(U16 *VID, U16 *PID);
 
 static volatile struct NX_RSTCON_RegisterSet *pRSTCONReg =
 				(struct NX_RSTCON_RegisterSet *)PHY_BASEADDR_RSTCON_MODULE;
@@ -492,7 +493,6 @@ static S32 nx_usb_set_init(void)
 {
 	U32 status = pUOReg->DCSR.DSTS; /* System status read */
 	U16	VID = USBD_VID, PID = USBD_PID;
-	U32 ECID;
 
 	/* Set if Device is High speed or Full speed */
 	if (((status & 0x6) >> 1) == USB_HIGH) {
@@ -520,15 +520,13 @@ static S32 nx_usb_set_init(void)
 	/*
 	 * READ ECID for Product and Vendor ID
 	 */
-	ECID = readl(IO_ADDRESS(PHY_BASEADDR_ECID_MODULE + (3<<2)));
-    if (ECID & 0xFFFF) {
-    	VID = 0x1234;	/* 0x1234 */
-    	PID = 0x04E8;	/* 0x04E8 */
-    	gs_DeviceDescriptorHS[ 8] = gs_DeviceDescriptorFS[ 8] = (U8)(VID & 0xff);
-    	gs_DeviceDescriptorHS[ 9] = gs_DeviceDescriptorFS[ 9] = (U8)(VID >> 8);
-    	gs_DeviceDescriptorHS[10] = gs_DeviceDescriptorFS[10] = (U8)(PID & 0xff);
-     	gs_DeviceDescriptorHS[11] = gs_DeviceDescriptorFS[11] = (U8)(PID >> 8);
-	}
+	GetUSBID(&VID, &PID);
+	NX_DEBUG_MSG("%s %x %x\n", __func__, VID, PID);
+
+   	gs_DeviceDescriptorHS[ 8] = gs_DeviceDescriptorFS[ 8] = (U8)(VID & 0xff);
+   	gs_DeviceDescriptorHS[ 9] = gs_DeviceDescriptorFS[ 9] = (U8)(VID >> 8);
+   	gs_DeviceDescriptorHS[10] = gs_DeviceDescriptorFS[10] = (U8)(PID & 0xff);
+   	gs_DeviceDescriptorHS[11] = gs_DeviceDescriptorFS[11] = (U8)(PID >> 8);
 
 	/* set endpoint */
 	/* Unmask NX_OTG_DAINT source */

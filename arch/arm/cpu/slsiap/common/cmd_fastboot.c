@@ -35,10 +35,14 @@
 #include <dwc_otg_hs.h>
 #endif
 #include "fastboot.h"
+#include "usbid.h"
 
 /*
 #define	debug	printf
 */
+
+extern void CalUSBID(U16 *VID, U16 *PID, U32 ECID);
+extern void GetUSBID(U16 *VID, U16 *PID);
 
 #ifndef FASTBOOT_PARTS_DEFAULT
 #error "Not default FASTBOOT_PARTS_DEFAULT"
@@ -1434,12 +1438,10 @@ static int fboot_rx_handler(const unsigned char *buffer, unsigned int length)
 
 #define ANDROID_VENDOR_ID 				0x18D1
 #define ANDROID_PRODUCT_ID				0x0002
-#define USB_VENDOR_ID 					0x2375
-#define USB_PRODUCT_ID					0x4330
 
 #define	USB_STRING_MANUFACTURER			"SLSIAP"
 
-#if	defined(CONFIG_MACH_S5P4418)
+#if	defined (CONFIG_MACH_S5P4418)
 #define USB_STRING_PRODUCT				"S5P4418"
 #define USB_STRING_SERIAL				"S5P4418"
 #elif defined (CONFIG_MACH_S5P6818)
@@ -1485,8 +1487,7 @@ static int fboot_interface_init(void)
 
 void fboot_usb_descriptor(descriptors_t *desc)
 {
-	U16	VID = USB_VENDOR_ID, PID = USB_PRODUCT_ID;
-	U32 ECID;
+	U16	VID = USBD_VID, PID = USBD_PID;
 
 	if (android_drvier) {
 		desc->dev.idVendorL  = ANDROID_VENDOR_ID	& 0xff;	//0xB4;	/**/
@@ -1494,11 +1495,9 @@ void fboot_usb_descriptor(descriptors_t *desc)
 		desc->dev.idProductL = ANDROID_PRODUCT_ID	& 0xff;	//0xFF; /**/
 		desc->dev.idProductH = ANDROID_PRODUCT_ID	>>8;	//0x0F; /**/
 	} else {
-		ECID = readl(IO_ADDRESS(PHY_BASEADDR_ECID_MODULE + (3<<2)));
-    	if (ECID & 0xFFFF) {
-    		VID = 0x1234;	/* 0x1234 */
-    		PID = 0x04E8;	/* 0x04E8 */
-		}
+		GetUSBID(&VID, &PID);
+		debug("%s %x %x\n", __func__, VID, PID);
+
 		desc->dev.idVendorL  = VID & 0xff;	//0xB4;	/**/
 		desc->dev.idVendorH  = VID >> 8;	//0x0B;	/**/
 		desc->dev.idProductL = PID & 0xff;	//0xFF; /**/

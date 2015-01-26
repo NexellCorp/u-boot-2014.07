@@ -131,7 +131,7 @@ int mio_format(int _format_type)
   //Exchange.debug.nfc.phy.info_readretry = 1;
   //Exchange.debug.nfc.phy.info_readretry_table = 1;
   //Exchange.debug.nfc.phy.info_readretry_otp_table = 1;
-    Exchange.debug.nfc.phy.info_lowapi = 1;
+  //Exchange.debug.nfc.phy.info_lowapi = 1;
     Exchange.debug.nfc.phy.warn_prohibited_block_access = 1;
   //Exchange.debug.nfc.phy.warn_ecc_uncorrectable = 1;
   //Exchange.debug.nfc.phy.warn_ecc_uncorrectable_show = 1;
@@ -235,7 +235,7 @@ int mio_init(void)
   //Exchange.debug.nfc.phy.info_readretry = 1;
   //Exchange.debug.nfc.phy.info_readretry_table = 1;
   //Exchange.debug.nfc.phy.info_readretry_otp_table = 1;
-    Exchange.debug.nfc.phy.info_lowapi = 1;
+  //Exchange.debug.nfc.phy.info_lowapi = 1;
     Exchange.debug.nfc.phy.warn_prohibited_block_access = 1;
   //Exchange.debug.nfc.phy.warn_ecc_uncorrectable = 1;
   //Exchange.debug.nfc.phy.warn_ecc_uncorrectable_show = 1;
@@ -422,82 +422,6 @@ void mio_deinit_rwtest_buffer(void)
  *******************************************************************************/
 int mio_info(void)
 {
-#if 0
-    loff_t ofs = 0;
-    size_t len = 0;
-    u_char *buf = 0;
-
-    int i = 0;
-
-    for (i = 0; i < gstRW.uiDataSize / 4; i++)
-    {
-        ((U32 *)gstRW.pucWData)[i] = i;
-    }
-
-    {
-        int block = 0x100;
-
-        // #1.1. EraseB-WriteP[0..15]-ReadP[0..15].ala
-      //buf = 0;                        ofs = block*16384*256; len = 16384*256; mio_nand_erase(ofs, len);
-      //buf = (u_char *)gstRW.pucWData; ofs = block*16384*256; len = 16384*16;  mio_nand_write(ofs, &len, buf);
-      //buf = (u_char *)gstRW.pucRData; ofs = block*16384*256; len = 16384*16;  mio_nand_read(ofs, &len, buf);
-
-        // #2.1. EraseB-WriteP[0..7]-WirteP[8..15]-ReadP[0..15].ala
-      //buf = 0;                        ofs = block*16384*256;         len = 16384*256; mio_nand_erase(ofs, len);
-      //buf = (u_char *)gstRW.pucWData; ofs = block*16384*256;         len = 16384*8;   mio_nand_write(ofs, &len, buf);
-      //buf = (u_char *)gstRW.pucWData; ofs = block*16384*256+16384*8; len = 16384*8;   mio_nand_write(ofs, &len, buf);
-      //buf = (u_char *)gstRW.pucRData; ofs = block*16384*256;         len = 16384*16;  mio_nand_read(ofs, &len, buf);
-
-        // #3.1. EraseB-WriteP[0..4]-WriteP[8..11]-ReadP[0..15].ala
-        // #3.2. EraseB-WriteP[0..4]-WriteP[8..11]-ReadP[0..15].ala
-        // #3.3. EraseB-WriteP[0..4]-WriteP[8..11]-ReadP[0..15].ala
-      //buf = 0;                        ofs = block*16384*256;         len = 16384*256; mio_nand_erase(ofs, len);
-      //buf = (u_char *)gstRW.pucWData; ofs = block*16384*256;         len = 16384*4;   mio_nand_write(ofs, &len, buf);
-      //buf = (u_char *)gstRW.pucWData; ofs = block*16384*256+16384*8; len = 16384*4;   mio_nand_write(ofs, &len, buf);
-      //buf = (u_char *)gstRW.pucRData; ofs = block*16384*256;         len = 16384*16;  mio_nand_read(ofs, &len, buf);
-
-        // #4.1. EraseB-WriteP[0..5]-WriteP[8..11]-ReadP[0..15].ala
-        // #4.2. EraseB-WriteP[0..5]-WriteP[8..11]-ReadP[0..15].ala
-        // #4.3. EraseB-WriteP[0..5]-WriteP[8..11]-ReadP[0..15].ala
-      //buf = 0;                        ofs = block*16384*256;         len = 16384*256; mio_nand_erase(ofs, len);
-      //buf = (u_char *)gstRW.pucWData; ofs = block*16384*256;         len = 16384*5;   mio_nand_write(ofs, &len, buf);
-      //buf = (u_char *)gstRW.pucWData; ofs = block*16384*256+16384*8; len = 16384*4;   mio_nand_write(ofs, &len, buf);
-      //buf = (u_char *)gstRW.pucRData; ofs = block*16384*256;         len = 16384*16;  mio_nand_read(ofs, &len, buf);
-
-        // #5.1. EraseB-WriteP[0..5]-WriteP[7]-WriteP[9..11]-ReadP[0..15].ala
-        // #5.2. EraseB-WriteP[0..5]-WriteP[7]-WriteP[9..11]-ReadP[0..15].ala
-        // #5.3. EraseB-WriteP[0..5]-WriteP[7]-WriteP[9..11]-ReadP[0..15].ala
-      //buf = 0;                        ofs = block*16384*256;         len = 16384*256; mio_nand_erase(ofs, len);
-      //buf = (u_char *)gstRW.pucWData; ofs = block*16384*256;         len = 16384*6;   mio_nand_write(ofs, &len, buf);
-      //buf = (u_char *)gstRW.pucWData; ofs = block*16384*256+16384*7; len = 16384*1;   mio_nand_write(ofs, &len, buf);
-      //buf = (u_char *)gstRW.pucWData; ofs = block*16384*256+16384*9; len = 16384*5;   mio_nand_write(ofs, &len, buf);
-      //buf = (u_char *)gstRW.pucRData; ofs = block*16384*256;         len = 16384*16;  mio_nand_read(ofs, &len, buf);
-
-        // #6.1. EraseB-WriteP[0..1]-WriteP[3]-WriteP[5]-WriteP[7]-WriteP[9]-WriteP[11]-WriteP[13]-WriteP[15]-ReadP[0..15].ala
-        // #6.2. EraseB-WriteP[0..1]-WriteP[3]-WriteP[5]-WriteP[7]-WriteP[9]-WriteP[11]-WriteP[13]-WriteP[15]-ReadP[0..15].ala
-        // #6.3. EraseB-WriteP[0..1]-WriteP[3]-WriteP[5]-WriteP[7]-WriteP[9]-WriteP[11]-WriteP[13]-WriteP[15]-ReadP[0..15].ala
-      //buf = 0;                        ofs = block*16384*256;          len = 16384*256; mio_nand_erase(ofs, len);
-      //buf = (u_char *)gstRW.pucWData; ofs = block*16384*256;          len = 16384*2;   mio_nand_write(ofs, &len, buf);
-      //buf = (u_char *)gstRW.pucWData; ofs = block*16384*256+16384*3;  len = 16384*1;   mio_nand_write(ofs, &len, buf);
-      //buf = (u_char *)gstRW.pucWData; ofs = block*16384*256+16384*5;  len = 16384*1;   mio_nand_write(ofs, &len, buf);
-      //buf = (u_char *)gstRW.pucWData; ofs = block*16384*256+16384*7;  len = 16384*1;   mio_nand_write(ofs, &len, buf);
-      //buf = (u_char *)gstRW.pucWData; ofs = block*16384*256+16384*9;  len = 16384*1;   mio_nand_write(ofs, &len, buf);
-      //buf = (u_char *)gstRW.pucWData; ofs = block*16384*256+16384*11; len = 16384*1;   mio_nand_write(ofs, &len, buf);
-      //buf = (u_char *)gstRW.pucWData; ofs = block*16384*256+16384*13; len = 16384*1;   mio_nand_write(ofs, &len, buf);
-      //buf = (u_char *)gstRW.pucWData; ofs = block*16384*256+16384*15; len = 16384*1;   mio_nand_write(ofs, &len, buf);
-      //buf = (u_char *)gstRW.pucRData; ofs = block*16384*256;          len = 16384*16;  mio_nand_read(ofs, &len, buf);
-
-        // #7.1. EraseB-WriteP[0..5]-WriteP[9..15]-ReadP[0..15].ala
-        // #7.2. EraseB-WriteP[0..5]-WriteP[9..15]-ReadP[0..15].ala
-        // #7.3. EraseB-WriteP[0..5]-WriteP[9..15]-ReadP[0..15].ala
-        buf = 0;                        ofs = block*16384*256;          len = 16384*256; mio_nand_erase(ofs, len);
-        buf = (u_char *)gstRW.pucWData; ofs = block*16384*256;          len = 16384*6;   mio_nand_write(ofs, &len, buf);
-        buf = (u_char *)gstRW.pucWData; ofs = block*16384*256+16384*9;  len = 16384*7;   mio_nand_write(ofs, &len, buf);
-        buf = (u_char *)gstRW.pucRData; ofs = block*16384*256;          len = 16384*16;  mio_nand_read(ofs, &len, buf);
-
-    }
-
-#else
     NAND * nand = (NAND *)&phy_features.nand_config;
 
     printf("\n NAND INFORMATION");
@@ -581,7 +505,7 @@ int mio_info(void)
 
     printf("*******************************************************************************\n");
     printf("\n");
-#endif
+
     return 0;
 }
 
@@ -936,14 +860,15 @@ int mio_deinit_without_ftl(void)
 int mio_nand_write(loff_t ofs, size_t *len, u_char *buf)
 {
     int ret = 0;
+    unsigned char enable_ecc = 1;
 
     if (!NFC_PHY_LOWAPI_is_init())
     {
-        Exchange.sys.fn.print("mio_nand_write(): error! NFC_PHY_LOWAPI is not initialized!\n");
+        Exchange.sys.fn.print("error! NFC_PHY_LOWAPI is not initialized!\n");
         return -1;
     }
 
-    ret = NFC_PHY_LOWAPI_nand_write(ofs, len, buf);
+    ret = NFC_PHY_LOWAPI_nand_write(ofs, len, buf, enable_ecc);
 
     return ret;
 }
@@ -951,14 +876,15 @@ int mio_nand_write(loff_t ofs, size_t *len, u_char *buf)
 int mio_nand_read(loff_t ofs, size_t *len, u_char *buf)
 {
     int ret = 0;
+    unsigned char enable_ecc = 1;
 
     if (!NFC_PHY_LOWAPI_is_init())
     {
-        Exchange.sys.fn.print("mio_nand_read(): error! NFC_PHY_LOWAPI is not initialized!\n");
+        Exchange.sys.fn.print("error! NFC_PHY_LOWAPI is not initialized!\n");
         return -1;
     }
 
-    ret = NFC_PHY_LOWAPI_nand_read(ofs, len, buf);
+    ret = NFC_PHY_LOWAPI_nand_read(ofs, len, buf, enable_ecc);
 
     return ret;
 }
@@ -969,7 +895,7 @@ int mio_nand_erase(loff_t ofs, size_t size)
 
     if (!NFC_PHY_LOWAPI_is_init())
     {
-        Exchange.sys.fn.print("mio_nand_erase(): error! NFC_PHY_LOWAPI is not initialized!\n");
+        Exchange.sys.fn.print("error! NFC_PHY_LOWAPI is not initialized!\n");
         return -1;
     }
 
@@ -981,19 +907,15 @@ int mio_nand_erase(loff_t ofs, size_t size)
 int mio_nand_raw_write(loff_t ofs, size_t *len, u_char *buf)
 {
     int ret = 0;
-    MIO_NAND_RAW_INFO info;
+    unsigned char enable_ecc = 0;
 
-    info.channel = 0;
-    info.phyway = 0;
-    info.pages_per_block = 256;
-    info.bytes_per_page = 8192;
-    info.blocks_per_lun = 4096;
+    if (!NFC_PHY_LOWAPI_is_init())
+    {
+        Exchange.sys.fn.print("error! NFC_PHY_LOWAPI is not initialized!\n");
+        return -1;
+    }
 
-    /*******************************************************************************
-     * NFC_PHY_LOWAPI_nand_raw_write() function has no prerequisite including 
-     * the NFC_PHY_LOWAPI_init() function.
-     *******************************************************************************/
-    ret = NFC_PHY_LOWAPI_nand_raw_write(&info, ofs, len, buf);
+    ret = NFC_PHY_LOWAPI_nand_write(ofs, len, buf, enable_ecc);
 
     return ret;
 }
@@ -1001,41 +923,22 @@ int mio_nand_raw_write(loff_t ofs, size_t *len, u_char *buf)
 int mio_nand_raw_read(loff_t ofs, size_t *len, u_char *buf)
 {
     int ret = 0;
-    MIO_NAND_RAW_INFO info;
+    unsigned char enable_ecc = 0;
 
-    info.channel = 0;
-    info.phyway = 0;
-    info.pages_per_block = 256;
-    info.bytes_per_page = 8192;
-    info.blocks_per_lun = 4096;
+    if (!NFC_PHY_LOWAPI_is_init())
+    {
+        Exchange.sys.fn.print("error! NFC_PHY_LOWAPI is not initialized!\n");
+        return -1;
+    }
 
-    /*******************************************************************************
-     * NFC_PHY_LOWAPI_nand_raw_read() function has no prerequisite including 
-     * the NFC_PHY_LOWAPI_init() function.
-     *******************************************************************************/
-    ret = NFC_PHY_LOWAPI_nand_raw_read(&info, ofs, len, buf);
+    ret = NFC_PHY_LOWAPI_nand_read(ofs, len, buf, enable_ecc);
 
     return ret;
 }
 
 int mio_nand_raw_erase(loff_t ofs, size_t size)
 {
-    int ret = 0;
-    MIO_NAND_RAW_INFO info;
-
-    info.channel = 0;
-    info.phyway = 0;
-    info.pages_per_block = 256;
-    info.bytes_per_page = 8192;
-    info.blocks_per_lun = 4096;
-
-    /*******************************************************************************
-     * NFC_PHY_LOWAPI_nand_raw_read() function has no prerequisite including 
-     * the NFC_PHY_LOWAPI_init() function.
-     *******************************************************************************/
-    ret = NFC_PHY_LOWAPI_nand_raw_erase(&info, ofs, size);
-
-    return ret;
+    return mio_nand_erase(ofs, size);
 }
 
 /*******************************************************************************

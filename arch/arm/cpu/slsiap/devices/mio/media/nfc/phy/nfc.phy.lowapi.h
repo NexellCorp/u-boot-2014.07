@@ -49,10 +49,11 @@ NFC_PHY_LOWAPI_EXT int NFC_PHY_LOWAPI_is_init(void);
  *
  *  - prerequisite: NFC_PHY_LOW_API_init() must be called.
  ******************************************************************************/
-NFC_PHY_LOWAPI_EXT int NFC_PHY_LOWAPI_nand_write(loff_t ofs, size_t *len, u_char *buf);
-NFC_PHY_LOWAPI_EXT int NFC_PHY_LOWAPI_nand_read(loff_t ofs, size_t *len, u_char *buf);
+NFC_PHY_LOWAPI_EXT int NFC_PHY_LOWAPI_nand_write(loff_t ofs, size_t *len, u_char *buf, unsigned char enable_ecc);
+NFC_PHY_LOWAPI_EXT int NFC_PHY_LOWAPI_nand_read(loff_t ofs, size_t *len, u_char *buf, unsigned char enable_ecc);
 NFC_PHY_LOWAPI_EXT int NFC_PHY_LOWAPI_nand_erase(loff_t ofs, size_t size);
 
+#if 0 // obsolute 2015.01.24
 /******************************************************************************
  * nand_raw_write
  * nand_raw_read
@@ -73,4 +74,5 @@ typedef struct __MIO_NAND_RAW_INFO__
 NFC_PHY_LOWAPI_EXT int NFC_PHY_LOWAPI_nand_raw_write(const MIO_NAND_RAW_INFO *info, loff_t ofs, size_t *len, u_char *buf);
 NFC_PHY_LOWAPI_EXT int NFC_PHY_LOWAPI_nand_raw_read(const MIO_NAND_RAW_INFO *info, loff_t ofs, size_t *len, u_char *buf);
 NFC_PHY_LOWAPI_EXT int NFC_PHY_LOWAPI_nand_raw_erase(const MIO_NAND_RAW_INFO *info, loff_t ofs, size_t size);
+#endif
 

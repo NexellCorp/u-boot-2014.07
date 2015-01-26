@@ -82,6 +82,9 @@ static struct
     unsigned char temp_buf[512];
 
     unsigned char is_init;
+    unsigned char go_nextblock;
+    unsigned char rsvd[2];
+
     MIO_NAND_INFO nandinfo;
 
 } low_api;
@@ -200,6 +203,7 @@ int NFC_PHY_LOWAPI_init(void)
         low_api.nandinfo.readretry_type = nand_config->_f.support_type.read_retry;
 
         low_api.is_init = 1;
+        low_api.go_nextblock = 0;
 
         if (Exchange.debug.nfc.phy.info_lowapi)
         {
@@ -247,10 +251,9 @@ int NFC_PHY_LOWAPI_is_init(void)
     return (low_api.is_init);
 }
 
-int NFC_PHY_LOWAPI_nand_write(loff_t ofs, size_t *len, u_char *buf)
+int NFC_PHY_LOWAPI_nand_write(loff_t ofs, size_t *len, u_char *buf, unsigned char enable_ecc)
 {
     int ret = -1;
-    unsigned char enable_ecc = 1;
 
     {
         unsigned char warn_prohibited_block_access = Exchange.debug.nfc.phy.warn_prohibited_block_access;
@@ -263,10 +266,9 @@ int NFC_PHY_LOWAPI_nand_write(loff_t ofs, size_t *len, u_char *buf)
     return ret;
 }
 
-int NFC_PHY_LOWAPI_nand_read(loff_t ofs, size_t *len, u_char *buf)
+int NFC_PHY_LOWAPI_nand_read(loff_t ofs, size_t *len, u_char *buf, unsigned char enable_ecc)
 {
     int ret = -1;
-    unsigned char enable_ecc = 1;
 
     {
         unsigned char warn_prohibited_block_access = Exchange.debug.nfc.phy.warn_prohibited_block_access;
@@ -357,7 +359,8 @@ int NFC_PHY_LOWAPI_ofs_read(loff_t ofs, size_t *len, u_char *buf, unsigned char 
 
             block_ofs += (curr_blockindex - block_ofs);
 
-            memcpy(destbuf, low_api.temp_buf+byte_ofs, copybytes);
+            if (Exchange.sys.fn._memcpy) { Exchange.sys.fn._memcpy(destbuf, low_api.temp_buf+byte_ofs, copybytes); }
+            else                         {                  memcpy(destbuf, low_api.temp_buf+byte_ofs, copybytes); }
 
             destbuf += copybytes;
             remain_bytes -= copybytes;
@@ -410,7 +413,10 @@ int NFC_PHY_LOWAPI_ofs_read(loff_t ofs, size_t *len, u_char *buf, unsigned char 
             {
                 break;
             }
-            memcpy(destbuf, low_api.temp_buf, remain_bytes);
+
+            if (Exchange.sys.fn._memcpy) { Exchange.sys.fn._memcpy(destbuf, low_api.temp_buf, remain_bytes); }
+            else                         {                  memcpy(destbuf, low_api.temp_buf, remain_bytes); }
+
             remain_bytes -= remain_bytes;
         }
 
@@ -519,10 +525,17 @@ int NFC_PHY_LOWAPI_write(unsigned int block_ofs, unsigned int page_ofs, unsigned
 
         if (failed)
         {
-            remain_sectors += curr_pageindex * sectors_per_page;
-            curr_buff -= curr_pageindex * info->bytes_per_page;
-            curr_pageindex = 0;
-            curr_blockindex += 1;
+            if (low_api.go_nextblock)
+            {
+                remain_sectors += curr_pageindex * sectors_per_page;
+                curr_buff -= curr_pageindex * info->bytes_per_page;
+                curr_pageindex = 0;
+                curr_blockindex += 1;
+            }
+            else
+            {
+                return -1;
+            }
         }
         else
         {
@@ -682,7 +695,14 @@ int NFC_PHY_LOWAPI_read(unsigned int block_ofs, unsigned int page_ofs, unsigned 
 
         if (failed)
         {
-            curr_blockindex += 1;
+            if (low_api.go_nextblock)
+            {
+                curr_blockindex += 1;
+            }
+            else
+            {
+                return -1;
+            }
         }
         else
         {
@@ -756,8 +776,15 @@ int NFC_PHY_LOWAPI_erase(unsigned int block_ofs, unsigned int block_cnt)
                 Exchange.sys.fn.print("failed!\n");
             }
 
-            curr_blockindex += 1;
-            continue;
+            if (low_api.go_nextblock)
+            {
+                curr_blockindex += 1;
+                continue;
+            }
+            else
+            {
+                return -1;
+            }
         }
 
         if (Exchange.debug.nfc.phy.info_lowapi)

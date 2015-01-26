@@ -502,6 +502,9 @@ typedef struct __ExNFC__
     void (*fnRandomize_DeInit)(void);
     void (*fnRandomize_Enable)(unsigned char _enable);
 
+    void (*fnBoostOn)(void);
+    void (*fnBoostOff)(void);
+
     struct
     {
         unsigned char timing_mode;
@@ -556,7 +559,7 @@ typedef struct __ExSYS__
         unsigned int led_indicator : 1;
         unsigned int gpio_debug    : 1;
 
-        unsigned int _rsvd0        : 32 - 3;
+        unsigned int _rsvd0        : (32-3);
 
     } support_list;
 
@@ -573,6 +576,14 @@ typedef struct __ExSYS__
         void (*mlock)(void);
         void (*munlock)(void);
 
+#if defined (__COMPILE_MODE_ELAPSE_T__)
+        // Elapse Time
+        void (*elapse_t_init)(void);
+        void (*elapse_t_start)(int _i);
+        void (*elapse_t_end)(int _i);
+        void (*elapse_t_io_measure_start)(int _rw, int _r, int _w);
+        void (*elapse_t_io_measure_end)(int _rw, int _r, int _w);
+#endif
         // Kernel Schedule
         void (*usleep)(unsigned long, unsigned long);
         void (*msleep)(unsigned int);
@@ -591,15 +602,16 @@ typedef struct __ExSYS__
 
         // Misc
         unsigned long long (*div64)(unsigned long long _dividend, unsigned long long _divisor);
+        void (*ratio)(unsigned char * _sz, unsigned long long _v1, unsigned long long _v2);
         unsigned short (*get_crc16)(unsigned short _initial, void * _buffer, unsigned int _length);
         unsigned int (*get_crc32)(unsigned int _initial, void * _buffer, unsigned int _length);
 
         int (*print)(const char *, ...);
         int (*sprintf)(char *, const char *, ...);
         unsigned int (*strlen)(const char *);
-        void * (*memset)(void *, int, unsigned int);
-        void * (*memcpy)(void *, const void *, unsigned int);
-        int (*memcmp)(const void *, const void *, unsigned int);
+        void * (*_memset)(void *, int, unsigned int);
+        void * (*_memcpy)(void *, const void *, unsigned int);
+        int (*_memcmp)(const void *, const void *, unsigned int);
 
     } fn;
 
@@ -609,24 +621,118 @@ typedef struct __ExSYS__
 #pragma pack(1)
 typedef struct __ExDEBUG__
 {
+#if defined (__COMPILE_MODE_ELAPSE_T__)
+
+#define ELAPSE_T_MAX                            (32)
+#define ELAPSE_T_TRANSACTION_THREAD_BASE        (0)
+#define ELAPSE_T_IO_BASE                        (8)
+
+#define ELAPSE_T_TRANSACTION_THREAD_(X)         (ELAPSE_T_TRANSACTION_THREAD_BASE+(X))
+#define ELAPSE_T_TRANSACTION_THREAD_00          (ELAPSE_T_TRANSACTION_THREAD_(0x00))
+#define ELAPSE_T_TRANSACTION_THREAD_01          (ELAPSE_T_TRANSACTION_THREAD_(0x01))
+#define ELAPSE_T_TRANSACTION_THREAD_02          (ELAPSE_T_TRANSACTION_THREAD_(0x02))
+#define ELAPSE_T_TRANSACTION_THREAD_03          (ELAPSE_T_TRANSACTION_THREAD_(0x03))
+#define ELAPSE_T_TRANSACTION_THREAD_04          (ELAPSE_T_TRANSACTION_THREAD_(0x04))
+#define ELAPSE_T_TRANSACTION_THREAD_05          (ELAPSE_T_TRANSACTION_THREAD_(0x05))
+#define ELAPSE_T_TRANSACTION_THREAD_06          (ELAPSE_T_TRANSACTION_THREAD_(0x06))
+#define ELAPSE_T_TRANSACTION_THREAD_07          (ELAPSE_T_TRANSACTION_THREAD_(0x07))
+
+#define ELAPSE_T_IO_(X)                         (ELAPSE_T_IO_BASE+(X))
+#define ELAPSE_T_IO_00                          (ELAPSE_T_IO_(0x00))
+#define ELAPSE_T_IO_01                          (ELAPSE_T_IO_(0x01))
+#define ELAPSE_T_IO_02                          (ELAPSE_T_IO_(0x02))
+#define ELAPSE_T_IO_03                          (ELAPSE_T_IO_(0x03))
+#define ELAPSE_T_IO_04                          (ELAPSE_T_IO_(0x04))
+#define ELAPSE_T_IO_05                          (ELAPSE_T_IO_(0x05))
+#define ELAPSE_T_IO_06                          (ELAPSE_T_IO_(0x06))
+#define ELAPSE_T_IO_07                          (ELAPSE_T_IO_(0x07))
+#define ELAPSE_T_IO_08                          (ELAPSE_T_IO_(0x08))
+#define ELAPSE_T_IO_09                          (ELAPSE_T_IO_(0x09))
+#define ELAPSE_T_IO_0A                          (ELAPSE_T_IO_(0x0A))
+#define ELAPSE_T_IO_0B                          (ELAPSE_T_IO_(0x0B))
+#define ELAPSE_T_IO_0C                          (ELAPSE_T_IO_(0x0C))
+#define ELAPSE_T_IO_0D                          (ELAPSE_T_IO_(0x0D))
+#define ELAPSE_T_IO_0E                          (ELAPSE_T_IO_(0x0E))
+#define ELAPSE_T_IO_0F                          (ELAPSE_T_IO_(0x0F))
+#define ELAPSE_T_IO_10                          (ELAPSE_T_IO_(0x10))
+#define ELAPSE_T_IO_11                          (ELAPSE_T_IO_(0x11))
+#define ELAPSE_T_IO_12                          (ELAPSE_T_IO_(0x12))
+#define ELAPSE_T_IO_13                          (ELAPSE_T_IO_(0x13))
+#define ELAPSE_T_IO_14                          (ELAPSE_T_IO_(0x14))
+#define ELAPSE_T_IO_15                          (ELAPSE_T_IO_(0x15))
+#define ELAPSE_T_IO_16                          (ELAPSE_T_IO_(0x16))
+#define ELAPSE_T_IO_17                          (ELAPSE_T_IO_(0x17))
+
+// Measure Block
+#define ELAPSE_T_TRANSACTION_THREAD_BACKGROUND  ELAPSE_T_TRANSACTION_THREAD_00
+#define ELAPSE_T_TRANSACTION_THREAD_SCHEDULED   ELAPSE_T_TRANSACTION_THREAD_01
+#define ELAPSE_T_TRANSACTION_THREAD_IO          ELAPSE_T_TRANSACTION_THREAD_02
+// Measure I/O
+#define ELAPSE_T_IO_MEDIA_DISCARD               ELAPSE_T_IO_00
+#define ELAPSE_T_IO_MEDIA_FLUSH                 ELAPSE_T_IO_01
+#define ELAPSE_T_IO_MEDIA_RW                    ELAPSE_T_IO_02
+#define ELAPSE_T_IO_MEDIA_R                     ELAPSE_T_IO_03
+#define ELAPSE_T_IO_MEDIA_W                     ELAPSE_T_IO_04
+#define ELAPSE_T_IO_FTL_RW                      ELAPSE_T_IO_05
+#define ELAPSE_T_IO_NFC_RW                      ELAPSE_T_IO_06
+#define ELAPSE_T_IO_NFC_RANDOMIZER_RW           ELAPSE_T_IO_07
+#define ELAPSE_T_IO_NFC_DELAY_RW                ELAPSE_T_IO_08
+#define ELAPSE_T_IO_MEMIO_RW                    ELAPSE_T_IO_09
+#define ELAPSE_T_IO_FTL_MAP_SEARCH_RW           ELAPSE_T_IO_0A
+#define ELAPSE_T_IO_FTL_R                       ELAPSE_T_IO_0B
+#define ELAPSE_T_IO_NFC_R                       ELAPSE_T_IO_0C
+#define ELAPSE_T_IO_NFC_RANDOMIZER_R            ELAPSE_T_IO_0D
+#define ELAPSE_T_IO_NFC_DELAY_R                 ELAPSE_T_IO_0E
+#define ELAPSE_T_IO_MEMIO_R                     ELAPSE_T_IO_0F
+#define ELAPSE_T_IO_FTL_MAP_SEARCH_R            ELAPSE_T_IO_10
+#define ELAPSE_T_IO_FTL_W                       ELAPSE_T_IO_11
+#define ELAPSE_T_IO_NFC_W                       ELAPSE_T_IO_12
+#define ELAPSE_T_IO_NFC_RANDOMIZER_W            ELAPSE_T_IO_13
+#define ELAPSE_T_IO_NFC_DELAY_W                 ELAPSE_T_IO_14
+#define ELAPSE_T_IO_MEMIO_W                     ELAPSE_T_IO_15
+#define ELAPSE_T_IO_FTL_MAP_SEARCH_W            ELAPSE_T_IO_16
+
+    struct
+    {
+        unsigned long long sum[ELAPSE_T_MAX];
+        unsigned long long avg[ELAPSE_T_MAX];
+        unsigned long long min[ELAPSE_T_MAX];
+        unsigned long long max[ELAPSE_T_MAX];
+
+        unsigned int  cnt[ELAPSE_T_MAX];
+
+        struct
+        {
+            unsigned int read       : 1;
+            unsigned int read_retry : 1;
+            unsigned int _rsvd0 : (16-2);
+
+            unsigned int write  : 1;
+            unsigned int _rsvd1 : (16-1);
+
+        } io;
+
+    } elapse_t;
+#endif
+
     struct
     {
         unsigned int block_thread      : 1;
         unsigned int block_transaction : 1;
         unsigned int block_background  : 1;
-        unsigned int _rsvd0            : 8 - 3;
+        unsigned int _rsvd0            : (8-3);
 
         unsigned int media_open   : 1;
         unsigned int media_format : 1;
         unsigned int media_close  : 1;
-        unsigned int _rsvd1       : 8 - 3;
+        unsigned int _rsvd1       : (8-3);
 
         unsigned int smart_store : 1;
-        unsigned int _rsvd2      : 8 - 1;
+        unsigned int _rsvd2      : (8-1);
 
         unsigned int uboot_format : 1;
         unsigned int uboot_init   : 1;
-        unsigned int _rsvd3       : 8;
+        unsigned int _rsvd3       : (8-2);
 
     } misc;
 
@@ -639,12 +745,12 @@ typedef struct __ExDEBUG__
         unsigned int memory_usage    : 1;
         unsigned int boot            : 1;
         unsigned int block_summary   : 1;
-        unsigned int _rsvd0          : 16 - 7;
+        unsigned int _rsvd0          : (16-7);
 
         // Error, Warnning
         unsigned int warn   : 1;
         unsigned int error  : 1;
-        unsigned int _rsvd1 : 16 - 2;
+        unsigned int _rsvd1 : (16-2);
 
     } ftl;
 
@@ -653,14 +759,14 @@ typedef struct __ExDEBUG__
         struct
         {
             unsigned int operation : 1;
-            unsigned int _rsvd0    : 32 - 1;
+            unsigned int _rsvd0    : (32-1);
 
         } sche;
 
         struct
         {
             unsigned int operation : 1;
-            unsigned int _rsvd0    : 8 - 1;
+            unsigned int _rsvd0    : (8-1);
 
             unsigned int info_feature             : 1;
             unsigned int info_ecc                 : 1;
@@ -671,14 +777,14 @@ typedef struct __ExDEBUG__
             unsigned int info_readretry_table     : 1;
             unsigned int info_readretry_otp_table : 1;
             unsigned int info_lowapi              : 1;
-            unsigned int _rsvd1                   : 16 - 9;
+            unsigned int _rsvd1                   : (16-9);
 
             // Error, Warnning
             unsigned int warn_prohibited_block_access : 1;
             unsigned int warn_ecc_uncorrectable       : 1;
             unsigned int warn_ecc_uncorrectable_show  : 1;
             unsigned int err_ecc_uncorrectable        : 1;
-            unsigned int _rsvd2                       : 8 - 4;
+            unsigned int _rsvd2                       : (8-4);
 
         } phy;
 

@@ -244,7 +244,9 @@ int NFC_PHY_HYNIX_READRETRY_Init(unsigned int _max_channels, unsigned int _max_w
             if (hynix_readretry.reg_data[way])
             {
                 hynix_readretry.max_channels = max_channels;
-                memset((void *)(hynix_readretry.reg_data[way]), 0x00, size);
+
+                if (Exchange.sys.fn._memset) { Exchange.sys.fn._memset((void *)(hynix_readretry.reg_data[way]), 0x00, size); }
+                else                         {                  memset((void *)(hynix_readretry.reg_data[way]), 0x00, size); }
 
                 for (channel=0; channel < max_channels; channel++)
                 {
@@ -578,7 +580,8 @@ void NFC_PHY_HYNIX_READRETRY_MajorityVote(void *_destbuf, void *_srcbuf, unsigne
     unsigned char cnt_of_setbit[8] = {0,};
     unsigned char value=0;
 
-    memset((void *)destbuf, 0x00, entry_size);
+    if (Exchange.sys.fn._memset) { Exchange.sys.fn._memset((void *)destbuf, 0x00, entry_size); }
+    else                         {                  memset((void *)destbuf, 0x00, entry_size); }
 
     for (byte_idx=0; byte_idx < entry_size; byte_idx++)
     {
@@ -608,7 +611,9 @@ void NFC_PHY_HYNIX_READRETRY_MakeRegAddr(NAND_HYNIX_READRETRY_REG_ADDRESS *_reg_
 
     NAND_HYNIX_READRETRY_REG_ADDRESS *reg_addr = _reg_addr;
 
-    memset((void *)reg_addr, 0x00, sizeof(*reg_addr));
+    if (Exchange.sys.fn._memset) { Exchange.sys.fn._memset((void *)reg_addr, 0x00, sizeof(*reg_addr)); }
+    else                         {                  memset((void *)reg_addr, 0x00, sizeof(*reg_addr)); }
+
     reg_addr->this_size = sizeof(*reg_addr);
     reg_addr->this_size_inverse = ~(reg_addr->this_size);
     switch (readretry_type)
@@ -666,7 +671,10 @@ int NFC_PHY_HYNIX_READRETRY_MakeRegData(NAND_HYNIX_READRETRY_REG_DATA *_reg_data
         case NAND_READRETRY_TYPE_HYNIX_20NM_MLC_BC_DIE: { reg_idx = 10; } break;
         case NAND_READRETRY_TYPE_HYNIX_1xNM_MLC:        { reg_idx =  4; } break;
     }
-    memset((void *)reg_data, 0x00, sizeof(*reg_data));
+
+    if (Exchange.sys.fn._memset) { Exchange.sys.fn._memset((void *)reg_data, 0x00, sizeof(*reg_data)); }
+    else                         {                  memset((void *)reg_data, 0x00, sizeof(*reg_data)); }
+
     reg_data->this_size = sizeof(*reg_data);
     reg_data->this_size_inverse = ~(reg_data->this_size);
 
@@ -702,7 +710,9 @@ int NFC_PHY_HYNIX_READRETRY_MakeRegData(NAND_HYNIX_READRETRY_REG_DATA *_reg_data
     {
         Exchange.sys.fn.print("NFC_PHY_HYNIX_READRETRY_MakeRegData: error! reg_data->total_readretry_cnt:%d, reg_data->readretry_reg_cnt:%d, reg_idx:%d \n",  reg_data->total_readretry_cnt, reg_data->readretry_reg_cnt, reg_idx);
 
-        memset((void *)reg_data, 0x00, sizeof(*reg_data));
+        if (Exchange.sys.fn._memset) { Exchange.sys.fn._memset((void *)reg_data, 0x00, sizeof(*reg_data)); }
+        else                         {                  memset((void *)reg_data, 0x00, sizeof(*reg_data)); }
+
         reg_data->this_size = sizeof(*reg_data);
         reg_data->this_size_inverse = ~(reg_data->this_size);
 

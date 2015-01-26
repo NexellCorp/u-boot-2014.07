@@ -29,7 +29,7 @@
 #include "media/nfc/phy/nfc.phy.readretry.h"
 #include <nand_ftl.h>
 
-#if 1
+#if 0
 #include "mio.uboot.rwtest.h"
 #endif
 
@@ -47,7 +47,7 @@
 /*******************************************************************************
  *
  *******************************************************************************/
-#define MEDIA_READ_WRITE_TEST
+//#define MEDIA_READ_WRITE_TEST
 
 #if defined (MEDIA_READ_WRITE_TEST)
     static struct

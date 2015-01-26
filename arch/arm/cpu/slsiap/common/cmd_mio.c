@@ -138,6 +138,7 @@ void do_mio_format(void)
     }
 }
 
+extern int mio_standby(void);
 static int do_mio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
     switch (argc)

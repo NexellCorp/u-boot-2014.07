@@ -36,9 +36,7 @@
 #endif
 #include "fastboot.h"
 
-/*
 #define	debug	printf
-*/
 
 #ifndef FASTBOOT_PARTS_DEFAULT
 #error "Not default FASTBOOT_PARTS_DEFAULT"
@@ -68,6 +66,7 @@ static const char *const f_parts_default = FASTBOOT_PARTS_DEFAULT;
 #define	FASTBOOT_FS_UBI			(1<<6)	/*  name "ubi" */
 #define	FASTBOOT_FS_UBIFS		(1<<7)	/*  name "ubifs" */
 #define	FASTBOOT_FS_RAW_PART	(1<<8)	/*  name "emmc" */
+#define FASTBOOT_FS_FACTORY		(1<<9)	/*  name "factory" */
 
 #define	FASTBOOT_FS_MASK		(FASTBOOT_FS_EXT4 | FASTBOOT_FS_FAT | FASTBOOT_FS_UBI | FASTBOOT_FS_UBIFS | FASTBOOT_FS_RAW_PART)
 
@@ -123,15 +122,16 @@ struct fastboot_fs_type {
 
 /* support fs type */
 static struct fastboot_fs_type f_part_fs[] = {
-	{ "2nd"		, FASTBOOT_FS_2NDBOOT  	},
-	{ "boot"	, FASTBOOT_FS_BOOT  	},
-	{ "raw"		, FASTBOOT_FS_RAW		},
-	{ "fat"		, FASTBOOT_FS_FAT		},
-	{ "ext4"	, FASTBOOT_FS_EXT4		},
-	{ "emmc"	, FASTBOOT_FS_RAW_PART	},
-	{ "nand"	, FASTBOOT_FS_RAW_PART	},
-	{ "ubi"		, FASTBOOT_FS_UBI		},
-	{ "ubifs"	, FASTBOOT_FS_UBIFS		},
+	{ "2nd"			, FASTBOOT_FS_2NDBOOT	},
+	{ "boot"		, FASTBOOT_FS_BOOT		},
+	{ "factory" 	, FASTBOOT_FS_FACTORY	},
+	{ "raw"			, FASTBOOT_FS_RAW		},
+	{ "fat"			, FASTBOOT_FS_FAT		},
+	{ "ext4"		, FASTBOOT_FS_EXT4		},
+	{ "emmc"		, FASTBOOT_FS_RAW_PART	},
+	{ "nand"		, FASTBOOT_FS_RAW_PART	},
+	{ "ubi"			, FASTBOOT_FS_UBI		},
+	{ "ubifs"		, FASTBOOT_FS_UBIFS		},
 };
 
 /* Reserved partition names
@@ -473,6 +473,39 @@ int ftl_write_raw_chunk(char* data, unsigned int sector, unsigned int sector_siz
 }
 
 /* nand ftl */
+enum {
+	MIO_NAND_RAWREAD,
+	MIO_NAND_RAWWRITE,
+	MIO_NAND_ERASE,
+};
+
+static int nand_part_ftl(uint64_t start, uint64_t length, void *buf, int command)
+{
+	char args[64];
+	int p = 0;
+
+	p += sprintf(args, "mio ");
+
+	switch (command) {
+	case MIO_NAND_ERASE:
+		p += sprintf(args+p, "nanderase ");
+		break;
+	case MIO_NAND_RAWWRITE:
+		p += sprintf(args+p, "nandrawwrite 0x%x ", (unsigned int)buf);
+		break;
+	case MIO_NAND_RAWREAD:
+	default: 
+		p += sprintf(args+p, "nandrawread 0x%x ", (unsigned int)buf);
+		break;
+	}
+	p += sprintf(args+p, "%llx %llx", start, length);
+	args[p] = 0;
+
+	debug("%s\n", args);
+	return run_command(args, 0);
+}
+
+extern int mio_standby(void);
 static int nand_part_write(struct fastboot_part *fpart, void *buf, uint64_t length)
 {
 	block_dev_desc_t *desc;
@@ -504,26 +537,23 @@ static int nand_part_write(struct fastboot_part *fpart, void *buf, uint64_t leng
 	 *			"mio write        0x50000000 0x20000000 0x20000000"
 	 */
 	if (fpart->fs_type == FASTBOOT_FS_2NDBOOT ||
-		fpart->fs_type == FASTBOOT_FS_BOOT) {
+		fpart->fs_type == FASTBOOT_FS_BOOT ||
+		fpart->fs_type == FASTBOOT_FS_FACTORY) {
 
-		char args[64];
-		int p = 0;
+		int i;
+		uint64_t start = fpart->start;
+		int offset = CFG_BOOTIMG_OFFSET;
+		int repeat = CFG_BOOTIMG_REPEAT;
 
 		/* erase */
-		p = sprintf(args, "mio nanderase %llx %llx", fpart->start, length);
-		args[p] = 0;
-
-		debug("%s\n", args);
-		run_command(args, 0);
-
+		nand_part_ftl(start, length, buf, MIO_NAND_ERASE);
 
 		/* write */
-		p = sprintf(args, "mio nandrawwrite 0x%x %llx %llx", (unsigned int)buf, fpart->start, length);
-		args[p] = 0;
+		for (i = 0; i < repeat; i++, start += offset) {
+			nand_part_ftl(start, length, buf, MIO_NAND_RAWWRITE);
+		}
 
-		debug("%s\n", args);
-
-		return run_command(args, 0);
+		return 0;
 	}
 
 	if (fpart->fs_type & FASTBOOT_FS_MASK) {
@@ -627,7 +657,7 @@ static struct fastboot_device f_devices[] = {
 		.dev_max	= FASTBOOT_NAND_MAX,
 		.dev_type	= FASTBOOT_DEV_NAND,
 		.fs_support	= (FASTBOOT_FS_2NDBOOT | FASTBOOT_FS_BOOT | FASTBOOT_FS_RAW | FASTBOOT_FS_EXT4 |
-						FASTBOOT_FS_RAW_PART),
+						FASTBOOT_FS_RAW_PART | FASTBOOT_FS_FACTORY),
 	#ifdef CONFIG_CMD_NAND
 		.write_part	= nand_part_write,
 		.capacity	= &nand_part_capacity,
@@ -732,6 +762,7 @@ static int parse_part_device(const char *parts, const char **ret,
 	parse_string(id, c, str, sizeof(str));
 
 	for (i = 0; FASTBOOT_DEV_SIZE > i; i++, fd++) {
+		printf("fd->device: %s, str: %s\n", fd->device, str);
 		if (strcmp(fd->device, str) == 0) {
 			/* add to device */
 			list_add_tail(&fpart->link, &fd->link);

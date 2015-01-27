@@ -462,10 +462,25 @@
 	#define	CONFIG_I2C2_NEXELL								/* 1 = i2c 1 */
 	#define	CONFIG_I2C2_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
 
+	#define	CONFIG_I2C3_NEXELL								/* 1 = i2c 1 */
+	#define	CONFIG_I2C3_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
+
+	#define	CONFIG_I2C4_NEXELL								/* 1 = i2c 1 */
+	#define	CONFIG_I2C4_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
+
+
     // workaround for i2c ch1 sda, scl schematic bug : sda, scl changed
     #define CFG_IO_I2C1_SCL             ((PAD_GPIO_D + 5) | PAD_FUNC_ALT0)
     #define CFG_IO_I2C1_SDA             ((PAD_GPIO_D + 4) | PAD_FUNC_ALT0)
 
+    #define CFG_IO_I2C2_SCL             ((PAD_GPIO_D + 6) | PAD_FUNC_ALT0)
+    #define CFG_IO_I2C2_SDA             ((PAD_GPIO_D + 7) | PAD_FUNC_ALT0)
+
+	#define CFG_IO_I2C3_SCL				((PAD_GPIO_C + 10) | PAD_FUNC_ALT1)
+	#define CFG_IO_I2C3_SDA				((PAD_GPIO_C +  9) | PAD_FUNC_ALT1)
+
+	#define CFG_IO_I2C4_SCL				((PAD_GPIO_C + 11) | PAD_FUNC_ALT1)
+	#define CFG_IO_I2C4_SDA				((PAD_GPIO_C + 12) | PAD_FUNC_ALT1)
 #endif
 
 /*-----------------------------------------------------------------------

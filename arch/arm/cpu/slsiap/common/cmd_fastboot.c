@@ -762,7 +762,6 @@ static int parse_part_device(const char *parts, const char **ret,
 	parse_string(id, c, str, sizeof(str));
 
 	for (i = 0; FASTBOOT_DEV_SIZE > i; i++, fd++) {
-		printf("fd->device: %s, str: %s\n", fd->device, str);
 		if (strcmp(fd->device, str) == 0) {
 			/* add to device */
 			list_add_tail(&fpart->link, &fd->link);

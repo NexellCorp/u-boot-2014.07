@@ -91,8 +91,10 @@ static void nand_init_chip(int i)
 	mtd->priv = nand;
 	nand->IO_ADDR_R = nand->IO_ADDR_W = (void  __iomem *)base_addr;
 
+#ifdef CONFIG_NAND_MTD
 	if (board_nand_init(nand))
 		return;
+#endif
 
 	if (nand_scan(mtd, maxchips))
 		return;

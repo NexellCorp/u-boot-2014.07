@@ -1,3 +1,7 @@
+# =========================================================================
+#   EWS FTL Build Option
+# =========================================================================
+ARCH_CFLAGS += -D__SUPPORT_MIO_UBOOT__
 
 obj-y	+= cmd.o
 obj-$(CONFIG_LOGO_NEXELL)			+= cmd_draw_logo.o cmd_load_logo.o draw_lcd.o
@@ -11,4 +15,4 @@ obj-$(CONFIG_CMD_MMC_UPDATE)		+= cmd_mmc_update.o
 obj-$(CONFIG_CMD_UPDATE_SDCARD)		+= cmd_update_sdcard.o
 obj-$(CONFIG_CMD_EXT4) 				+= decompress_ext4.o
 obj-$(CONFIG_VIP)					+= camera.o
-
+obj-$(CONFIG_NAND_FTL)				+= cmd_mio.o cmd_nandparts.o

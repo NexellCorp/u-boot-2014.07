@@ -10,6 +10,7 @@ obj-y 	+= clock.o
 obj-y 	+= reset.o
 obj-y 	+= timer.o
 obj-y 	+= device.o
+obj-$(CONFIG_NAND_FTL) += ../devices/mio/
 
 obj-$(CONFIG_MMU_ENABLE) += mmu.o mmu_asm.o
 

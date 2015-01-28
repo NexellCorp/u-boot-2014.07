@@ -37,9 +37,7 @@
 #include "fastboot.h"
 #include "usbid.h"
 
-/*
 #define	debug	printf
-*/
 
 extern void CalUSBID(U16 *VID, U16 *PID, U32 ECID);
 extern void GetUSBID(U16 *VID, U16 *PID);
@@ -72,6 +70,7 @@ static const char *const f_parts_default = FASTBOOT_PARTS_DEFAULT;
 #define	FASTBOOT_FS_UBI			(1<<6)	/*  name "ubi" */
 #define	FASTBOOT_FS_UBIFS		(1<<7)	/*  name "ubifs" */
 #define	FASTBOOT_FS_RAW_PART	(1<<8)	/*  name "emmc" */
+#define FASTBOOT_FS_FACTORY		(1<<9)	/*  name "factory" */
 
 #define	FASTBOOT_FS_MASK		(FASTBOOT_FS_EXT4 | FASTBOOT_FS_FAT | FASTBOOT_FS_UBI | FASTBOOT_FS_UBIFS | FASTBOOT_FS_RAW_PART)
 
@@ -127,14 +126,16 @@ struct fastboot_fs_type {
 
 /* support fs type */
 static struct fastboot_fs_type f_part_fs[] = {
-	{ "2nd"		, FASTBOOT_FS_2NDBOOT  	},
-	{ "boot"	, FASTBOOT_FS_BOOT  	},
-	{ "raw"		, FASTBOOT_FS_RAW		},
-	{ "fat"		, FASTBOOT_FS_FAT		},
-	{ "ext4"	, FASTBOOT_FS_EXT4		},
-	{ "emmc"	, FASTBOOT_FS_RAW_PART	},
-	{ "ubi"		, FASTBOOT_FS_UBI		},
-	{ "ubifs"	, FASTBOOT_FS_UBIFS		},
+	{ "2nd"			, FASTBOOT_FS_2NDBOOT	},
+	{ "boot"		, FASTBOOT_FS_BOOT		},
+	{ "factory" 	, FASTBOOT_FS_FACTORY	},
+	{ "raw"			, FASTBOOT_FS_RAW		},
+	{ "fat"			, FASTBOOT_FS_FAT		},
+	{ "ext4"		, FASTBOOT_FS_EXT4		},
+	{ "emmc"		, FASTBOOT_FS_RAW_PART	},
+	{ "nand"		, FASTBOOT_FS_RAW_PART	},
+	{ "ubi"			, FASTBOOT_FS_UBI		},
+	{ "ubifs"		, FASTBOOT_FS_UBIFS		},
 };
 
 /* Reserved partition names
@@ -359,6 +360,8 @@ static int eeprom_part_write(struct fastboot_part *fpart, void *buf, uint64_t le
 #endif
 
 #ifdef CONFIG_CMD_NAND
+
+#ifdef CONFIG_NAND_MTD
 static int nand_part_write(struct fastboot_part *fpart, void *buf, uint64_t length)
 {
 	char args1[64], args2[64];
@@ -413,7 +416,224 @@ static int nand_part_write(struct fastboot_part *fpart, void *buf, uint64_t leng
 
 	return run_command(args2, 0);
 }
-#endif
+#else /* CONFIG_NAND_FTL */
+
+extern ulong nand_bwrite(int dev_num, lbaint_t start, lbaint_t blkcnt, const void *src);
+extern int nand_get_part_table(block_dev_desc_t *desc, uint64_t (*parts)[2], int *count);
+extern void mio_set_autosend_standbycmd(int enable);
+
+static inline int nand_make_parts(int dev, uint64_t (*parts)[2], int count)
+{
+	char cmd[128];
+	int i = 0, l = 0, p = 0;
+
+	l = sprintf(cmd, "ndisk %d %d:", dev, count);
+	p = l;
+	for (i= 0; count > i; i++) {
+		l = sprintf(&cmd[p], " 0x%llx:0x%llx", parts[i][0], parts[i][1]);
+		p += l;
+	}
+	cmd[p] = 0;
+	printf("%s\n", cmd);
+
+	/* "ndisk <dev no> [part table counts] <start:length> <start:length> ...\n" */
+	return run_command(cmd, 0);
+}
+
+static int nand_check_part_table(block_dev_desc_t *desc, struct fastboot_part *fpart)
+{
+	uint64_t parts[FASTBOOT_DEV_PART_MAX][2] = { {0,0}, };
+	int i = 0, num = 0;
+	int ret = 1;
+
+	if (0 > nand_get_part_table(desc, parts, &num))
+		return -1;
+
+	for (i = 0; num > i; i++) {
+		if (parts[i][0] == fpart->start &&
+			parts[i][1] == fpart->length)
+			return 0;
+		/* when last partition set value is zero,
+		   set avaliable length */
+		if ((num-1) == i &&
+			parts[i][0] == fpart->start &&
+			0 == fpart->length) {
+			fpart->length = parts[i][1];
+			ret = 0;
+			break;
+		}
+	}
+	return ret;
+}
+
+int ftl_write_raw_chunk(char* data, unsigned int sector, unsigned int sector_size) {
+	char run_cmd[64];
+
+	printf("write raw data in %d size %d (sector)\n", sector, sector_size);
+	sprintf(run_cmd,"mio write 0x%x 0x%x 0x%x", (int)data, sector, sector_size);
+	run_command(run_cmd, 0);
+
+	return 0;
+}
+
+/* nand ftl */
+enum {
+	MIO_NAND_RAWREAD,
+	MIO_NAND_RAWWRITE,
+	MIO_NAND_ERASE,
+};
+
+static int nand_part_ftl(uint64_t start, uint64_t length, void *buf, int command)
+{
+	char args[64];
+	int p = 0;
+
+	p += sprintf(args, "mio ");
+
+	switch (command) {
+	case MIO_NAND_ERASE:
+		p += sprintf(args+p, "nanderase ");
+		break;
+	case MIO_NAND_RAWWRITE:
+		p += sprintf(args+p, "nandrawwrite 0x%x ", (unsigned int)buf);
+		break;
+	case MIO_NAND_RAWREAD:
+	default: 
+		p += sprintf(args+p, "nandrawread 0x%x ", (unsigned int)buf);
+		break;
+	}
+	p += sprintf(args+p, "%llx %llx", start, length);
+	args[p] = 0;
+
+	debug("%s\n", args);
+	return run_command(args, 0);
+}
+
+extern int mio_standby(void);
+static int nand_part_write(struct fastboot_part *fpart, void *buf, uint64_t length)
+{
+	block_dev_desc_t *desc;
+	struct fastboot_device *fd = fpart->fd;
+	int dev = fpart->dev_no;
+	lbaint_t blk, cnt;
+	int blk_size;
+	int ret = 0;
+
+	debug("** nand.%d partition %s (%s)**\n",
+		dev, fpart->partition, fpart->fs_type&FASTBOOT_FS_EXT4?"FS":"Image");
+
+	if (0 > get_device("nand", simple_itoa(dev), &desc))
+		return -1;
+
+	blk_size = desc->blksz;
+
+	/*
+	 * lowlevel : linear : no ecc, no randomize, no read-retry
+	 *		2ndboot,3rdboot
+	 *          "mio nandrawwrite 0x50000000 0x0        0x20000"
+	 *
+	 * lowlevel : linear : ecc, randomize, read-retry
+	 *		raw data
+	 *			"mio nandwrite    0x50000000 0x400000   0x100000"
+	 *
+	 * ftl : block :
+	 *		ext4 image
+	 *			"mio write        0x50000000 0x20000000 0x20000000"
+	 */
+	if (fpart->fs_type == FASTBOOT_FS_2NDBOOT ||
+		fpart->fs_type == FASTBOOT_FS_BOOT ||
+		fpart->fs_type == FASTBOOT_FS_FACTORY) {
+
+		int i;
+		uint64_t start = fpart->start;
+		int offset = CFG_BOOTIMG_OFFSET;
+		int repeat = CFG_BOOTIMG_REPEAT;
+
+		/* erase */
+		nand_part_ftl(start, length, buf, MIO_NAND_ERASE);
+
+		/* write */
+		for (i = 0; i < repeat; i++, start += offset) {
+			nand_part_ftl(start, length, buf, MIO_NAND_RAWWRITE);
+		}
+
+		return 0;
+	}
+
+	if (fpart->fs_type & FASTBOOT_FS_MASK) {
+
+		ret = nand_check_part_table(desc, fpart);
+		if (0 > ret)
+			return -1;
+
+		if (ret) {	/* new partition */
+			uint64_t parts[FASTBOOT_DEV_PART_MAX][2] = { {0,0}, };
+			int num;
+
+			printf("Warn  : [%s] make new partitions ....\n", fpart->partition);
+			part_dev_print(fpart->fd);
+
+			get_parts_from_lists(fpart, parts, &num);
+			ret = nand_make_parts(dev, parts, num);
+			if (0 > ret) {
+				printf("** Fail make partition : %s.%d %s**\n",
+					fd->device, dev, fpart->partition);
+				return -1;
+			}
+		}
+
+		if (nand_check_part_table(desc, fpart))
+			return -1;
+	}
+
+	/* change write raw chunk method : mmc -> nand */
+	set_write_raw_chunk_cb(ftl_write_raw_chunk);
+
+ 	if ((fpart->fs_type & FASTBOOT_FS_EXT4) &&
+ 		(0 == check_compress_ext4((char*)buf, fpart->length))) {
+		debug("write compressed ext4 ...\n");
+
+		mio_set_autosend_standbycmd(0);
+		ret = write_compressed_ext4((char*)buf, fpart->start/blk_size);
+		mio_set_autosend_standbycmd(1);
+		mio_standby();
+		return ret;
+	}
+
+	blk = fpart->start/blk_size ;
+	cnt = (length/blk_size) + ((length & (blk_size-1)) ? 1 : 0);
+
+	printf("write image to 0x%llx(0x%x), 0x%llx(0x%x)\n",
+		fpart->start, (unsigned int)blk, length, (unsigned int)blk);
+
+	mio_set_autosend_standbycmd(0);
+	ret = nand_bwrite(dev, blk, cnt, buf);
+	mio_set_autosend_standbycmd(1);
+	mio_standby();
+
+	return (0 > ret ? ret : 0);
+}
+
+static int nand_part_capacity(struct fastboot_device *fd, int devno, uint64_t *length)
+{
+	block_dev_desc_t *desc;
+
+	debug("** nand.%d capacity **\n", devno);
+
+	/* get nand device */
+	if (0 > get_device("nand", simple_itoa(devno), &desc))
+		return -1;
+
+		//nand->block_dev.lba = nand->capacity;
+
+	*length = (uint64_t)desc->lba * (uint64_t)desc->blksz;
+	debug("%u*%u = %llu\n", (uint)desc->lba, (uint)desc->blksz, *length);
+
+	return 0;
+}
+#endif /* CONFIG_NAND_FTL */
+
+#endif /* CONFIG_CMD_NAND */
 
 static struct fastboot_device f_devices[] = {
 	{
@@ -425,6 +645,7 @@ static struct fastboot_device f_devices[] = {
 		.write_part	= eeprom_part_write,
 	#endif
 	},
+#if defined(CONFIG_NAND_MTD)
 	{
 		.device 	= "nand",
 		.dev_max	= FASTBOOT_NAND_MAX,
@@ -434,6 +655,20 @@ static struct fastboot_device f_devices[] = {
 		.write_part	= nand_part_write,
 	#endif
 	},
+#else /* CONFIG_NAND_FTL */
+	{
+		.device 	= "nand",
+		.dev_max	= FASTBOOT_NAND_MAX,
+		.dev_type	= FASTBOOT_DEV_NAND,
+		.fs_support	= (FASTBOOT_FS_2NDBOOT | FASTBOOT_FS_BOOT | FASTBOOT_FS_RAW | FASTBOOT_FS_EXT4 |
+						FASTBOOT_FS_RAW_PART | FASTBOOT_FS_FACTORY),
+	#ifdef CONFIG_CMD_NAND
+		.write_part	= nand_part_write,
+		.capacity	= &nand_part_capacity,
+	#endif
+	},
+
+#endif
 	{
 		.device 	= "mmc",
 		.dev_max	= FASTBOOT_MMC_MAX,
@@ -893,6 +1128,17 @@ static int part_dev_capacity(const char *device, uint64_t *length)
 			break;
 		}
 	}
+#if defined(CONFIG_NAND_FTL)
+	else {
+		for (i = 0; FASTBOOT_DEV_SIZE > i; i++, fd++) {
+			if (0 == strcmp(fd->device, "nand")) {
+				if (fd->capacity)
+					fd->capacity(fd, 0, &len);
+				break;
+			}
+		}
+	}
+#endif /* CONFIG_NAND_FTL */
 
 	*length = len;
 

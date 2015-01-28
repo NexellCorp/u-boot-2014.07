@@ -39,7 +39,7 @@ int gpio_direction_input(unsigned gpio)
 	int grp = PAD_GET_GROUP(gpio);
 	int bit = PAD_GET_BITNO(gpio);
 
-	if (gpio < PAD_GPIO_ALV)
+	if (grp < PAD_GET_GROUP(PAD_GPIO_ALV))
 		NX_GPIO_SetOutputEnable(grp, bit, CFALSE);
 	else
 		NX_ALIVE_SetOutputEnable(bit, CFALSE);
@@ -52,7 +52,7 @@ int gpio_direction_output(unsigned gpio, int value)
 	int grp = PAD_GET_GROUP(gpio);
 	int bit = PAD_GET_BITNO(gpio);
 
-	if (gpio < PAD_GPIO_ALV) {
+	if (grp < PAD_GET_GROUP(PAD_GPIO_ALV)) {
 		NX_GPIO_SetOutputValue(grp, bit, (value ? CTRUE : CFALSE));
 		NX_GPIO_SetOutputEnable(grp, bit, CTRUE);
 	} else {
@@ -67,7 +67,7 @@ int gpio_get_value(unsigned gpio)
 	int grp = PAD_GET_GROUP(gpio);
 	int bit = PAD_GET_BITNO(gpio);
 
-	if (gpio < PAD_GPIO_ALV)
+	if (grp < PAD_GET_GROUP(PAD_GPIO_ALV))
 		return (int) NX_GPIO_GetInputValue(grp, bit);
 	else
 		return (int) NX_ALIVE_GetInputValue(bit);
@@ -78,7 +78,7 @@ int gpio_set_value(unsigned gpio, int value)
 	int grp = PAD_GET_GROUP(gpio);
 	int bit = PAD_GET_BITNO(gpio);
 
-	if (gpio < PAD_GPIO_ALV)
+	if (grp < PAD_GET_GROUP(PAD_GPIO_ALV))
 		NX_GPIO_SetOutputValue(grp, bit, (value ? CTRUE : CFALSE));
 	else
 		NX_ALIVE_SetOutputValue(bit, (value ? CTRUE : CFALSE));
@@ -92,7 +92,7 @@ int gpio_get_int_pend(int gpio)
 	int grp = PAD_GET_GROUP(gpio);
 	int bit = PAD_GET_BITNO(gpio);
 
-	if (gpio < PAD_GPIO_ALV)
+	if (grp < PAD_GET_GROUP(PAD_GPIO_ALV))
 		return (int) NX_GPIO_GetInterruptPending(grp, bit);
 	else
 		return (int) NX_ALIVE_GetInterruptPending(bit);
@@ -103,7 +103,7 @@ void gpio_set_int_clear(int gpio)
 	int grp = PAD_GET_GROUP(gpio);
 	int bit = PAD_GET_BITNO(gpio);
 
-	if (gpio < PAD_GPIO_ALV)
+	if (grp < PAD_GET_GROUP(PAD_GPIO_ALV))
 		NX_GPIO_ClearInterruptPending(grp, bit);
 	else
 		NX_ALIVE_ClearInterruptPending(bit);
@@ -111,26 +111,22 @@ void gpio_set_int_clear(int gpio)
 
 void gpio_set_alt(int gpio, int mode)
 {
-	int grp, bit;
+	int grp = PAD_GET_GROUP(gpio);
+	int bit = PAD_GET_BITNO(gpio);
 
-	if (gpio > (PAD_GPIO_ALV - 1) )
+	if (grp > (PAD_GET_GROUP(PAD_GPIO_ALV) - 1) )
 		return;
-
-	grp = PAD_GET_GROUP(gpio);
-	bit = PAD_GET_BITNO(gpio);
 
 	NX_GPIO_SetPadFunction(grp, bit, (NX_GPIO_PADFUNC)mode);
 }
 
 int gpio_get_alt(int gpio)
 {
-	int grp, bit;
+	int grp = PAD_GET_GROUP(gpio);
+	int bit = PAD_GET_BITNO(gpio);
 
-	if (gpio > (PAD_GPIO_ALV - 1) )
+	if (grp > (PAD_GET_GROUP(PAD_GPIO_ALV) - 1) )
 		return -1;
-
-	grp = PAD_GET_GROUP(gpio);
-	bit = PAD_GET_BITNO(gpio);
 
 	return (int) NX_GPIO_GetPadFunction(grp, bit);
 }

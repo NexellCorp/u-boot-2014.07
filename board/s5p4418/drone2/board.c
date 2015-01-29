@@ -616,7 +616,7 @@ int board_late_init(void)
 
 	printf("poweroff_his : 0x%02x \n", poweroff_his);
 	printf("poweron_his  : 0x%02x \n", poweron_his);
-	printf("chg_state    : 0x%02x,    chrg_type        : %s\n", chg_state, (chrg == CHARGER_USB ? "VUSB" : (chrg == CHARGER_TA ? "VADP" : "NONE")));
+	printf("chg_state    : 0x%02x,    chrg_type        : %s\n", chg_state, (chrg == CHARGER_USB ? "USB" : (chrg == CHARGER_TA ? "ADP" : "NONE")));
 	printf("avg_voltage  : %d, shutdown_ilim_uV : %d\n", avg_voltage, shutdown_ilim_uV);
 
 	if(avg_voltage < NXE2000_DEF_CUTOFF_VOL)
@@ -866,8 +866,8 @@ skip_bat_animation:
 	pmic_reg_read(p_chrg, NXE2000_REG_REGISET1, &ilim_adp);
 	pmic_reg_read(p_chrg, NXE2000_REG_REGISET2, &ilim_usb);
 	pmic_reg_read(p_chrg, NXE2000_REG_CHGISET, &ichg);
-	printf("## ilim_adp:0x%x, ilim_usb:0x%x, ichg:0x%x \n", ilim_adp, ilim_usb, ichg);
-	printf("## chrg:%s, power_depth:%d, power_key_depth:%d\n", (chrg == CHARGER_USB ? "VUSB" : (chrg == CHARGER_TA ? "VADP" : "NONE")), 
+	printf("## ilim_vadp:0x%x, ilim_vusb:0x%x, ichg:0x%x \n", ilim_adp, ilim_usb, ichg);
+	printf("## chrg:%s, power_depth:%d, power_key_depth:%d\n", (chrg == CHARGER_USB ? "USB" : (chrg == CHARGER_TA ? "ADP" : "NONE")), 
 																				power_depth, power_key_depth);
 	printf("## voltage_uV:%d, shutdown_ilim_uV:%d \n", pb->bat->voltage_uV, shutdown_ilim_uV);
 
@@ -896,8 +896,8 @@ enter_shutdown:
 	pmic_reg_read(p_chrg, NXE2000_REG_REGISET1, &ilim_adp);
 	pmic_reg_read(p_chrg, NXE2000_REG_REGISET2, &ilim_usb);
 	pmic_reg_read(p_chrg, NXE2000_REG_CHGISET, &ichg);
-	printf("## ilim_adp:0x%x, ilim_usb:0x%x, ichg:0x%x \n", ilim_adp, ilim_usb, ichg);
-	printf("## chrg:%s, power_depth:%d, power_key_depth:%d\n", (chrg == CHARGER_USB ? "VUSB" : (chrg == CHARGER_TA ? "VADP" : "NONE")), 
+	printf("## ilim_vadp:0x%x, ilim_vusb:0x%x, ichg:0x%x \n", ilim_adp, ilim_usb, ichg);
+	printf("## chrg:%s, power_depth:%d, power_key_depth:%d\n", (chrg == CHARGER_USB ? "USB" : (chrg == CHARGER_TA ? "ADP" : "NONE")), 
 																				power_depth, power_key_depth);
 	printf("## voltage_uV:%d, shutdown_ilim_uV:%d \n", pb->bat->voltage_uV, shutdown_ilim_uV);
 	printf("Power Off\n");

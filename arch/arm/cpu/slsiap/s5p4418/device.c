@@ -90,9 +90,11 @@ int i2c_gpio_init(int bus)
 
 	scl = i2c_devices[bus].scl;
 	sda = i2c_devices[bus].sda;
+
+#ifndef CONFIG_I2C_GPIO_MODE
 	NX_GPIO_SetPadFunction(PAD_GET_GROUP(scl), PAD_GET_BITNO(scl), PAD_GET_FUNC(scl));
 	NX_GPIO_SetPadFunction(PAD_GET_GROUP(sda), PAD_GET_BITNO(sda), PAD_GET_FUNC(sda));
-
+#endif
 	return 0;
 }
 #endif

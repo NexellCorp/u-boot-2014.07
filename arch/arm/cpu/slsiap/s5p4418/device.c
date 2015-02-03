@@ -65,15 +65,9 @@
 #endif
 #ifdef CFG_IO_I2C3_SCL
 	#define	I2C3_SCL	CFG_IO_I2C3_SCL
-#else
-	#error	"not defined i2c3 scl gpio alt function"
 #endif
 #ifdef CFG_IO_I2C3_SDA
 	#define	I2C3_SDA	CFG_IO_I2C3_SDA
-#else
-	#error	"not defined i2c3 sda gpio alt function"
-#endif
-
 #endif
 
 struct i2c_dev i2c_devices[] = {

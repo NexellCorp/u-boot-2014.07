@@ -81,7 +81,7 @@ static struct power_battery power_bat_nxe2000 = {
 	.battery_charge = power_battery_charge,
 };
 
-int power_bat_init(unsigned char bus)
+int power_nxe2000_bat_init(unsigned char bus)
 {
 	static const char name[] = "BAT_NXE2000";
 	struct pmic *p = pmic_alloc();

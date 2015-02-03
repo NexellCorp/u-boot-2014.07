@@ -65,9 +65,15 @@
 #endif
 #ifdef CFG_IO_I2C3_SCL
 	#define	I2C3_SCL	CFG_IO_I2C3_SCL
+#else
+	#error	"not defined i2c3 scl gpio alt function"
 #endif
 #ifdef CFG_IO_I2C3_SDA
 	#define	I2C3_SDA	CFG_IO_I2C3_SDA
+#else
+	#error	"not defined i2c3 sda gpio alt function"
+#endif
+
 #endif
 
 struct i2c_dev i2c_devices[] = {
@@ -91,10 +97,9 @@ int i2c_gpio_init(int bus)
 	scl = i2c_devices[bus].scl;
 	sda = i2c_devices[bus].sda;
 
-#ifndef CONFIG_I2C_GPIO_MODE
 	NX_GPIO_SetPadFunction(PAD_GET_GROUP(scl), PAD_GET_BITNO(scl), PAD_GET_FUNC(scl));
 	NX_GPIO_SetPadFunction(PAD_GET_GROUP(sda), PAD_GET_BITNO(sda), PAD_GET_FUNC(sda));
-#endif
+
 	return 0;
 }
 #endif

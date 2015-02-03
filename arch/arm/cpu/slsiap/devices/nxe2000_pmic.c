@@ -274,14 +274,3 @@ int power_pmic_init(unsigned char bus)
 	p->chrg = &power_chrg_pmic_ops;
 	return 0;
 }
-
-int bd_pmic_init_nxe2000(void)
-{
-	struct nxe2000_power nxe_power_config = {
-		.i2c_addr = NXE2000_I2C_ADDR,
-		.i2c_bus = CONFIG_NXE2000_I2C_BUS,
-	};
-
-	nxe2000_device_setup(&nxe_power_config);
-	return 0;
-}

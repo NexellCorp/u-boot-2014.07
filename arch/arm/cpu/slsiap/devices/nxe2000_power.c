@@ -190,7 +190,7 @@ void nxe2000_register_dump(struct nxe2000_power *power)
 }
 #endif
 
-int nxe2000_param_setup(struct nxe2000_power *power)
+static int nxe2000_param_setup(struct nxe2000_power *power)
 {
 	u_char *cache = nxe2000_cache_reg;
 	u_char	temp;
@@ -440,7 +440,7 @@ int nxe2000_param_setup(struct nxe2000_power *power)
 	return 0;
 }
 
-int nxe2000_device_setup(struct nxe2000_power *power)
+static int nxe2000_device_setup(struct nxe2000_power *power)
 {
 	u_char	*cache = nxe2000_cache_reg;
 	int		bus = power->i2c_bus;
@@ -582,6 +582,48 @@ int nxe2000_device_setup(struct nxe2000_power *power)
 }
 
 #if defined(CONFIG_BAT_CHECK)
+static int power_nxe2000_init(void)
+{
+    struct pmic *p = pmic_get("PMIC_NXE2000");
+    u32 val;
+    int ret = 0;
+
+    if (pmic_probe(p))
+        return -1;
+
+    if (GPIO_OTG_USBID_DET > -1)
+    {
+        gpio_direction_input(GPIO_OTG_USBID_DET);
+    }
+
+    if (GPIO_OTG_VBUS_DET > -1)
+    {
+        gpio_direction_output(GPIO_OTG_VBUS_DET, 0);
+    }
+
+    if (GPIO_PMIC_VUSB_DET > -1)
+    {
+        gpio_direction_input(GPIO_PMIC_VUSB_DET);
+    }
+
+    if (GPIO_PMIC_LOWBAT_DET > -1)
+    {
+        gpio_direction_input(GPIO_PMIC_LOWBAT_DET);
+    }
+
+    val = (NXE2000_POS_ADCCNT3_ADRQ_SINGLE | NXE2000_POS_ADCCNT3_ADSEL_VBAT);
+    pmic_reg_write(p, NXE2000_REG_ADCCNT3, val);
+
+    val = (1 << NXE2000_POS_ADCCNT1_VBATSEL);
+    pmic_reg_write(p, NXE2000_REG_ADCCNT1, val);
+
+    if (ret) {
+        puts("NXE2000 PMIC setting error!\n");
+        return -1;
+    }
+    return 0;
+}
+
 int power_nxe2000_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 {
 #if defined(CONFIG_DISPLAY_OUT)
@@ -998,48 +1040,6 @@ enter_shutdown:
 }
 #endif /* CONFIG_BAT_CHECK */
 
-int power_nxe2000_init(void)
-{
-    struct pmic *p = pmic_get("PMIC_NXE2000");
-    u32 val;
-    int ret = 0;
-
-    if (pmic_probe(p))
-        return -1;
-
-    if (GPIO_OTG_USBID_DET > -1)
-    {
-        gpio_direction_input(GPIO_OTG_USBID_DET);
-    }
-
-    if (GPIO_OTG_VBUS_DET > -1)
-    {
-        gpio_direction_output(GPIO_OTG_VBUS_DET, 0);
-    }
-
-    if (GPIO_PMIC_VUSB_DET > -1)
-    {
-        gpio_direction_input(GPIO_PMIC_VUSB_DET);
-    }
-
-    if (GPIO_PMIC_LOWBAT_DET > -1)
-    {
-        gpio_direction_input(GPIO_PMIC_LOWBAT_DET);
-    }
-
-    val = (NXE2000_POS_ADCCNT3_ADRQ_SINGLE | NXE2000_POS_ADCCNT3_ADSEL_VBAT);
-    pmic_reg_write(p, NXE2000_REG_ADCCNT3, val);
-
-    val = (1 << NXE2000_POS_ADCCNT1_VBATSEL);
-    pmic_reg_write(p, NXE2000_REG_ADCCNT1, val);
-
-    if (ret) {
-        puts("NXE2000 PMIC setting error!\n");
-        return -1;
-    }
-    return 0;
-}
-
 int power_pmic_function_init(void)
 {
 	int ret = 0;
@@ -1054,5 +1054,16 @@ int power_pmic_function_init(void)
 	ret |= power_nxe2000_muic_init(i2c_bus);
 
 	return ret;
+}
+
+int bd_pmic_init_nxe2000(void)
+{
+	struct nxe2000_power nxe_power_config = {
+		.i2c_addr = NXE2000_I2C_ADDR,
+		.i2c_bus = CONFIG_NXE2000_I2C_BUS,
+	};
+
+	nxe2000_device_setup(&nxe_power_config);
+	return 0;
 }
 

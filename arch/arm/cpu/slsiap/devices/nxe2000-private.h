@@ -991,30 +991,18 @@ struct nxe2000_power {
 	int		warm_reset;
 };
 
-extern int nxe2000_set_vol(struct pmic *p, int pwr_src, int set_uV, int pwr_on);
-
-
 extern u8 nxe2000_get_ldo_step(u8 ldo_num, int want_vol);
 extern u8 nxe2000_get_dcdc_step(u8 ldo_num, int want_vol);
-
-extern int nxe2000_device_setup(struct nxe2000_power *power);
+extern int nxe2000_set_vol(struct pmic *p, int pwr_src, int set_uV, int pwr_on);
 
 extern int power_nxe2000_battery_check(int skip, void (*bd_display_run)(char *, int, int));
 extern int power_nxe2000_fg_init(unsigned char bus);
 extern int power_nxe2000_bat_init(unsigned char bus);
 extern int power_nxe2000_muic_init(unsigned int bus);
-extern int power_nxe2000_init(void);
 
-extern int power_pmic_function_init(void);
 extern int power_pmic_init(unsigned char bus);
+extern int power_pmic_function_init(void);
 
 extern int bd_pmic_init_nxe2000(void);
-
-#if defined(CONFIG_NXE2000_REG_DUMP)
-extern void nxe2000_register_dump(struct nxe2000_power *power);
-#endif
-
-extern void bd_display_run(char *cmd, int bl_duty, int bl_on);
-
 
 #endif /*  __LINUX_NXE2000_PRIV_H */

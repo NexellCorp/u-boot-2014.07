@@ -393,27 +393,20 @@
 
 #define CONFIG_SW_UBC_DETECT	/* need with CONFIG_FASTBOOT. */
 
-// #define CONFIG_NXE2000_REG_DUMP
+//#define CONFIG_NXE2000_REG_DUMP
 #endif
 
-/*-----------------------------------------------------------------------
- * BATTERY CHECK (FUEL GAUGE)
- */
 #if defined(CONFIG_HAVE_BATTERY)
+#define CONFIG_POWER_BATTERY
+#define CONFIG_POWER_BATTERY_NXE2000
 
 //#define CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE
 //#define CONFIG_POWER_BATTERY_SMALL
-
-#ifndef CONFIG_POWER_BATTERY_SMALL
-#define CONFIG_BAT_CHECK
+	#ifndef CONFIG_POWER_BATTERY_SMALL
+	#define CONFIG_BAT_CHECK
+	#define CONFIG_NXP_RTC_USE
+	#endif
 #endif
-
-#define CONFIG_POWER_BATTERY
-#define CONFIG_POWER_BATTERY_NXE2000
-#ifdef CONFIG_BAT_CHECK
-#define CONFIG_NXP_RTC_USE
-#endif
-#endif	// #if defined(CONFIG_HAVE_BATTERY)
 
 #if defined(CONFIG_PMIC) && defined(CONFIG_PMIC_NXE2000)
 #define CONFIG_POWER

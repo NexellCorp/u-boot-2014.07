@@ -187,17 +187,26 @@ int board_init(void)
 	return 0;
 }
 
+extern void boot_animation(void);
+
 int board_late_init(void)
 {
 #if defined(CONFIG_SYS_MMC_BOOT_DEV)
 	char boot[16];
 	sprintf(boot, "mmc dev %d", CONFIG_SYS_MMC_BOOT_DEV);
-	run_command("ext4load mmc 2:1 0x49000000 root.img.gz", 0);
 #endif
 
 #ifndef CONFIG_USBBOOT_BURNING_MODE
 
+#ifdef CONFIG_SMP
+	char *cmd = getenv("preloadcmd");
+	if (cmd) {
+		printf("preload cmd:%s\n", cmd);
+		run_command(cmd, 0);
+	}
+
 	boot_animation();
+#endif
 
 #if defined(CONFIG_VIP)
  	camera_run();

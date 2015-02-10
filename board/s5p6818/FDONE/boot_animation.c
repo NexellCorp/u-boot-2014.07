@@ -32,6 +32,8 @@
 #include <asm/arch/display.h>
 #include <asm/arch/pm.h>
 
+#ifdef CONFIG_SMP
+
 #if (0)
 #define	pr_debug(m...)	printf(m)
 #else
@@ -44,26 +46,10 @@ static void do_draw_animation(int cpu);
 void boot_animation(void)
 {
 	smp_cpu_register_fn(6, do_load_animation);
-	smp_cpu_register_fn(7, do_draw_animation);
 	smp_cpu_raise(6);
+
+	smp_cpu_register_fn(7, do_draw_animation);
 	smp_cpu_raise(7);
-}
-
-static void bd_backlight(int on)
-{
-	int ch = CFG_LCD_PRI_PWM_CH;
-	u32 duty_ns = TO_DUTY_NS(CFG_LCD_PRI_PWM_DUTYCYCLE, CFG_LCD_PRI_PWM_FREQ);
-	u32 period_ns = TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ);
-
-	if (on)	{
-		pwm_init(ch, 0, 0);
-		pwm_config(ch, duty_ns, period_ns);
-		pwm_enable(ch);
-		mdelay(10);
-	} else {
-		pwm_disable(ch);
-		mdelay(10);
-	}
 }
 
 extern void	bd_display(void);
@@ -118,8 +104,17 @@ static void do_draw_animation(int cpu)
 	SPLASH_IMAGE_Header	*splash_header = (SPLASH_IMAGE_Header*)splash_base;
 	SPLASH_IMAGE_INFO *splash_info;
 
-	/* wait for load image */
+	/* out dislay  */
+//	bd_backlight(0);
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENB), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), CTRUE);
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_RESET), PAD_GET_BITNO(CFG_IO_LCD_RESET), CFALSE);
+	mdelay(1);
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_RESET), PAD_GET_BITNO(CFG_IO_LCD_RESET), CTRUE);
 	mdelay(100);
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_GD_PWR_EN), PAD_GET_BITNO(CFG_IO_LCD_GD_PWR_EN), CTRUE);
+
+	/* wait for load image */
+//	mdelay(90);
 
 	/* check splash image */
 	if (strncmp(SPLASH_TAG, (char*)splash_header->ucPartition, SPLASH_TAG_SIZE)) {
@@ -141,15 +136,17 @@ static void do_draw_animation(int cpu)
 
 	pr_debug("splash %d * %d (%dEA)...\n", width, height, count);
 
-	/* out dislay  */
-	bd_backlight(0);
-
 	bd_display();
 
 	/* set FB and wait sync  */
 	disp_mlc_set_address(module, layer, address);
 	disp_mlc_wait_vsync(module, layer, SPLASH_FPS);
-	bd_backlight(1);
+//	bd_backlight(1);
+
+	mdelay(10);
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_BL_ENB), PAD_GET_BITNO(CFG_IO_LCD_BL_ENB), CTRUE);
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_TEST), PAD_GET_BITNO(CFG_IO_LCD_TEST), CTRUE);
+
 	n++;
 
 	while (count) {
@@ -172,3 +169,5 @@ static void do_draw_animation(int cpu)
 		}
 	}
 }
+
+#endif

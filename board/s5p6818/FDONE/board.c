@@ -35,11 +35,6 @@
 
 #include <draw_lcd.h>
 
-#if defined(CONFIG_PMIC_NXE2000)
-#include <power/pmic.h>
-#include <nxe2000-private.h>
-#endif
-
 DECLARE_GLOBAL_DATA_PTR;
 
 #include "eth.c"
@@ -53,7 +48,6 @@ DECLARE_GLOBAL_DATA_PTR;
 /*------------------------------------------------------------------------------
  * intialize nexell soc and board status.
  */
-
 static void bd_gpio_init(void)
 {
 	int index, bit;
@@ -184,12 +178,6 @@ int board_early_init_f(void)
 {
 	bd_gpio_init();
 	bd_alive_init();
-#if defined(CONFIG_PMIC_NXE2000) && !defined(CONFIG_NXE2000_REG_DUMP)
-	bd_pmic_init_nxe2000();
-#endif
-#if defined(CONFIG_NXP_RTC_USE)
-	nxp_rtc_init();
-#endif
 	return 0;
 }
 
@@ -199,131 +187,27 @@ int board_init(void)
 	return 0;
 }
 
-#if defined(CONFIG_PMIC_NXE2000)
-int power_init_board(void)
-{
-	int ret = 0;
-#if defined(CONFIG_NXE2000_REG_DUMP)
-	bd_pmic_init_nxe2000();
-#endif
-	ret = power_pmic_function_init();
-	return ret;
-}
-#endif
-
-extern void	bd_display(void);
-
-static void auto_update(int io, int wait)
-{
-	unsigned int grp = PAD_GET_GROUP(io);
-	unsigned int bit = PAD_GET_BITNO(io);
-	int level = 1, i = 0;
-	char *cmd = "fastboot";
-
-	for (i = 0; wait > i; i++) {
-		switch (io & ~(32-1)) {
-		case PAD_GPIO_A:
-		case PAD_GPIO_B:
-		case PAD_GPIO_C:
-		case PAD_GPIO_D:
-		case PAD_GPIO_E:
-			level = NX_GPIO_GetInputValue(grp, bit);	break;
-		case PAD_GPIO_ALV:
-			level = NX_ALIVE_GetInputValue(bit);	break;
-		};
-		//printf(" gui0 Test Level %d in %d %d \n", level, grp, bit);
-		if (level)
-			break;
-		mdelay(1);
-	}
-
-
-
-	if (i == wait)
-		run_command (cmd, 0);
-}
-
-void bd_display_run(char *cmd, int bl_duty, int bl_on)
-{
-	static int display_init = 0;
-
-	if (cmd) {
-		run_command(cmd, 0);
-		lcd_draw_boot_logo(CONFIG_FB_ADDR, CFG_DISP_PRI_RESOL_WIDTH,
-			CFG_DISP_PRI_RESOL_HEIGHT, CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
-	}
-
-	if (!display_init) {
-		bd_display();
-		pwm_init(CFG_LCD_PRI_PWM_CH, 0, 0);
-		display_init = 1;
-	}
-
-	pwm_config(CFG_LCD_PRI_PWM_CH,
-		TO_DUTY_NS(bl_duty, CFG_LCD_PRI_PWM_FREQ),
-		TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
-
-	if (bl_on)
-		pwm_enable(CFG_LCD_PRI_PWM_CH);
-
-	//check done
-}
-
-#define	UPDATE_KEY			(PAD_GPIO_B + 23)
-#define	UPDATE_CHECK_TIME	(3000)	/* ms */
-
 int board_late_init(void)
 {
 #if defined(CONFIG_SYS_MMC_BOOT_DEV)
 	char boot[16];
 	sprintf(boot, "mmc dev %d", CONFIG_SYS_MMC_BOOT_DEV);
-	run_command(boot, 0);
-#endif
-
-#if defined(CONFIG_RECOVERY_BOOT)
-    if (RECOVERY_SIGNATURE == readl(SCR_RESET_SIG_READ)) {
-        writel((-1UL), SCR_RESET_SIG_RESET); /* clear */
-
-        printf("RECOVERY BOOT\n");
-        bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
-        run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
-    }
-    writel((-1UL), SCR_RESET_SIG_RESET);
-#endif /* CONFIG_RECOVERY_BOOT */
-
-#if defined(CONFIG_BAT_CHECK)
-	{
-		int ret =0;
-		int bat_check_skip = 0;
-	    // psw0523 for cts
-	    // bat_check_skip = 1;
-
-		ret = power_nxe2000_battery_check(bat_check_skip, bd_display_run);
-
-		if(ret == 1)
-			auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
-	}
-#else /* CONFIG_BAT_CHECK */
-
-#if defined(CONFIG_DISPLAY_OUT)
-	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+	run_command("ext4load mmc 2:1 0x49000000 root.img.gz", 0);
 #endif
 
 #ifndef CONFIG_USBBOOT_BURNING_MODE
-#if defined(CONFIG_VIP)
-    camera_run();
-    camera_preview();
-#endif
-#endif
 
-	/* Temp check gpio to update */
-	//auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
-	//while(1) printf(" gui0 Test \n");
+	boot_animation();
+
+#if defined(CONFIG_VIP)
+ 	camera_run();
+	camera_preview();
+#endif
+#endif
 
 #ifdef CONFIG_USBBOOT_BURNING_MODE
-		run_command("fastboot nexell", 0);
+	run_command("fastboot nexell", 0);
 #endif
-#endif /* CONFIG_BAT_CHECK */
 
 	return 0;
 }

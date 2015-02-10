@@ -731,6 +731,9 @@ static int run_main_loop(void)
  * TODO: perhaps reset the watchdog in the initcall function after each call?
  */
 init_fnc_t init_sequence_r[] = {
+#if	defined(CONFIG_MACH_S5P6818)
+	initr_malloc,
+#endif
 	initr_trace,
 	initr_reloc,
 	/* TODO: could x86/PPC have this also perhaps? */
@@ -785,7 +788,9 @@ init_fnc_t init_sequence_r[] = {
 	initr_w83c553f,
 #endif
 	initr_barrier,
+#if	!defined(CONFIG_MACH_S5P6818)
 	initr_malloc,
+#endif
 	bootstage_relocate,
 #ifdef CONFIG_DM
 	initr_dm,

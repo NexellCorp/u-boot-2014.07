@@ -277,3 +277,17 @@ void smp_cpu_bootup(void)
 	pr_debug("%s cpu.%d wakeup (pen=%d)\n", __func__, cpu, pen_status);
 }
 
+
+int smp_cpu_check_stop(void)	__attribute__((weak, alias("__smp_cpu_check_stop")));
+void smp_cpu_set_end(void)		__attribute__((weak, alias("__smp_cpu_set_end")));
+
+static int __smp_cpu_check_stop(void)
+{
+	return __raw_readl(SCR_SMP_SIG_READ) == SMP_SIGNATURE_STOP ? 1 : 0;
+}
+
+static void __smp_cpu_set_end(void)
+{
+	__raw_writel((-1UL), SCR_SMP_SIG_RESET);
+	__raw_writel(SMP_SIGNATURE_EXIT, SCR_SMP_SIG_SET);
+}

@@ -33,6 +33,8 @@ extern void gic_raise_softirq(int cpu);
 extern void smp_cpu_init_f(void);
 extern int  smp_cpu_register_fn(int cpu, void (*fn)(int cpu));
 extern int  smp_cpu_raise(int cpu);
+extern int  smp_cpu_check_stop(void);
+extern void smp_cpu_set_end(void);
 
 extern void timer_start(int ch);
 extern void timer_stop(int ch);

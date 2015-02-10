@@ -19,8 +19,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef __LINUX_MFD_NXE2000_PRIV_H
-#define __LINUX_MFD_NXE2000_PRIV_H
+#ifndef __LINUX_NXE2000_PRIV_H
+#define __LINUX_NXE2000_PRIV_H
 
 #define NXE2000_NUM_IRQ_REGS			4
 
@@ -959,4 +959,50 @@ enum {
     BOOT_SRC_POS_KEY,
 };
 
-#endif /*  __LINUX_MFD_NXE2000_PRIV_H */
+/* Nexell 2000 regulator ids */
+enum {
+	NXE2000_LDO1 = 0,
+	NXE2000_LDO2,
+	NXE2000_LDO3,
+	NXE2000_LDO4,
+	NXE2000_LDO5,
+	NXE2000_LDO6,
+	NXE2000_LDO7,
+	NXE2000_LDO8,
+	NXE2000_LDO9,
+	NXE2000_LDO10,
+	NXE2000_LDORTC1,
+	NXE2000_LDORTC2,
+	NXE2000_BUCK1,		/* DCDC1 */
+	NXE2000_BUCK2,		/* DCDC2 */
+	NXE2000_BUCK3,		/* DCDC3 */
+	NXE2000_BUCK4,		/* DCDC4 */
+	NXE2000_BUCK5,		/* DCDC5 */
+	NXE2000_REG_MAX,
+};
+
+/*
+ * platform device data
+ */
+struct nxe2000_power {
+	int		i2c_bus;
+	int		i2c_addr;
+	int		support_policy;
+	int		warm_reset;
+};
+
+extern u8 nxe2000_get_ldo_step(u8 ldo_num, int want_vol);
+extern u8 nxe2000_get_dcdc_step(u8 ldo_num, int want_vol);
+extern int nxe2000_set_vol(struct pmic *p, int pwr_src, int set_uV, int pwr_on);
+
+extern int power_nxe2000_battery_check(int skip, void (*bd_display_run)(char *, int, int));
+extern int power_nxe2000_fg_init(unsigned char bus);
+extern int power_nxe2000_bat_init(unsigned char bus);
+extern int power_nxe2000_muic_init(unsigned int bus);
+
+extern int power_pmic_init(unsigned char bus);
+extern int power_pmic_function_init(void);
+
+extern int bd_pmic_init_nxe2000(void);
+
+#endif /*  __LINUX_NXE2000_PRIV_H */

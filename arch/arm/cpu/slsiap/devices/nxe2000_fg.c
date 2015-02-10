@@ -185,7 +185,7 @@ static struct power_fg power_fg_ops = {
 	.fg_ibatt = power_check_ibatt,
 };
 
-int power_fg_init(unsigned char bus)
+int power_nxe2000_fg_init(unsigned char bus)
 {
 	static const char name[] = "FG_NXE2000";
 	struct pmic *p = pmic_alloc();

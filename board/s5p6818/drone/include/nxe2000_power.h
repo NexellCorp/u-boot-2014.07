@@ -40,7 +40,7 @@
 #define GPIO_OTG_VBUS_DET					(PAD_GPIO_D + 21)
 #define GPIO_PMIC_VUSB_DET					(PAD_GPIO_ALV + 2)
 #define GPIO_PMIC_LOWBAT_DET				(PAD_GPIO_ALV + 3)
-
+#define GPIO_POWER_KEY_DET					(PAD_GPIO_ALV + 0)
 
 /*
  *	Default Value
@@ -256,182 +256,14 @@
 #define	NXE2000_DEF_PWRIREN_EXTIN			0
 #define	NXE2000_DEF_PWRIREN_PWRON			0
 
-#define NXE2000_NUM_BUCK	5
-#define NXE2000_NUM_LDO		10
-#define NXE2000_NUM_PSO		5
+#define NXE2000_NUM_BUCK					5
+#define NXE2000_NUM_LDO						10
+#define NXE2000_NUM_PSO						5
 
-/* Nexell 2000 regulator ids */
-enum {
-	NXE2000_LDO1 = 0,
-	NXE2000_LDO2,
-	NXE2000_LDO3,
-	NXE2000_LDO4,
-	NXE2000_LDO5,
-    NXE2000_LDO6,
-    NXE2000_LDO7,
-    NXE2000_LDO8,
-    NXE2000_LDO9,
-    NXE2000_LDO10,
-    NXE2000_LDORTC1,
-    NXE2000_LDORTC2,
-	NXE2000_BUCK1,			/* DCDC1 */
-	NXE2000_BUCK2,			/* DCDC2 */
-	NXE2000_BUCK3,			/* DCDC3 */
-    NXE2000_BUCK4,          /* DCDC4 */
-    NXE2000_BUCK5,          /* DCDC5 */
-#if 0
-//	NXE2000_CHARGER_CV,		/* control MBCCV of MBCCTRL3 */
-	NXE2000_CHARGER,		/* charger current, MBCCTRL4 */
-	NXE2000_CHARGER_TOPOFF,	/* MBCCTRL5 */
-#endif
-
-	NXE2000_REG_MAX,
-};
-
-
-/*
- * for no battery
- */
 #define NXE2000_DEF_FET1CNT					0x05
 #define NXE2000_DEF_FET2CNT					0x00
 #define NXE2000_DEF_TSET					0x20
 #define NXE2000_DEF_CMPSET					0x00
 #define NXE2000_DEF_SUSPEND					0x01
-/*
- * Policy to control pmic state machine.
- */
-struct nxe2000_pmic_policy;
-struct nxe2000_power;
-
-/* Voltage Detector */
-struct nxe2000_vdc_policy {
-	/* VDCTRL: Detection Circuit Control Register(Address 02h) */
-	int	battery_release_vol;	/* R:VDCTRL, VAL(V) = 0: 3.1, 1: 3.2,  2: 3.3(default), 3: 3.5 */
-	int	reset_release_vol;		/* R:VDCTRL, VAL(V) = 0: prohibit, 1: 1.53,  2: 2.13, 3: 2.21, 4: 2.38, 5: 2.42, 6: 2.55, 7: 2.81 (default) */
-	int	sys_limit_current; 		/* R:FET1CNT, NOTE> this value will affect the VCHG and VSYS pin, VAL(mA) = 0:120, 1:240, 2:360, 3:480, 4:600, 5:720(default), 6:840, 7:960, 8:1080, other:1200 */
-};
-
-/* Regulator */
-struct nxe2000_ldo_policy {
-	/* LDOON: LDO Output Control Register(Address 03h) */
-	int	ldo_1_out_enb;		/* R:LDO1EN  , 1= On, 0 = Off */
-	int	ldo_1_out_vol;		/* R:LDO1DAC, Pin VOUT1, VAL(V) = 0: 0.90 ~ 3.5V, Step = 25mV */
-	int	ldo_2_out_enb;		/* R:LDO2EN  , 1= On, 0 = Off */
-	int	ldo_2_out_vol;		/* R:LDO2DAC, Pin VOUT2, VAL(V) = 0: 0.90 ~ 3.5V, Step = 25mV */
-	int	ldo_3_out_enb;		/* R:LDO3EN  , 1= On, 0 = Off */
-	int	ldo_3_out_vol;		/* R:LDO3DAC, Pin VOUT3, VAL(V) = 0: 0.90 ~ 3.5V, Step = 25mV */
-	int	ldo_4_out_enb;		/* R:LDO4EN  , 1= On, 0 = Off */
-	int	ldo_4_out_vol;		/* R:LDO4DAC, Pin VOUT4, VAL(V) = 0: 0.90 ~ 3.5V, Step = 25mV */
-
-	int	ldo_5_out_enb;		/* R:LDO5EN  , 1= On, 0 = Off */
-	int	ldo_5_out_vol;		/* R:LDO5DAC, Pin VOUT5, VAL(V) = 0: 0.60 ~ 3.5V, Step = 25mV */
-	int	ldo_6_out_enb;		/* R:LDO6EN  , 1= On, 0 = Off */
-	int	ldo_6_out_vol;		/* R:LDO6DAC, Pin VOUT6, VAL(V) = 0: 0.60 ~ 3.5V, Step = 25mV */
-							/* LDO6 default(OTP) is Enable */
-
-	int	ldo_7_out_enb;		/* R:LDO7EN  , 1= On, 0 = Off */
-	int	ldo_7_out_vol;		/* R:LDO7DAC, Pin VOUT7, VAL(V) = 0: 0.90 ~ 3.5V, Step = 25mV */
-	int	ldo_8_out_enb;		/* R:LDO8EN  , 1= On, 0 = Off */
-	int	ldo_8_out_vol;		/* R:LDO8DAC, Pin VOUT8, VAL(V) = 0: 0.90 ~ 3.5V, Step = 25mV */
-	int	ldo_9_out_enb;		/* R:LDO9EN  , 1= On, 0 = Off */
-	int	ldo_9_out_vol;		/* R:LDO9DAC, Pin VOUT9, VAL(V) = 0: 0.90 ~ 3.5V, Step = 25mV */
-	int	ldo_10_out_enb;		/* R:LDO10EN  , 1= On, 0 = Off */
-	int	ldo_10_out_vol;		/* R:LDO10DAC, Pin VOUT10, VAL(V) = 0: 0.90 ~ 3.5V, Step = 25mV */
-
-	int	ldo_rtc1_out_enb;	/* R:LDORTC1EN  , 1= On, 0 = Off */
-	int	ldo_rtc1_out_vol;	/* R:LDORTC1DAC, Pin VOUTRTC1, VAL(V) = 0: 1.70 ~ 3.5V, Step = 25mV */
-	int	ldo_rtc2_out_enb;	/* R:LDORTC2EN  , 1= On, 0 = Off */
-	int	ldo_rtc2_out_vol;	/* R:LDORTC2DAC, Pin VOUTRTC2, VAL(V) = 0: 0.90 ~ 3.5V, Step = 25mV */
-};
-
-struct nxe2000_dcdc_policy {
-	int	ddc_1_out_enb;		/* DC1EN , 1= On, 0 = Off */
-	int ddc_1_out_vol;		/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV */
-	int ddc_1_mode;			/* VAL = 0:AUTO(default), 1:PWM, 2:PSM, 3:AUTO */
-	int ddc_1_mode_slp;		/* VAL = 0:AUTO(default), 1:PWM, 2:PSM, 3:AUTO */
-	int ddc_1_ramp_slop;	/* VAL(mV/us) = 0: 14, 1: 7, 2: 3.5, 3: prohibit */
-
-	int	ddc_2_out_enb;		/* DC2EN , 1= On, 0 = Off */
-	int ddc_2_out_vol;		/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV */
-	int ddc_2_mode;			/* VAL = 0:AUTO(default), 1:PWM, 2:PSM, 3:AUTO */
-	int ddc_2_mode_slp;		/* VAL = 0:AUTO(default), 1:PWM, 2:PSM, 3:AUTO */
-	int ddc_2_ramp_slop;	/* VAL(mV/us) = 0: 14, 1: 7, 2: 3.5, 3: prohibit */
-
-	int	ddc_3_out_enb;		/* DC3EN , 1= On, 0 = Off */
-	int ddc_3_out_vol;		/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV */
-	int ddc_3_mode;			/* VAL = 0:AUTO(default), 1:PWM, 2:PSM, 3:AUTO */
-	int ddc_3_mode_slp;		/* VAL = 0:AUTO(default), 1:PWM, 2:PSM, 3:AUTO */
-	int ddc_3_ramp_slop;	/* VAL(mV/us) = 0: 14, 1: 7, 2: 3.5, 3: prohibit */
-
-	int	ddc_4_out_enb;		/* DC4EN , 1= On, 0 = Off */
-	int ddc_4_out_vol;		/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV */
-	int ddc_4_mode;			/* VAL = 0:AUTO(default), 1:PWM, 2:PSM, 3:AUTO */
-	int ddc_4_mode_slp;		/* VAL = 0:AUTO(default), 1:PWM, 2:PSM, 3:AUTO */
-	int ddc_4_ramp_slop;	/* VAL(mV/us) = 0: 14, 1: 7, 2: 3.5, 3: prohibit */
-
-	int	ddc_5_out_enb;		/* DC5EN , 1= On, 0 = Off */
-	int ddc_5_out_vol;		/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV */
-	int ddc_5_mode;			/* VAL = 0:AUTO(default), 1:PWM, 2:PSM, 3:AUTO */
-	int ddc_5_mode_slp;		/* VAL = 0:AUTO(default), 1:PWM, 2:PSM, 3:AUTO */
-	int ddc_5_ramp_slop;	/* VAL(mV/us) = 0: 14, 1: 7, 2: 3.5, 3: prohibit */
-};
-
-struct nxe2000_batt_policy {
-	int	batt_charge_enable;				/* R:CHGSTART, support battery charging when VCHG is high and battery is connected, VAL = 0: not support, 1: support */
-	int	charge_voltage;					/* R:FET2CNT, Battery Charge Voltage (VBAT pin), VAL(V)= 0:4.2(default), 1:4.12, 2:4.07, 3:4.07 */
-	int	charge_current;					/* R:FET2CNT, Battery Rapid Charge Current (VBAT pin), VAL(mA)= 0:100, 1:200, 2:300, 3:400, 4:500, 5:600, 6:700, 7:800, other:900 */
-	int charge_time_up;					/* R:TSET, VAL(min)= 0:120(default), 1:180, 2:240, 3:300 */
-	int charge_temperature_threshold;	/* R:TSET, VAL(C)= 0: detection (105), recovery (85), 1: detection (115), recovery (95), 2: detection (125), recovery (105) (default), 0: detection (135), recovery (115) */
-	int charge_complete_current;		/* R:CMPSET, Charge complete current, VAL(mA)= 0:25(deefault), 1:50, 2:75, 3:100, 4:125:, 5:150, 6:175, 7:200 */
-	int charge_ready_current;			/* R:SUSPEND, Charge ready current, VAL(mA)= 0:0(deefault), 1:10 */
-};
-
-struct nxe2000_intc_policy {
-	/* Charge interrupt */
-	int enb_adapter_in_out;			/* R:CHGEN1, Adapter insert & remove interrupt enable, VAL= 0:disable, 1:enable */
-	int enb_die_temperature;		/* R:CHGEN1, Die abnormal temperature by SW1 or SW2 in charger interrupt enable, VAL= 0:disable, 1:enable */
-	int enb_batt_temperature;		/* R:CHGEN1, Battery abnormal temperature interrupt enable, VAL= 0:disable, 1:enable */
-	int enb_no_batt_dect;			/* R:CHGEN1, No Battery detect interrupt enable, VAL= 0:disable, 1:enable */
-	int enb_adapter_over_vol;		/* R:CHGEN1, Adapter over voltage interrupt enable (VVCHG>6.2V), VAL= 0:disable, 1:enable */
-	int enb_batt_over_vol;			/* R:CHGEN1, Battery over voltage interrupt enable (VVBAT > 4.6V), VAL= 0:disable, 1:enable */
-
-	int enb_charge_ready;			/* R:CHGEN2, Shift to Charge-Ready state interrupt enable, VAL= 0:disable, 1:enable */
-	int enb_charge_state;			/* R:CHGEN2,Shift to Rapid-Charge state interrupt enable, VAL= 0:disable, 1:enable */
-	int enb_charge_complete;		/* R:CHGEN2, Charge complete interrupt enable, VAL= 0:disable, 1:enable */
-	int enb_charge_time_up;			/* R:CHGEN2, Timer time out interrupt enable, VAL= 0:disable, 1:enable */
-};
-
-struct nxe2000_pmic_policy {
-	struct nxe2000_vdc_policy	vdc;
-	struct nxe2000_ldo_policy	ldo;
-	struct nxe2000_dcdc_policy	dcdc;
-	struct nxe2000_batt_policy	batt;
-	struct nxe2000_intc_policy	intc;
-};
-
-/*
- * platform device data
- */
-struct nxe2000_power {
-	int							i2c_bus;
-	int							i2c_addr;
-	int							support_policy;
-	int							warm_reset;
-	struct nxe2000_pmic_policy	policy;
-};
-
-extern int	nxe2000_set_vol(struct pmic *p, int pwr_src, int set_uV, int pwr_on);
-extern int	power_fg_init(unsigned char bus);
-
-extern u8	nxe2000_get_ldo_step(u8 ldo_num, int want_vol);
-extern u8	nxe2000_get_dcdc_step(u8 ldo_num, int want_vol);
-
-extern int	nxe2000_device_setup(struct nxe2000_power *power);
-
-extern int  power_muic_init(unsigned int bus);
-
-#if defined(CONFIG_NXE2000_REG_DUMP)
-extern void nxe2000_register_dump(struct nxe2000_power *power);
-#endif
 
 #endif  //#ifndef __NXE2000_POWER_H_

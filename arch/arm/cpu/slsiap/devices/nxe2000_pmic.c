@@ -252,7 +252,7 @@ static struct power_chrg power_chrg_pmic_ops = {
 	.chrg_state = pmic_charger_state,
 };
 
-int pmic_init(unsigned char bus)
+int power_pmic_init(unsigned char bus)
 {
 	static const char name[] = "PMIC_NXE2000";
 	struct pmic *p = pmic_alloc();

@@ -1500,8 +1500,8 @@ void NFC_PHY_SetFeatures(unsigned int _max_channel, unsigned int _max_way, void 
                     nfcI->nftcos = regval;
 
                     regval = nfcI->nftacc;
-                    regval &= ~__POW(0xF,way*4);
-                    regval |= __POW(tACC,way*4);
+                    regval &= ~__POW(0xFF,way*8);
+                    regval |= __POW(tACC,way*8);
                     nfcI->nftacc = regval;
 
                     regval = nfcI->nftoch;

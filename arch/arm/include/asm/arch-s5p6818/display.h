@@ -84,6 +84,8 @@ struct disp_syncgen_param {
  * multilayer control (MLC)
  */
 struct disp_multily_param {
+	int 		 x_start;
+	int 		 y_start;
 	int			 x_resol;
 	int			 y_resol;
 	int 		 pixel_byte;
@@ -157,5 +159,36 @@ struct disp_mipi_param {
 struct disp_rgb_param {
 	int lcd_mpu_type;
 };
+
+/*
+ * display APIs
+ */
+#if defined(CONFIG_DISPLAY_OUT_LVDS)
+extern void display_lvds(int module, unsigned int fbbase,
+				struct disp_vsync_info *pvsync, struct disp_syncgen_param *psgen,
+				struct disp_multily_param *pmly, struct disp_lvds_param *plvds);
+#endif
+
+#if defined(CONFIG_DISPLAY_OUT_RGB)
+extern void display_rgb(int module, unsigned int fbbase,
+				struct disp_vsync_info *pvsync, struct disp_syncgen_param *psgen,
+				struct disp_multily_param *pmly, struct disp_rgb_param *prgb);
+#endif
+
+#if defined(CONFIG_DISPLAY_OUT_HDMI)
+extern void display_hdmi(int module, int preset, unsigned int fbbase,
+				struct disp_vsync_info *pvsync, struct disp_syncgen_param *psgen,
+				struct disp_multily_param *pmly);
+#endif
+
+#if defined(CONFIG_DISPLAY_OUT_MIPI)
+extern void display_mipi(int module, unsigned int fbbase,
+				struct disp_vsync_info *pvsync, struct disp_syncgen_param *psgen,
+				struct disp_multily_param *pmly, struct disp_mipi_param *pmipi);
+#endif
+
+extern int disp_mlc_set_enable(int module, int layer, int on);
+extern int disp_mlc_set_address(int module, int layer, unsigned int address);
+extern int disp_mlc_wait_vsync(int module, int layer, int fps);
 
 #endif /* __DISPLAY_H__ */

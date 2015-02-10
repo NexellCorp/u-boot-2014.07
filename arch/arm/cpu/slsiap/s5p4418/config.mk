@@ -21,14 +21,14 @@
 # MA 02111-1307 USA
 #
 
-PLATFORM_RELFLAGS +=
+PLATFORM_RELFLAGS += -mcpu=cortex-a9
 
 # remove "uses variable-size enums yet the output is to use 32-bit enums..."
 PLATFORM_RELFLAGS += -fno-short-enums -fstrict-aliasing
 
 # If armv7-a is not supported by GCC fall-back to armv5, which is
 # supported by more tool-chains
-PF_CPPFLAGS_ARMV7 := $(call cc-option, -march=armv7, -march=armv5)
+PF_CPPFLAGS_ARMV7 := $(call cc-option, -march=armv7-a)
 PLATFORM_CPPFLAGS += $(PF_CPPFLAGS_ARMV7)
 
 # =========================================================================

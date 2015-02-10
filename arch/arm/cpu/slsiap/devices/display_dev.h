@@ -38,6 +38,10 @@
 #define	KERN_INFO
 #endif
 
+#define	MLC_LAYER_RGB_0			0	/* number of RGB layer 0 */
+#define	MLC_LAYER_RGB_1			1	/* number of RGB layer 1 */
+#define	MLC_LAYER_VIDEO			3	/* number of Video layer: 3 = VIDEO */
+
 extern void disp_lcd_device(int io);
 extern void disp_initialize(void);
 extern void disp_topctl_reset(void);
@@ -48,5 +52,3 @@ extern int  disp_syncgen_setup(int module, struct disp_vsync_info *psync, struct
 extern void disp_multily_init(int module);
 extern void disp_multily_enable(int module, int layer, int enable);
 extern int disp_multily_setup(int module, struct disp_multily_param *par, unsigned int fbbase);
-
-

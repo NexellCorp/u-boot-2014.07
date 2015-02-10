@@ -23,6 +23,7 @@
 
 #include <common.h>
 #include <asm/io.h>
+#include <linux/spinlock.h>
 #include <platform.h>
 #include <mach-api.h>
 
@@ -42,6 +43,7 @@ static ulong timestamp;
 static ulong lastdec;
 /* set .data section, before u-boot is relocated */
 static int	 timerinit __attribute__ ((section(".data"))) = 0;
+static DEFINE_SPINLOCK(time_lock);
 
 /* macro to hw timer tick config */
 static long	TIMER_FREQ  = 1000000;
@@ -95,10 +97,22 @@ static inline void timer_count(int ch, unsigned int cnt)
 	writel((cnt-1), TIMER_BASE + TIMER_CMPB + (TIMER_CH_OFFS * ch));
 }
 
-static inline void timer_start(int ch, int irqon)
+static inline void timer_irq_clear(int ch)
 {
 	volatile U32 val;
-	int on = irqon ? 1 : 0;
+	val  = readl(TIMER_BASE + TIMER_STAT);
+	val &= ~(TINT_CS_MASK<<5);
+	val |= (0x1 << TINT_CS_CH(ch));
+	writel(val, TIMER_BASE + TIMER_STAT);
+}
+
+/*------------------------------------------------------------------------------
+ * u-boot timer interface
+ */
+void timer_start(int ch)
+{
+	volatile U32 val;
+	int on = 0;
 
 	val  = readl(TIMER_BASE + TIMER_STAT);
 	val &= ~(TINT_CS_MASK<<5 | 0x1 << TINT_CH(ch));
@@ -115,10 +129,10 @@ static inline void timer_start(int ch, int irqon)
 	writel(val, TIMER_BASE + TIMER_TCON);
 }
 
-static inline void timer_stop(int ch, int irqon)
+void timer_stop(int ch)
 {
 	volatile U32 val;
-	int on = irqon ? 1 : 0;
+	int on = 0;
 
 	val  = readl(TIMER_BASE + TIMER_STAT);
 	val &= ~(TINT_CS_MASK<<5 | 0x1 << TINT_CH(ch));
@@ -130,18 +144,6 @@ static inline void timer_stop(int ch, int irqon)
 	writel(val, TIMER_BASE + TIMER_TCON);
 }
 
-static inline void timer_irq_clear(int ch)
-{
-	volatile U32 val;
-	val  = readl(TIMER_BASE + TIMER_STAT);
-	val &= ~(TINT_CS_MASK<<5);
-	val |= (0x1 << TINT_CS_CH(ch));
-	writel(val, TIMER_BASE + TIMER_STAT);
-}
-
-/*------------------------------------------------------------------------------
- * u-boot timer interface
- */
 int timer_init(void)
 {
 	struct clk *clk = NULL;
@@ -193,13 +195,14 @@ int timer_init(void)
 	NX_RSTCON_SetRST(RESETINDEX_OF_TIMER_MODULE_PRESETn, RSTCON_ASSERT);
 	NX_RSTCON_SetRST(RESETINDEX_OF_TIMER_MODULE_PRESETn, RSTCON_NEGATE);
 
-	timer_stop (ch, 0);
+	timer_stop (ch);
 	timer_clock(ch, tmux, tscl);
 	timer_count(ch, tcnt);
-	timer_start(ch, 0);
+	timer_start(ch);
 
 	reset_timer_masked();
 	timerinit = 1;
+
 	return 0;
 }
 
@@ -223,9 +226,12 @@ void set_timer(ulong t)
 void reset_timer_masked(void)
 {
 	int ch = CFG_TIMER_SYS_TICK_CH;
+
+	spin_lock(&time_lock);
 	/* reset time */
 	lastdec = TIMER_READ(ch);  	/* capure current decrementer value time */
 	timestamp = 0;	       		/* start "advancing" time stamp from 0 */
+	spin_unlock(&time_lock);
 }
 
 ulong get_timer_masked(void)

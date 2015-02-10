@@ -203,6 +203,10 @@ int disp_syncgen_setup(int module, struct disp_vsync_info *psync, struct disp_sy
 	NX_DPC_SetVSyncOffset(module, v_vso, v_veo, e_vso, e_veo);
 	NX_DPC_SetDelay (module, rgb_pvd, hsync_cp1, vsync_fram, de_cp2);
    	NX_DPC_SetDither(module, RDither, GDither, BDither);
+
+	/* MLC top screen size */
+   	NX_MLC_SetScreenSize(module, psync->h_active_len, psync->v_active_len);
+
    	return 0;
 }
 
@@ -230,6 +234,8 @@ void disp_multily_enable(int module, int layer, int enable)
 
 int disp_multily_setup(int module, struct disp_multily_param *par, unsigned int fbbase)
 {
+	int sx =  par->x_start;
+	int sy =  par->y_start;
 	int	x_resol = par->x_resol;
 	int	y_resol	= par->y_resol;
 	int	interlace = par->interlace;
@@ -246,7 +252,6 @@ int disp_multily_setup(int module, struct disp_multily_param *par, unsigned int 
 	NX_MLC_SetLayerPriority	(module, video_prior);
 	NX_MLC_SetBackground(module, bg_color);
 	NX_MLC_SetFieldEnable(module, interlace);
-	NX_MLC_SetScreenSize(module, x_resol, y_resol);
 	NX_MLC_SetRGBLayerGamaTablePowerMode(module, CFALSE, CFALSE, CFALSE);
 	NX_MLC_SetRGBLayerGamaTableSleepMode(module, CTRUE, CTRUE, CTRUE);
 	NX_MLC_SetRGBLayerGammaEnable(module, CFALSE);
@@ -263,11 +268,55 @@ int disp_multily_setup(int module, struct disp_multily_param *par, unsigned int 
 	NX_MLC_SetRGBLayerInvalidPosition(module, layer, 0, 0, 0, 0, 0, CFALSE);
 	NX_MLC_SetRGBLayerInvalidPosition(module, layer, 1, 0, 0, 0, 0, CFALSE);
 	NX_MLC_SetFormatRGB(module, layer, rgb_format);
-	NX_MLC_SetPosition(module, layer, 0, 0, x_resol-1, y_resol-1);
+	NX_MLC_SetPosition(module, layer, sx, sy, sx+x_resol-1, sy+y_resol-1);
 	NX_MLC_SetRGBLayerStride(module, layer, pixel_byte, x_resol*pixel_byte);
 	NX_MLC_SetRGBLayerAddress(module, layer, fbbase);
 
 	return 0;
 }
 
+int disp_mlc_set_enable(int module, int layer, int on)
+{
+	if (MLC_LAYER_VIDEO == layer) {
+		if (on) {
+    	    NX_MLC_SetVideoLayerLineBufferPowerMode(module, CTRUE);
+   		    NX_MLC_SetVideoLayerLineBufferSleepMode(module, CFALSE);
+			NX_MLC_SetLayerEnable(module, MLC_LAYER_VIDEO, CTRUE);
+			NX_MLC_SetDirtyFlag(module, MLC_LAYER_VIDEO);
+		} else {
+			CBOOL hl, hc, vl, vc;
+ 			NX_MLC_SetLayerEnable(module, MLC_LAYER_VIDEO, CFALSE);
+			NX_MLC_SetDirtyFlag(module, MLC_LAYER_VIDEO);
+			NX_MLC_GetVideoLayerScaleFilter(module, &hl, &hc, &vl, &vc);
+			if (hl | hc | vl | vc)
+				NX_MLC_SetVideoLayerScaleFilter(module, 0, 0, 0, 0);
+    	    NX_MLC_SetVideoLayerLineBufferPowerMode(module, CFALSE);
+   		    NX_MLC_SetVideoLayerLineBufferSleepMode(module, CTRUE);
+			NX_MLC_SetDirtyFlag(module, MLC_LAYER_VIDEO);
+		}
+	}  else {
+		NX_MLC_SetLayerEnable(module, layer, (on ? CTRUE : CFALSE));
+		NX_MLC_SetDirtyFlag(module, layer);
+	}
+	return 0;
+}
 
+int disp_mlc_set_address(int module, int layer, unsigned int address)
+{
+	NX_MLC_SetRGBLayerAddress(module, layer, address);
+	NX_MLC_SetDirtyFlag(module, layer);
+	return 0;
+}
+
+int disp_mlc_wait_vsync(int module, int layer, int fps)
+{
+	int cnt = 0;
+	if (0 == fps)
+		return 	(int)NX_MLC_GetDirtyFlag(module, layer);
+
+	while (fps > cnt++) {
+		while(NX_MLC_GetDirtyFlag(module, layer)) { };
+		NX_MLC_SetDirtyFlag(module, layer);
+	}
+	return 0;
+}

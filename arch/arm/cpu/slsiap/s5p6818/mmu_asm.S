@@ -30,7 +30,7 @@ mmu_turn_on:
 enable_mmu:
 		mov		r10, r0							@ r0: PTs
 		mov		r1, #0
-		MCR		p15, 0, r1, c2, c0, 2			@ performs a page table walk on TLB miss and TTB0 has 16KB boundary
+		mcr		p15, 0, r1, c2, c0, 2			@ performs a page table walk on TLB miss and TTB0 has 16KB boundary
 
 		ldr		r1, =PAGE_DOMAIN
 
@@ -50,16 +50,12 @@ enable_mmu:
 		orr		r1, r1, #(0x1<<28)				@ Enable TRE Cache//bok
 		mcr		p15, 0, r1, c1, c0, 0
 
-
 		mov		pc, lr							@ return
 #endif
 
 	.globl disable_mmu
 disable_mmu:
-	#if 0
 		mrc		p15, 0, r0, c1, c0, 0
-		bic		r0, r0, #(1<<0)
+		bic		r0, r0, #(1<<0) | (1<<2)		@ 0: MMU, 2: Dcache
 		mcr		p15, 0, r0, c1, c0, 0
-	#endif
 		mov		pc, lr
-

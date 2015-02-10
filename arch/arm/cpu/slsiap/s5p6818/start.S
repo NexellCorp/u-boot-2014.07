@@ -146,7 +146,7 @@ clbss_l:str	r2, [r0]			/* clear loop... */
 	mov	r0, r9						/* gd_t *gd */
 	ldr r1, TEXT_BASE				/* ulong text */
 	mov r2, sp						/* ulong sp */
-	bl	global_data_setup
+	bl	gdt_reset
 
 	/* call board_init_r(gd_t *id, ulong dest_addr) */
 	mov	r0, r9							/* gd_t */
@@ -209,7 +209,6 @@ ENTRY(cpu_init_cp15)
 	/*
 	 * Invalidate L1 I/D
 	 */
-
 	mov	r0, #0			@ set up for MCR
 	mcr	p15, 0, r0, c8, c7, 0	@ invalidate TLBs
 	mcr	p15, 0, r0, c7, c5, 0	@ invalidate icache

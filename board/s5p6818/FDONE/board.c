@@ -187,6 +187,30 @@ int board_init(void)
 	return 0;
 }
 
+void bd_display_run(char *cmd, int bl_duty, int bl_on)
+{
+	static int display_init = 0;
+
+	if (cmd) {
+		run_command(cmd, 0);
+		lcd_draw_boot_logo(CONFIG_FB_ADDR, CFG_DISP_PRI_RESOL_WIDTH,
+			CFG_DISP_PRI_RESOL_HEIGHT, CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
+	}
+
+	if (!display_init) {
+		bd_display();
+		pwm_init(CFG_LCD_PRI_PWM_CH, 0, 0);
+		display_init = 1;
+	}
+
+	pwm_config(CFG_LCD_PRI_PWM_CH,
+		TO_DUTY_NS(bl_duty, CFG_LCD_PRI_PWM_FREQ),
+		TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
+
+	if (bl_on)
+		pwm_enable(CFG_LCD_PRI_PWM_CH);
+}
+
 extern void boot_animation(void);
 
 int board_late_init(void)
@@ -198,7 +222,18 @@ int board_late_init(void)
 
 #ifndef CONFIG_USBBOOT_BURNING_MODE
 
-#ifdef CONFIG_SMP
+	#if defined(CONFIG_RECOVERY_BOOT)
+    if (RECOVERY_SIGNATURE == readl(SCR_RESET_SIG_READ)) {
+        writel((-1UL), SCR_RESET_SIG_RESET); /* clear */
+
+        printf("RECOVERY BOOT\n");
+        bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+        run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
+    }
+    writel((-1UL), SCR_RESET_SIG_RESET);
+	#endif /* CONFIG_RECOVERY_BOOT */
+
+	#ifdef CONFIG_SMP
 	char *cmd = getenv("preloadcmd");
 	if (cmd) {
 		printf("preload cmd:%s\n", cmd);
@@ -206,12 +241,16 @@ int board_late_init(void)
 	}
 
 	boot_animation();
-#endif
+	#else
+	#if defined(CONFIG_DISPLAY_OUT)
+	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+	#endif
+	#endif
 
-#if defined(CONFIG_VIP)
+	#if defined(CONFIG_VIP)
  	camera_run();
 	camera_preview();
-#endif
+	#endif
 #endif
 
 #ifdef CONFIG_USBBOOT_BURNING_MODE

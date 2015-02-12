@@ -340,7 +340,7 @@ int do_load(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[],
 		return 1;
 	}
 
-#if DEBUG
+#ifdef DEBUG
 	printf("%d bytes read in %lu ms", len_read, time);
 	if (time > 0) {
 		puts(" (");

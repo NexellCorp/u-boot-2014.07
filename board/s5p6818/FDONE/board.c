@@ -247,10 +247,10 @@ int board_late_init(void)
 	#endif
 	#endif
 
-	#if defined(CONFIG_VIP)
- 	camera_run();
-	camera_preview();
-	#endif
+	/*#if defined(CONFIG_VIP)*/
+     /*camera_run();*/
+	/*camera_preview();*/
+	/*#endif*/
 #endif
 
 #ifdef CONFIG_USBBOOT_BURNING_MODE

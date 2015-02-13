@@ -59,16 +59,17 @@
  */
 #define CONFIG_RELOC_TO_TEXT_BASE												/* Relocate u-boot code to TEXT_BASE */
 
-#define	CONFIG_SYS_TEXT_BASE 			0x43C00000
+#define	CONFIG_SYS_TEXT_BASE 			0x7A100000
 #define	CONFIG_SYS_INIT_SP_ADDR			CONFIG_SYS_TEXT_BASE					/* init and run stack pointer */
+#define	CONFIG_SYS_SMP_SP_ADDR			(CONFIG_SYS_TEXT_BASE - 0x80000)
+#define	CONFIG_SYS_SMP_SP_SIZE			(8192)
 
 /* malloc() pool */
-#define	CONFIG_MEM_MALLOC_START			0x44000000
-#define CONFIG_MEM_MALLOC_LENGTH		32*1024*1024							/* more than 2M for ubifs: MAX 16M */
+#define	CONFIG_MEM_MALLOC_START			0x7A200000
+#define CONFIG_MEM_MALLOC_LENGTH		2*1024*1024							/* more than 2M for ubifs: MAX 16M */
 
 /* when CONFIG_LCD */
-#define CONFIG_FB_ADDR					0x46000000
-#define CONFIG_BMP_ADDR					0x47000000
+#define CONFIG_FB_ADDR					0x7A600000
 
 /* Download OFFSET */
 #define CONFIG_MEM_LOAD_ADDR			0x48000000
@@ -98,14 +99,24 @@
 #define CONFIG_ARCH_CPU_INIT													/* board_init_f->init_sequence, call arch_cpu_init */
 #define	CONFIG_BOARD_EARLY_INIT_F												/* board_init_f->init_sequence, call board_early_init_f */
 #define	CONFIG_BOARD_LATE_INIT													/* board_init_r, call board_early_init_f */
-#define	CONFIG_DISPLAY_CPUINFO													/* board_init_f->init_sequence, call print_cpuinfo */
+//#define	CONFIG_DISPLAY_CPUINFO													/* board_init_f->init_sequence, call print_cpuinfo */
 #define	CONFIG_SYS_DCACHE_OFF													/* board_init_f, CONFIG_SYS_ICACHE_OFF */
-#define	CONFIG_ARCH_MISC_INIT													/* board_init_r, call arch_misc_init */
+//#define	CONFIG_ARCH_MISC_INIT													/* board_init_r, call arch_misc_init */
 //#define	CONFIG_SYS_ICACHE_OFF
 
 #define CONFIG_MMU_ENABLE
 #ifdef  CONFIG_MMU_ENABLE
 #undef  CONFIG_SYS_DCACHE_OFF
+#endif
+
+#define CONFIG_MMU_ENABLE
+#ifdef  CONFIG_MMU_ENABLE
+#undef  CONFIG_SYS_DCACHE_OFF
+#endif
+
+#define	CONFIG_SMP
+#if defined (CONFIG_SMP) && !defined (CONFIG_SYS_SMP_SP_ADDR)
+#error "Not defined smp core's stack pointer 'CONFIG_SYS_SMP_SP_ADDR'"
 #endif
 
 /*-----------------------------------------------------------------------
@@ -115,16 +126,20 @@
 //#define CONFIG_CMD_NET      [> bootp, tftpboot, rarpboot    <]
 #define CONFIG_CMD_RUN      /* run command in env variable  */
 #define CONFIG_CMD_SAVEENV  /* saveenv          */
-#define CONFIG_CMD_SOURCE   /* "source" command support */
+//#define CONFIG_CMD_SOURCE   /* "source" command support */
 #define CONFIG_CMD_BOOTD	/* "boot" command support */
-#define	CONFIG_CMD_MEMTEST
+//#define	CONFIG_CMD_MEMTEST
+
+#undef CONFIG_BOOTM_VXWORKS
+#undef CONFIG_CMD_IMPORTENV
+#undef CONFIG_CMD_EXPORTENV
 
 /*-----------------------------------------------------------------------
  *	U-Boot Environments
  */
 /* refer to common/env_common.c	*/
 #define CONFIG_BOOTDELAY	   			0
-#define CONFIG_ZERO_BOOTDELAY_CHECK
+#define CONFIG_ZERO_BOOTDELAY_CHECK							/* to goto prompt when zero delay */
 #define CONFIG_ETHADDR		   			00:e2:1c:ba:e8:60
 #define CONFIG_NETMASK		   			255.255.255.0
 #define CONFIG_IPADDR					192.168.1.165
@@ -133,7 +148,8 @@
 #define CONFIG_BOOTFILE					"uImage"  		/* File to load	*/
 
 //#define CONFIG_BOOTCOMMAND "ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 root.img.gz;bootm 0x48000000"
-#define CONFIG_BOOTCOMMAND "ext4load mmc 2:1 0x48000000 uImage;bootm 0x48000000"
+//#define CONFIG_BOOTCOMMAND "ext4load mmc 2:1 0x48000000 uImage;bootm 0x48000000"
+#define CONFIG_BOOTCOMMAND "ext4load mmc 2:1 0x40008000 Image;goimage 0x40008000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -144,6 +160,7 @@
 #define CONFIG_SYS_PBSIZE		   		(CONFIG_SYS_CBSIZE+sizeof(CONFIG_SYS_PROMPT)+16) 	/* Print Buffer Size */
 #define CONFIG_SYS_MAXARGS			   	16		       										/* max number of command args   */
 #define CONFIG_SYS_BARGSIZE			   	CONFIG_SYS_CBSIZE	       							/* Boot Argument Buffer Size    */
+
 /*-----------------------------------------------------------------------
  * allow to overwrite serial and ethaddr
  */
@@ -156,9 +173,9 @@
 /*-----------------------------------------------------------------------
  * Etc Command definition
  */
-#define	CONFIG_CMD_BDI					/* board info	*/
-#define	CONFIG_CMD_IMI					/* image info	*/
-#define	CONFIG_CMD_MEMORY
+//#define	CONFIG_CMD_BDI					/* board info	*/
+//#define	CONFIG_CMD_IMI					/* image info	*/
+//#define	CONFIG_CMD_MEMORY
 #define	CONFIG_CMD_RUN					/* run commands in an environment variable	*/
 #define CONFIG_CMDLINE_EDITING			/* add command line history	*/
 #define	CONFIG_CMDLINE_TAG				/* use bootargs commandline */
@@ -501,18 +518,20 @@
 	#define CONFIG_GENERIC_MMC
 	#define HAVE_BLOCK_DEVICE
 
-	#define CONFIG_MMC0_ATTACH      	TRUE    /* 0 = MMC0 : External	 */
+	//#define	CONFIG_MMC0_NEXELL
+	//#define	CONFIG_MMC2_NEXELL
+	#define CONFIG_MMC0_ATTACH      	TRUE    /* 0 = MMC0 : BOOT(eMMC) */
 	#define CONFIG_MMC1_ATTACH      	FALSE   /* 1 = MMC1 : 	         */
-	#define CONFIG_MMC2_ATTACH      	TRUE    /* 2 = MMC2 : BOOT(eMMC) */
+	#define CONFIG_MMC2_ATTACH      	TRUE    /* 2 = MMC2 : External   */
 
 	#define CONFIG_MMC0_CLOCK			10000000
 	#define CONFIG_MMC0_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(0)
     #define CONFIG_MMC0_BUS_WIDTH       4
 
 	#define CONFIG_MMC2_CLOCK			50000000
-	#define CONFIG_MMC2_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(3)| DW_MMC_SAMPLE_PHASE(2)
+	#define CONFIG_MMC2_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(1)
     #define CONFIG_MMC2_BUS_WIDTH       8
-    #define CONFIG_MMC2_TRANS_MODE      1 //1 : DDR_MODE, 0: SDR_MODE
+    #define CONFIG_MMC2_TRANS_MODE      0 //1 : DDR_MODE, 0: SDR_MODE
 
 	#define CONFIG_DWMMC
 	#define CONFIG_NXP_DWMMC
@@ -663,22 +682,24 @@
  * Debug message
  */
 //#define DEBUG							/* u-boot debug macro, nand, ethernet,... */
+#define	CONFIG_SILENT_CONSOLE			/* setenv silent 1 */
 
+/*-----------------------------------------------------------------------
+ * Extra Configs
+ */
 #define CONFIG_VIP
 #define CONFIG_MLC_VIDEO
 
 #if defined(CONFIG_VIP)
 // start address must be checked by kernel booting
 // each address must be aligned 4K
-#if 0
-#define CONFIG_VIP_LU_ADDR          0x7FEF2000
-#define CONFIG_VIP_CB_ADDR          0x7FF62800
-#define CONFIG_VIP_CR_ADDR          0x7FF79000
-#else
-#define CONFIG_VIP_LU_ADDR          0x7FD28000
-#define CONFIG_VIP_CB_ADDR          0x7FD98800
-#define CONFIG_VIP_CR_ADDR          0x7FDAF000
-#endif
+#define CONFIG_VIP_LU_ADDR          0x79D28000 // -- 0x52800
+//#define CONFIG_VIP_CB_ADDR          0x79D98800
+#define CONFIG_VIP_CB_ADDR          0x79D7a800 // -- 0x16800
+//#define CONFIG_VIP_CR_ADDR          0x79DAF000
+#define CONFIG_VIP_CR_ADDR          0x79D91000 // -- 0x16800
+
+#define CONFIG_RGB_OVERLAY_ADDR     0x79DA8000
 #endif
 
 #endif /* __CONFIG_H__ */

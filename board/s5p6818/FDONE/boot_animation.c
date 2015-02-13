@@ -149,6 +149,11 @@ static void do_draw_animation(int cpu)
 
 	n++;
 
+    #if defined(CONFIG_VIP)
+    camera_run();
+    camera_preview();
+    #endif
+
 	while (count) {
 		SPLASH_IMAGE_INFO *splash = &splash_info[n++%count];
 		address = splash->ulImageAddr + splash_base;

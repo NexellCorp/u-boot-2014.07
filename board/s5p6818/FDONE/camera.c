@@ -24,6 +24,11 @@ static struct reg_val _sensor_init_data[] =
     {0x11, 0x42},
     {0x2f, 0xe6},
     {0x55, 0x00},
+    // interrupt : VDLOSSCH enable
+    /*{0xb1, 0x20},*/
+    {0xb1, 0xa0},
+    // interrupt enable
+    {0xae, 0x80},
 #else
     {0x02, 0x44},
 	{0x03, 0xA2},
@@ -340,10 +345,70 @@ void camera_run(void)
     /*printf("%s exit\n", __func__);*/
 }
 
-#define CAMERA_ACTIVE_DETECT (PAD_GPIO_A + 3)
+// test for sensor i2c read
+#include <i2c.h>
+static u8 video_status = 0x80;
+static void read_tw9900_intstatus(int bus_num, int chip_addr)
+{
+    u8 val;
+    i2c_set_bus_num(bus_num);
+    i2c_read(chip_addr, 0xb6, 1, &val, 1);
+    printf("INT1RAWSTATUS: 0x%x\n", val);
+    i2c_read(chip_addr, 0xb7, 1, &val, 1);
+    printf("INT2RAWSTATUS: 0x%x\n", val);
+    i2c_read(chip_addr, 0x01, 1, &val, 1);
+    printf("STATUS1: 0x%x\n", val);
+    video_status = val;
+    i2c_read(chip_addr, 0xb9, 1, &val, 1);
+    printf("INT1STATUS: 0x%x\n", val);
+    i2c_read(chip_addr, 0xba, 1, &val, 1);
+    printf("INT2STATUS: 0x%x\n", val);
+}
+
+#define CAMERA_ACTIVE_DETECT (PAD_GPIO_A + 6)
 #define CAMERA_DETECT_ACTIVE_VALUE 0
+static int is_tw9900_video_in(int bus_num, int chip_addr)
+{
+    u8 val;
+    i2c_set_bus_num(bus_num);
+    i2c_read(chip_addr, 0x01, 1, &val, 1);
+    /*printf("%s: val 0x%x, %d\n", __func__, val, !(0x80 & val));*/
+    // check twice
+    if (val & 0x80) {
+        mdelay(10);
+        i2c_read(chip_addr, 0x01, 1, &val, 1);
+        /*printf("%s: check2 val 0x%x, %d\n", __func__, val, !(0x80 & val));*/
+    }
+    if (val & 0x80) {
+        mdelay(10);
+        i2c_read(chip_addr, 0x01, 1, &val, 1);
+        /*printf("%s: check3 val 0x%x, %d\n", __func__, val, !(0x80 & val));*/
+    }
+    /*{*/
+        /*int io = CAMERA_ACTIVE_DETECT;*/
+        /*int val;*/
+
+        /*gpio_direction_input(io);*/
+        /*gpio_set_alt(io, 0);*/
+        /*val = gpio_get_value(io);*/
+        /*printf("gpio val: %d\n", val);*/
+    /*}*/
+    /*{*/
+        /*int io = PAD_GPIO_ALV + 4;*/
+        /*int val;*/
+
+        /*gpio_direction_input(io);*/
+        /*gpio_set_alt(io, 0);*/
+        /*val = gpio_get_value(io);*/
+        /*printf("gpio val2: %d\n", val);*/
+    /*}*/
+    /*read_tw9900_intstatus(bus_num, chip_addr);*/
+    return !(0x80 & val);
+}
+
 void camera_preview(void)
 {
+#if 0
     int io = CAMERA_ACTIVE_DETECT;
     int val;
 
@@ -351,10 +416,27 @@ void camera_preview(void)
     gpio_set_alt(io, 0);
     val = gpio_get_value(io);
 
+    read_tw9900_intstatus(_sensor_data.bus, _sensor_data.chip);
+
     if (val == CAMERA_DETECT_ACTIVE_VALUE) {
         printf("run vip & mlc\n");
         nxp_vip_run(module_id);
         nxp_mlc_video_run(0);
     }
+#else
+    /*read_tw9900_intstatus(_sensor_data.bus, _sensor_data.chip);*/
+    /*int io = CAMERA_ACTIVE_DETECT;*/
+    /*int val;*/
+
+    /*gpio_direction_input(io);*/
+    /*gpio_set_alt(io, 0);*/
+    /*val = gpio_get_value(io);*/
+    /*printf("gpio val: %d\n", val);*/
+    if (is_tw9900_video_in(_sensor_data.bus, _sensor_data.chip)) {
+        printf("run vip & mlc\n");
+        nxp_vip_run(module_id);
+        nxp_mlc_video_run(0);
+    }
+#endif
     /*printf("%s exit\n", __func__);*/
 }

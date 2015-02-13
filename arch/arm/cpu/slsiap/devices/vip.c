@@ -39,7 +39,7 @@ static void _hw_set_clock(int module, struct nxp_vip_param *param, bool on)
             NX_CLKGEN_SetClockDivisorEnable(NX_VIP_GetClockNumber(module), CTRUE);
         }
 
-        printf("VIP CLK GEN VAL: 0x%x\n", *clkgen_base);
+        /*printf("VIP CLK GEN VAL: 0x%x\n", *clkgen_base);*/
         NX_VIP_SetBaseAddress(module, IO_ADDRESS(NX_VIP_GetPhysicalAddress(module)));
     }
 }

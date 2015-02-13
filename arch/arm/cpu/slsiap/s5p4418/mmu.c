@@ -78,7 +78,7 @@ static void make_page_table(u32 *ptable)
 	index = 0;
 	mode = (0<<SECTION_CACHEABLE) | (0<<SECTION_BUFFERABLE) | (FLD_SECTION<<0);	// No Cachable & No Bufferable
 #ifdef SMP_CACHE_COHERENCY
-	mode = 0xC06;		// 0xC16 -> 4bit SBZ
+	mode = 0xC16;
 #else
 	mode = mode | AP_CLIENT<<SECTION_AP;	/* set kernel R/W permission */
 #endif
@@ -132,7 +132,7 @@ static void make_page_table(u32 *ptable)
 	index = 0;
 	mode = (0<<SECTION_CACHEABLE) | (0<<SECTION_BUFFERABLE) | (FLD_SECTION<<0);	// No Cachable & No Bufferable
 #ifdef SMP_CACHE_COHERENCY
-	mode = 0xC06;		// 0xC16 -> 4bit SBZ
+	mode = 0xC16;
 #else
 	mode = mode | AP_CLIENT<<SECTION_AP;					// set kernel R/W permission
 #endif

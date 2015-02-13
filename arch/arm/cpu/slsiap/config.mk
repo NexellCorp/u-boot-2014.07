@@ -10,3 +10,9 @@ LDPPFLAGS += -DSOCDIR=$(SOCDIR)
 # when export CROSS_COMPILE	(arch/arm/config.mk)
 #
 PLATFORM_LIBS :=
+
+GCCVERSION =  $(shell $(CC) -dumpversion | cut -f2 -d.)
+
+ifeq "$(GCCVERSION)" "7"
+PLATFORM_RELFLAGS += -mno-unaligned-access
+endif

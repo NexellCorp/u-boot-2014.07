@@ -256,9 +256,9 @@
  * EEPROM
  */
 
-#define CONFIG_CMD_EEPROM
-#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
-#define CONFIG_ENV_IS_IN_EEPROM
+//#define CONFIG_CMD_EEPROM
+//#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
+//#define CONFIG_ENV_IS_IN_EEPROM
 
 #if defined(CONFIG_CMD_EEPROM)
 
@@ -467,7 +467,7 @@
  *
  */
 #define	CONFIG_CMD_MMC
-//#define CONFIG_ENV_IS_IN_MMC
+#define CONFIG_ENV_IS_IN_MMC
 
 #if defined(CONFIG_CMD_MMC)
 
@@ -484,7 +484,7 @@
 
 	#define CONFIG_MMC2_CLOCK			50000000
 	#define CONFIG_MMC2_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(0)
-	#define CONFIG_MMC2_BUS_WIDTH       8
+	#define CONFIG_MMC2_BUS_WIDTH       4 
     #define CONFIG_MMC2_TRANS_MODE      0 //1 : DDR_MODE, 0: SDR_MODE 
 
 	#define CONFIG_DWMMC

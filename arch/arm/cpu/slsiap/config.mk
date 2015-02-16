@@ -16,3 +16,7 @@ GCCVERSION =  $(shell $(CC) -dumpversion | cut -f2 -d.)
 ifeq "$(GCCVERSION)" "7"
 PLATFORM_RELFLAGS += -mno-unaligned-access
 endif
+
+ifeq "$(GCCVERSION)" "8"
+PLATFORM_RELFLAGS += -mno-unaligned-access
+endif

@@ -475,9 +475,9 @@
 	#define CONFIG_GENERIC_MMC
 	#define HAVE_BLOCK_DEVICE
 
-	#define CONFIG_MMC0_ATTACH      	TRUE    /* 0 = MMC0 : BOOT(eMMC) */
+	#define CONFIG_MMC0_ATTACH      	TRUE    /* 0 = MMC0 : External 	 */
 	#define CONFIG_MMC1_ATTACH      	FALSE   /* 1 = MMC1 : 	         */
-	#define CONFIG_MMC2_ATTACH      	TRUE    /* 2 = MMC2 : External   */
+	#define CONFIG_MMC2_ATTACH      	TRUE    /* 2 = MMC2 : BOOT(eMMC) */
 
 	#define CONFIG_MMC0_CLOCK			50000000
 	#define CONFIG_MMC0_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(0)

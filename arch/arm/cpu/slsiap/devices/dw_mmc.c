@@ -113,9 +113,10 @@ static int dw_mci_init(u32 regbase, int bus_width, int index, int max_clock, int
 	
 	add_dwmci(host, max_clock, 400000);
 
+#ifdef CONFIG_MACH_S5P6818
 	if(bus_width == 8)
 		NX_TIEOFF_Set(TIEOFFINDEX_OF_MMC_8BIT , 1 );
-
+#endif
 	dw_mci_reset(index);
 	return 0;
 }

@@ -92,10 +92,7 @@ int mio_format(int _format_type)
     int resp = -1;
     int capacity = -1;
 
-    if (is_mio_init)
-    {
-        mio_deinit();
-    }
+    mio_deinit();
 
     /**************************************************************************
      * MIO Debug Options
@@ -164,7 +161,7 @@ int mio_format(int _format_type)
      * FTL Format
      **************************************************************************/
     if (Exchange.debug.misc.uboot_format) { Exchange.sys.fn.print("MIO.FORMAT: Exchange.ftl.fnFormat()\n"); }
-    if ((resp = Exchange.ftl.fnFormat((unsigned char *)"NXP4330", 0xC0067000, (unsigned char)_format_type)) < 0)
+    if ((resp = Exchange.ftl.fnFormat((unsigned char *)CHIP_NAME, CHIP_ID_PHY_BASE, (unsigned char)_format_type)) < 0)
     {
         Exchange.sys.fn.print("MIO.FORMAT: Exchange.ftl.fnFormat() Fail\n");
     }
@@ -196,10 +193,7 @@ int mio_init(void)
     int resp = -1;
     int capacity = -1;
 
-    if (is_mio_init)
-    {
-        mio_deinit();
-    }
+    mio_deinit();
 
     /**************************************************************************
      * MIO Debug Options
@@ -268,7 +262,7 @@ int mio_init(void)
     do 
     {
         if (Exchange.debug.misc.uboot_init) { Exchange.sys.fn.print("MIO.INIT: Exchange.ftl.fnOpen()\n"); }
-        if ((resp = Exchange.ftl.fnOpen((unsigned char *)"NXP4330", 0xC0067000, 0)) < 0)
+        if ((resp = Exchange.ftl.fnOpen((unsigned char *)CHIP_NAME, CHIP_ID_PHY_BASE, 0)) < 0)
         {
             Exchange.sys.fn.print("MIO.INIT: Exchange.ftl.fnOpen() Fail\n");
             break;
@@ -319,12 +313,14 @@ int mio_init(void)
 int mio_deinit(void)
 {
 #if defined (__MEDIA_ON_NAND__)
+    if (Exchange.ftl.fnClose)
+    {
+        Exchange.ftl.fnClose();
+    }
+
     if (is_mio_init)
     {
         struct nand_ftl *nx_nand;
-
-        Exchange.ftl.fnClose();
-        free(Exchange.buffer.mpool);
 
         is_mio_init = 0;
 
@@ -338,6 +334,13 @@ int mio_deinit(void)
 #if defined (MEDIA_READ_WRITE_TEST)
         mio_deinit_rwtest_buffer();
 #endif
+    }
+
+    if (Exchange.buffer.mpool)
+    {
+        free(Exchange.buffer.mpool);
+        Exchange.buffer.mpool = (unsigned char *)0;
+        Exchange.buffer.mpool_size = 0;
     }
 #endif
 

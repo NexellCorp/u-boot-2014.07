@@ -11,12 +11,14 @@ LDPPFLAGS += -DSOCDIR=$(SOCDIR)
 #
 PLATFORM_LIBS :=
 
+GCCMACHINE =  $(shell $(CC) -dumpmachine | cut -f1 -d-)
 GCCVERSION =  $(shell $(CC) -dumpversion | cut -f2 -d.)
 
+ifeq "$(GCCMACHINE)" "arm"
 ifeq "$(GCCVERSION)" "7"
 PLATFORM_RELFLAGS += -mno-unaligned-access
 endif
-
 ifeq "$(GCCVERSION)" "8"
 PLATFORM_RELFLAGS += -mno-unaligned-access
 endif
+endif	# ifeq "$(GCCMACHINE)" "arm"

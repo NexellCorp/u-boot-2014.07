@@ -31,15 +31,10 @@
 #include <mach-api.h>
 #include <pm.h>
 
-#if defined(CONFIG_PMIC)
-#include <power/pmic.h>
-#include <power/battery.h>
-#include <nxe2000-private.h>
+
 #if defined(CONFIG_PMIC_NXE2000)
-#include <nxe2000_power.h>
-#endif
-#include <i2c.h>
-#include <errno.h>
+#include <power/pmic.h>
+#include <nxe2000-private.h>
 #endif
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -112,9 +107,6 @@ const u8 g_DispBusSI[3] = {
 /*------------------------------------------------------------------------------
  * intialize nexell soc and board status.
  */
-#if defined(CONFIG_PMIC_NXE2000)
-struct nxe2000_power	nxe_power_config;
-#endif
 static void set_gpio_strenth(U32 Group, U32 BitNumber, U32 mA)
 {
 	U32 drv1=0, drv0=0;
@@ -270,63 +262,14 @@ static void bd_alive_init(void)
 	}
 }
 
-int bd_pmic_init(void)
-{
-#if defined(CONFIG_PMIC_NXE2000)
-	nxe_power_config.i2c_addr	= (0x64>>1);
-	nxe_power_config.i2c_bus	= CONFIG_NXE2000_I2C_BUS;
-
-	nxe_power_config.policy.ldo.ldo_1_out_vol = NXE2000_DEF_LDO1_VOL;
-	nxe_power_config.policy.ldo.ldo_2_out_vol = NXE2000_DEF_LDO2_VOL;
-	nxe_power_config.policy.ldo.ldo_3_out_vol = NXE2000_DEF_LDO3_VOL;
-	nxe_power_config.policy.ldo.ldo_4_out_vol = NXE2000_DEF_LDO4_VOL;
-	nxe_power_config.policy.ldo.ldo_5_out_vol = NXE2000_DEF_LDO5_VOL;
-	nxe_power_config.policy.ldo.ldo_6_out_vol = NXE2000_DEF_LDO6_VOL;
-	nxe_power_config.policy.ldo.ldo_7_out_vol = NXE2000_DEF_LDO7_VOL;
-	nxe_power_config.policy.ldo.ldo_8_out_vol = NXE2000_DEF_LDO8_VOL;
-	nxe_power_config.policy.ldo.ldo_9_out_vol = NXE2000_DEF_LDO9_VOL;
-	nxe_power_config.policy.ldo.ldo_10_out_vol = NXE2000_DEF_LDO10_VOL;
-	nxe_power_config.policy.ldo.ldo_rtc1_out_vol = NXE2000_DEF_LDORTC1_VOL;
-	nxe_power_config.policy.ldo.ldo_rtc2_out_vol = NXE2000_DEF_LDORTC2_VOL;
-
-	nxe_power_config.policy.ldo.ldo_1_out_enb = 1;
-	nxe_power_config.policy.ldo.ldo_2_out_enb = 1;
-	nxe_power_config.policy.ldo.ldo_3_out_enb = 1;
-	nxe_power_config.policy.ldo.ldo_4_out_enb = 1;
-	nxe_power_config.policy.ldo.ldo_5_out_enb = 1;
-	nxe_power_config.policy.ldo.ldo_6_out_enb = 1;
-	nxe_power_config.policy.ldo.ldo_7_out_enb = 1;
-	nxe_power_config.policy.ldo.ldo_8_out_enb = 1;
-	nxe_power_config.policy.ldo.ldo_9_out_enb = 1;
-	nxe_power_config.policy.ldo.ldo_10_out_enb = 1;
-	nxe_power_config.policy.ldo.ldo_rtc1_out_enb = 1;
-	nxe_power_config.policy.ldo.ldo_rtc2_out_enb = 1;
-
-	nxe_power_config.policy.dcdc.ddc_1_out_vol = NXE2000_DEF_DDC1_VOL;
-	nxe_power_config.policy.dcdc.ddc_2_out_vol = NXE2000_DEF_DDC2_VOL;
-	nxe_power_config.policy.dcdc.ddc_3_out_vol = NXE2000_DEF_DDC3_VOL;
-	nxe_power_config.policy.dcdc.ddc_4_out_vol = NXE2000_DEF_DDC4_VOL;
-	nxe_power_config.policy.dcdc.ddc_5_out_vol = NXE2000_DEF_DDC5_VOL;
-
-	nxe_power_config.policy.dcdc.ddc_1_out_enb = 1;
-	nxe_power_config.policy.dcdc.ddc_2_out_enb = 1;
-	nxe_power_config.policy.dcdc.ddc_3_out_enb = 1;
-	nxe_power_config.policy.dcdc.ddc_4_out_enb = 1;
-	nxe_power_config.policy.dcdc.ddc_5_out_enb = 1;
-
-	nxe2000_device_setup(&nxe_power_config);
-	printf("done pmic setup...\n");
-#endif  // #if defined(CONFIG_PMIC_NXE2000)
-
-	return 0;
-}
-
 /* call from u-boot */
 int board_early_init_f(void)
 {
 	bd_gpio_init();
 	bd_alive_init();
-	bd_pmic_init();
+#if defined(CONFIG_PMIC_NXE2000) && !defined(CONFIG_NXE2000_REG_DUMP)
+	bd_pmic_init_nxe2000();
+#endif
 	return 0;
 }
 

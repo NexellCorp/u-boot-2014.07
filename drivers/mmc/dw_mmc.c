@@ -116,14 +116,11 @@ static int dwmci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 		struct mmc_data *data)
 {
 	struct dwmci_host *host = mmc->priv;
-//	ALLOC_CACHE_ALIGN_BUFFER(struct dwmci_idmac, cur_idmac,
-//				 data ? DIV_ROUND_UP(data->blocks, 8) : 0);
 	int flags = 0, i;
 	unsigned int timeout = 100000;
 	u32 retry = 10000;
 	u32 mask, ctrl;
 	ulong start = get_timer(0);
-//	struct bounce_buffer bbstate;
 
 	while (dwmci_readl(host, DWMCI_STATUS) & DWMCI_BUSY) {
 		if (get_timer(start) > timeout) {
@@ -185,7 +182,6 @@ static int dwmci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 		return -1;
 	}
 
-
 	if (cmd->resp_type & MMC_RSP_PRESENT) {
 		if (cmd->resp_type & MMC_RSP_136) {
 			cmd->response[0] = dwmci_readl(host, DWMCI_RESP3);
@@ -214,7 +210,6 @@ static int dwmci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 	}
 
 	udelay(100);
-
 	return 0;
 }
 
@@ -378,6 +373,6 @@ int add_dwmci(struct dwmci_host *host, u32 max_clk, u32 min_clk)
 	host->mmc = mmc_create(&host->cfg, host);
 	if (host->mmc == NULL)
 		return -1;
-
+	
 	return 0;
 }

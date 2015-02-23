@@ -46,8 +46,8 @@ _fiq:			.word fiq
  *************************************************************************
  */
 
-.globl _TEXT_BASE
-_TEXT_BASE:
+.globl TEXT_BASE
+TEXT_BASE:
 	.word	CONFIG_SYS_TEXT_BASE
 
 /*
@@ -98,7 +98,7 @@ relocate_to_text:
 	 * for nexell arm core (add by jhkim)
 	 */
 	adr	r0, _stext				/* r0 <- current position of code   */
-	ldr	r1, _TEXT_BASE			/* test if we run from flash or RAM */
+	ldr	r1, TEXT_BASE			/* test if we run from flash or RAM */
 	cmp r0, r1              	/* don't reloc during debug         */
 	beq clear_bss
 
@@ -111,13 +111,13 @@ copy_loop_text:
 	cmp	r0, r2					/* until source end addreee [r2]    */
 	ble	copy_loop_text
 
-	ldr	r1, _TEXT_BASE			/* restart at text base */
+	ldr	r1, TEXT_BASE			/* restart at text base */
 	mov pc, r1
 
 clear_bss:
 	ldr	r0, _bss_start_ofs
 	ldr	r1, _bss_end_ofs
-	ldr	r4, _TEXT_BASE			/* text addr */
+	ldr	r4, TEXT_BASE			/* text addr */
 	add	r0, r0, r4
 	add	r1, r1, r4
 	mov	r2, #0x00000000			/* clear */
@@ -145,9 +145,9 @@ clbss_l:str	r2, [r0]			/* clear loop... */
 	bic	sp, sp, #7					/* 8-byte alignment for ABI compliance */
 
 	mov	r0, r9						/* gd_t *gd */
-	ldr r1, _TEXT_BASE				/* ulong text */
+	ldr r1, TEXT_BASE				/* ulong text */
 	mov r2, sp						/* ulong sp */
-	bl	global_data_setup
+	bl	gdt_reset
 
 	/* call board_init_r(gd_t *id, ulong dest_addr) */
 	mov	r0, r9							/* gd_t */
@@ -212,8 +212,9 @@ ENTRY(cpu_init_cp15)
 	mcr	p15, 0, r0, c8, c7, 0	@ invalidate TLBs
 	mcr	p15, 0, r0, c7, c5, 0	@ invalidate icache
 	mcr	p15, 0, r0, c7, c5, 6	@ invalidate BP array
-	mcr     p15, 0, r0, c7, c10, 4	@ DSB
-	mcr     p15, 0, r0, c7, c5, 4	@ ISB
+
+	dsb
+	isb
 
 	/*
 	 * disable MMU stuff and caches

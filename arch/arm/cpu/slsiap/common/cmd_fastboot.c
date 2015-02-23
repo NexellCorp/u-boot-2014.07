@@ -37,7 +37,9 @@
 #include "fastboot.h"
 #include "usbid.h"
 
+/*
 #define	debug	printf
+*/
 
 extern void CalUSBID(U16 *VID, U16 *PID, U32 ECID);
 extern void GetUSBID(U16 *VID, U16 *PID);

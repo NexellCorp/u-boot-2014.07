@@ -1489,6 +1489,7 @@ void NFC_PHY_SetFeatures(unsigned int _max_channel, unsigned int _max_way, void 
             {
                 for (channel = 0; channel < max_channel; channel++)
                 {
+#if 0
                     regval = nfcI->nftacs;
                     regval &= ~__POW(0xF,way*4);
                     regval |= __POW(tACS,way*4);
@@ -1500,7 +1501,7 @@ void NFC_PHY_SetFeatures(unsigned int _max_channel, unsigned int _max_way, void 
                     nfcI->nftcos = regval;
 
                     regval = nfcI->nftacc;
-                    regval &= ~__POW(0xF,way*8);
+                    regval &= ~__POW(0xFF,way*8);
                     regval |= __POW(tACC,way*8);
                     nfcI->nftacc = regval;
 
@@ -1513,6 +1514,13 @@ void NFC_PHY_SetFeatures(unsigned int _max_channel, unsigned int _max_way, void 
                     regval &= ~__POW(0xF,way*4);
                     regval |= __POW(tCAH,way*4);
                     nfcI->nftcah = regval;
+#else
+					nfcI->nftacs = 0xf;
+					nfcI->nftcos = 0x4;
+					nfcI->nftacc = 0x8;
+					nfcI->nftoch = 0x4;
+					nfcI->nftcah = 0xf;
+#endif
 
                     if (NAND_INTERFACE_ONFI_ASYNC == phy_features.nand_config._f.interfacetype)
                     {

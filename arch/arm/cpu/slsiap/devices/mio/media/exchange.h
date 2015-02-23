@@ -270,9 +270,9 @@ typedef struct __WARN__
  ******************************************************************************/
 
 //#define __SUPPORT_CHIP_NXP4330__
-#define __SUPPORT_CHIP_S5P4418__
+//#define __SUPPORT_CHIP_S5P4418__
 //#define __SUPPORT_CHIP_NXP5430__
-//#define __SUPPORT_CHIP_S5P6818__
+#define __SUPPORT_CHIP_S5P6818__
 
 #if   defined (__SUPPORT_CHIP_NXP4330__)
 #define CHIP_NAME           "NXP4330"
@@ -289,7 +289,7 @@ typedef struct __WARN__
 #define CHIP_ID_BASE        0xF0067000
 #define CHIP_ID_PHY_BASE    0xC0067000
 
-#elif defined (__SUPPORT_CHIP_S5PXXXX__)
+#elif defined (__SUPPORT_CHIP_S5P6818__)
 #define CHIP_NAME           "S5P6818"
 #define CHIP_ID_BASE        0xF0067000
 #define CHIP_ID_PHY_BASE    0xC0067000

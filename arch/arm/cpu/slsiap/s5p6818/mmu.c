@@ -14,15 +14,17 @@
 #include <mach-types.h>
 #include <asm/arch/mach-api.h>
 
-extern ulong _bss_start_ofs;	/* BSS start relative to _start */
+DECLARE_GLOBAL_DATA_PTR;
 extern ulong _bss_end_ofs;		/* BSS end relative to _start */
-extern ulong _end_ofs;			/* end of image relative to _start */
 
-//------------------------------------------------------------------------------
-// Stack area that to be used after mmu set
-//------------------------------------------------------------------------------
+#define SMP_CACHE_COHERENCY
+#define SMP_SCU_ENABE
+
+/*------------------------------------------------------------------------------
+ * Stack area that to be used after mmu set
+ */
 #define ACCESS_ALIGN		4
-#define PAGE_DOMAIN			0							// use domain 0, domain 0 is setted client mode in util.s
+#define PAGE_DOMAIN			0	// use domain 0, domain 0 is setted client mode in util.s
 
 #define BSS_END_OPS				_bss_end_ofs
 #define PAGE_TABLE_START		((CONFIG_SYS_TEXT_BASE + BSS_END_OPS) & 0xffff0000) + 0x10000
@@ -51,11 +53,9 @@ enum {
 	SECTION_SHARED		= 16,
 };
 
-//------------------------------------------------------------------------------
-// Virtual Map Address Table
-//
-// static const u32 page_table_start =  PAGE_TABLE_START  ;
-
+/*------------------------------------------------------------------------------
+ * Virtual Map Address Table
+ */
 static const u32 ptable[] = {
  	#include "page_map.h"
 };
@@ -63,87 +63,97 @@ static const u32 ptable[] = {
 static void make_page_table(u32 *ptable)
 {
 	int	index;
-	unsigned int temp,virtual_address, physical_address, num_of_MB;
+	unsigned int temp, virt, phys, num_of_MB;
 	unsigned int mode, i, addr, data;
-	unsigned int *address_table;
+	unsigned int *table;
 
-	address_table = (u32*)ptable;
+	table = (u32*)ptable;
 
-	// Clear page table zone (16K).
+	/* Clear page table zone (16K). */
 	memset((char*)PAGE_TABLE_START, 0x00, 4096*4);
 
-	//-------------------------------------------------------------------------
-	// Non-Cacheable, NO-Bufferable, ROM Base
-	//-------------------------------------------------------------------------
+	/*
+	 * ROM Base: Non-Cacheable, NO-Bufferable
+	 */
 	index = 0;
 	mode  = (0<<SECTION_CACHEABLE) | (0<<SECTION_BUFFERABLE) | (FLD_SECTION<<0);	// No Cachable & No Bufferable
+#ifdef SMP_CACHE_COHERENCY
+	mode = 0xC16;
+#else
 	mode |= (1<<SECTION_SHARED);
-	mode  = mode | AP_CLIENT<<SECTION_AP;					// set kernel R/W permission
-//	while(1)
-	{
-	    virtual_address  = 0;
-	    temp             = 0;
-	    physical_address = 0;
-	    num_of_MB        = 1;
+	mode  = mode | AP_CLIENT<<SECTION_AP;					/* set kernel R/W permission */
+#endif
 
-    	addr = PAGE_TABLE_START + ((virtual_address>>20)*ACCESS_ALIGN);
-    	for (i=0; i < num_of_MB; i++) {
-    		data = physical_address | mode;
-           *(volatile unsigned int *)(addr)= data;
-        	physical_address += 1<<20;
-	    	addr += ACCESS_ALIGN;
-	    }
-   }
+    virt = 0, temp = 0, phys = 0;
+    num_of_MB = 1;
 
-	//-------------------------------------------------------------------------
-	// Cacheable, Bufferable, R/W
-	//-------------------------------------------------------------------------
+   	addr = PAGE_TABLE_START + ((virt>>20)*ACCESS_ALIGN);
+   	for (i=0; i < num_of_MB; i++) {
+   		data = phys | mode;
+       *(volatile unsigned int *)(addr)= data;
+       	phys += 1<<20;
+    	addr += ACCESS_ALIGN;
+    }
+
+	/*
+	 * Cacheable, Bufferable, R/W
+	 */
 	index = 0;
 	mode  = (1<<SECTION_CACHEABLE) | (1<<SECTION_BUFFERABLE) | (FLD_SECTION<<0);	// Cachable & Bufferable
+#ifdef SMP_CACHE_COHERENCY
+	mode = 0x15C06;
+	mode = 0x15C06 | (1 << SECTION_CACHEABLE);	/* Cacheable */
+#else
 	mode |= (1<<SECTION_SHARED);
 	mode  = mode | AP_CLIENT<<SECTION_AP;					// set kernel R/W permission
+#endif
 
 	while (1) {
-		temp			 = *(address_table+index++) & 0xfff<<20;
-		virtual_address	 = *(address_table+index++) & 0xfff<<20;
-		physical_address = *(address_table+index++) & 0xfff<<20;
-		num_of_MB		 = *(address_table+index++);
+		temp = *(table+index++) & 0xfff<<20;
+		virt = *(table+index++) & 0xfff<<20;
+		phys = *(table+index++) & 0xfff<<20;
+		num_of_MB = *(table+index++);
 
-		if (num_of_MB==0) break;
+		if (num_of_MB == 0)
+			break;
 
-		if (0!=virtual_address){
-			addr = PAGE_TABLE_START + ((virtual_address>>20)*ACCESS_ALIGN);
+		if (0 != virt) {
+			addr = PAGE_TABLE_START + ((virt>>20)*ACCESS_ALIGN);
 			for (i=0; i < num_of_MB; i++) {
-				data = physical_address | mode;
+				data = phys | mode;
 				*(volatile unsigned int *)(addr)= data;
-				physical_address += 1<<20;
+				phys += 1<<20;
 				addr += ACCESS_ALIGN;
 			}
 		}
 	}
 
-	//-------------------------------------------------------------------------
-	// No Cacheable, No Bufferable, R/W
-	//-------------------------------------------------------------------------
+	/*
+	 * No Cacheable, No Bufferable, R/W
+	 */
 	index = 0;
 	mode = (0<<SECTION_CACHEABLE) | (0<<SECTION_BUFFERABLE) | (FLD_SECTION<<0);	// No Cachable & No Bufferable
+#ifdef SMP_CACHE_COHERENCY
+	mode = 0xC16;
+#else
 	mode = mode | AP_CLIENT<<SECTION_AP;					// set kernel R/W permission
+#endif
 
 	while (1) {
-		virtual_address	 = *(address_table+index++) & 0xfff<<20;
-		temp			 = *(address_table+index++) & 0xfff<<20;
-		physical_address = *(address_table+index++) & 0xfff<<20;
-		num_of_MB		 = *(address_table+index++);
+		virt = *(table+index++) & 0xfff<<20;
+		temp = *(table+index++) & 0xfff<<20;
+		phys = *(table+index++) & 0xfff<<20;
+		num_of_MB = *(table+index++);
 
-		if (num_of_MB==0) break;
+		if (num_of_MB==0)
+			break;
 
-		if (0!=virtual_address){
-			addr = PAGE_TABLE_START + ((virtual_address>>20)*ACCESS_ALIGN);
-			for (i=0; i < num_of_MB; i++)
-			{
-				data = physical_address | mode;
+		if (0 != virt) {
+			addr = PAGE_TABLE_START + ((virt>>20)*ACCESS_ALIGN);
+			for (i=0; i < num_of_MB; i++) {
+				data = phys | mode;
 				*(volatile unsigned int *)(addr)= data;
-				physical_address += 1<<20;
+				phys += 1<<20;
 				addr += ACCESS_ALIGN;
 			}
 		}
@@ -154,16 +164,18 @@ static void make_page_table(u32 *ptable)
 extern void arm_init_before_mmu(void);
 extern void enable_mmu(unsigned);
 
-#define	CCI_REG	0xe0090000
-
 void mmu_on(void)
 {
 	void *vector_base = (void *)0xFFFF0000;
+
+	dcache_disable();
+	arm_init_before_mmu();				/* Flush DCACHE */
 
 	/* copy vector table */
 	memcpy(vector_base, (void const *)CONFIG_SYS_TEXT_BASE, 64);
 
 	/* set CCI-400 */
+	#define	CCI_REG	0xe0090000
 	writel(0x8, (CCI_REG + 0x0000));	// CCI
 	writel(0x0, (CCI_REG + 0x1000));	// S0 : coresight
  	writel(0x0, (CCI_REG + 0x2000));	// S1 : bottom bus
@@ -174,10 +186,16 @@ void mmu_on(void)
 	mmu_page_table_flush(PAGE_TABLE_START, PAGE_TABLE_SIZE);
 	make_page_table((u32*)ptable);		/* 	Make MMU PAGE TABLE	*/
 
-	arm_init_before_mmu();				/* Flush DCACHE */
-	flush_dcache_all();
-	invalidate_dcache_all();
-
 	enable_mmu(PAGE_TABLE_START);
-	return;
 }
+
+#if defined (CONFIG_SMP)
+void mmu_secondary_on(void)
+{
+	dcache_disable();
+	arm_init_before_mmu();				/* Flush DCACHE */
+
+	mmu_page_table_flush(PAGE_TABLE_START, PAGE_TABLE_SIZE);
+	enable_mmu(PAGE_TABLE_START);
+}
+#endif

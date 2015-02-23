@@ -450,7 +450,7 @@ static struct power_chrg power_chrg_muic_ops = {
 	.chrg_type = muic_chrg_get_type,
 };
 
-int power_muic_init(unsigned int bus)
+int power_nxe2000_muic_init(unsigned int bus)
 {
 	static const char name[] = "MUIC_NXE2000";
 	struct pmic *p = pmic_alloc();

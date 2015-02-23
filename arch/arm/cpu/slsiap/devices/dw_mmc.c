@@ -68,6 +68,7 @@ static unsigned long dw_mci_set_clk(int dev_index, unsigned  rate)
 static void dw_mci_clksel(struct dwmci_host *host)
 {
 	u32 val;
+
 	val = DWMCI_SET_SAMPLE_CLK(DWMCI_SHIFT_0) |
 		DWMCI_SET_DRV_CLK(DWMCI_SHIFT_0) | DWMCI_SET_DIV_RATIO(3);
 
@@ -81,14 +82,12 @@ static void dw_mci_clk_delay(int val ,int regbase )
 
 static void dw_mci_reset(int ch )
 {
-#ifdef CONFIG_MACH_S5P4418
 	int rst_id = RESET_ID_SDMMC0 + ch;
-    
-	NX_RSTCON_SetnRST(rst_id, 0);
-    NX_RSTCON_SetnRST(rst_id, 1 );
-#endif
+
+	NX_RSTCON_SetRST(rst_id, 0);
+	NX_RSTCON_SetRST(rst_id, 1);
 }
-static int dw_mci_init(u32 regbase, int bus_width, int index, int max_clock)
+static int dw_mci_init(u32 regbase, int bus_width, int index, int max_clock, int ddr)
 {
 	struct dwmci_host *host = NULL;
 	int  fifo_size = 0x20;
@@ -99,7 +98,7 @@ static int dw_mci_init(u32 regbase, int bus_width, int index, int max_clock)
 		return 1;
 	}
 
-	dw_mci_set_clk(index, max_clock * 2);
+	dw_mci_set_clk(index, max_clock * 4);
 
 	host->name = NXP_NAME;
 	host->ioaddr = (void *)regbase;
@@ -108,39 +107,68 @@ static int dw_mci_init(u32 regbase, int bus_width, int index, int max_clock)
 	host->dev_index = index;
 	host->get_mmc_clk = dw_mci_get_clk;
 	host->fifoth_val = MSIZE(0x2) | RX_WMARK(fifo_size/2 -1) | TX_WMARK(fifo_size/2);
-
+	
+	if(ddr == 1)
+		host->caps |= MMC_MODE_DDR_52MHz;// | MMC_MODE_4BIT | MMC_MODE_HS_52MHz ;
+	
 	add_dwmci(host, max_clock, 400000);
 
+#ifdef CONFIG_MACH_S5P6818
+	if(bus_width == 8)
+		NX_TIEOFF_Set(TIEOFFINDEX_OF_MMC_8BIT , 1 );
+#endif
 	dw_mci_reset(index);
 	return 0;
 }
+
 int board_mmc_init(bd_t *bis)
 {
 	int err = 0;
-
+	int bus = 0, speed = 0,ddr = 0;
+	
 	#if(CONFIG_MMC0_ATTACH == TRUE)
 	writel(readl(0xC0012004) | (1<<7), 0xC0012004);
 	#endif
 
 	#if(CONFIG_MMC0_CLOCK)
-	err = dw_mci_init(0xC0062000, 4, 0, CONFIG_MMC0_CLOCK);
+	speed = CONFIG_MMC0_CLOCK;
 	#else
-	err = dw_mci_init(0xC0062000, 4, 0, 52000000);
+	speed = 52000000;
+	#endif
+	
+	#if(CONFIG_MMC0_BUS_WIDTH)
+	bus = CONFIG_MMC0_BUS_WIDTH;
+	#else
+	bus = 4;
 	#endif
 
+	#if(CONFIG_MMC0_TRANS_MODE)
+	ddr = CONFIG_MMC0_TRANS_MODE;
+	#else
+	ddr = 0;
+	#endif
+	err = dw_mci_init(0xC0062000, bus, 0, speed, ddr);
 	#ifdef CONFIG_MMC0_CLK_DELAY
 	dw_mci_clk_delay(CONFIG_MMC0_CLK_DELAY, 0xC0062000);
 	#endif
 
-	#if(CONFIG_MMC1_ATTACH == TRUE)
-	writel(readl(0xC0012004) | (1<<8), 0xC0012004);
-	#endif
 	#if(CONFIG_MMC1_CLOCK)
-	err = dw_mci_init(0xC0068000, 4, 1, CONFIG_MMC1_CLOCK);
+	speed = CONFIG_MMC1_CLOCK;
 	#else
-	err = dw_mci_init(0xC0068000, 4, 1, 52000000);
+	speed = 52000000;
 	#endif
-
+	
+	#if(CONFIG_MMC1_BUS_WIDTH)
+	bus = CONFIG_MMC1_BUS_WIDTH;
+	#else
+	bus = 4;
+	#endif
+	#if(CONFIG_MMC1_TRANS_MODE)
+	ddr = CONFIG_MMC1_TRANS_MODE;
+	#else
+	ddr = 0;
+	#endif
+	err = dw_mci_init(0xC0068000, bus, 0, speed, ddr);
 	#ifdef CONFIG_MMC1_CLK_DELAY
 	dw_mci_clk_delay( CONFIG_MMC1_CLK_DELAY, 0xC0068000);
 	#endif
@@ -148,11 +176,26 @@ int board_mmc_init(bd_t *bis)
 	#if(CONFIG_MMC2_ATTACH == TRUE)
 	writel(readl(0xC0012004) | (1<<9), 0xC0012004);
 	#endif
+
 	#if(CONFIG_MMC2_CLOCK)
-	err = dw_mci_init(0xC0069000, 4,2, CONFIG_MMC2_CLOCK);
+	speed = CONFIG_MMC2_CLOCK;
 	#else
-	err = dw_mci_init(0xC0069000, 4,2, 52000000);
+	speed = 52000000;
 	#endif
+	
+	#if(CONFIG_MMC2_BUS_WIDTH)
+	bus = CONFIG_MMC2_BUS_WIDTH;
+	#else
+	bus = 4;
+	#endif
+
+	#if(CONFIG_MMC2_TRANS_MODE)
+	ddr = CONFIG_MMC2_TRANS_MODE;
+	#else
+	ddr = 0;
+	#endif
+	err = dw_mci_init(0xC0069000, bus, 2, speed, ddr);
+
 	#ifdef CONFIG_MMC2_CLK_DELAY
 	dw_mci_clk_delay(CONFIG_MMC2_CLK_DELAY, 0xC0069000);
 	#endif

@@ -30,6 +30,7 @@
 #include <platform.h>
 #include <mach-types.h>
 #include <asm/arch/mach-api.h>
+#include <asm/arch/cpu.h>
 
 extern ulong _bss_start_ofs;	/* BSS start relative to _start */
 extern ulong _bss_end_ofs;		/* BSS end relative to _start */
@@ -101,15 +102,30 @@ struct stack {
 } ____cacheline_aligned;
 
 static struct stack stacks;
+extern ulong _IRQ_STACK_START_IN_;
+#ifdef CONFIG_USE_IRQ
+extern ulong _IRQ_STACK_START_;
+extern ulong _FIQ_STACK_START_;
+#endif
 
 #if defined(CONFIG_ARCH_CPU_INIT)
 int arch_cpu_init (void)
 {
+	struct stack *stack = &stacks;
+
 	/*
 	 * global data (_start is invalid so reconfig mon_len value)
-	 *
+	 * reset stack point for Exception
 	 */
 	gd->mon_len = (ulong)&__bss_end - CONFIG_SYS_TEXT_BASE;
+	gd->irq_sp = (unsigned long)stack->abt;	/* Abort stack */
+
+	_IRQ_STACK_START_IN_ = gd->irq_sp + 8;
+#ifdef CONFIG_USE_IRQ
+	_IRQ_STACK_START_ = gd->irq_sp - 4;
+	_FIQ_STACK_START_ = _IRQ_STACK_START_ - CONFIG_STACKSIZE_IRQ;
+#endif
+	flush_dcache_all();
 
 	/*
 	 * cpu initialize
@@ -117,6 +133,13 @@ int arch_cpu_init (void)
 	nxp_cpu_arch_init();
 	nxp_cpu_clock_init();
 	nxp_cpu_periph_init();
+
+#if defined (CONFIG_SMP)
+	gic_init(0, 16, (void __iomem *)0xC0009000, (void __iomem *)0xC000A000);
+	smp_cpu_init_f();
+	flush_dcache_all();
+#endif
+
 	return 0;
 }
 #endif
@@ -149,30 +172,20 @@ void dram_init_banksize(void)
 
 #ifdef CONFIG_RELOC_TO_TEXT_BASE
 extern uchar default_environment[];
+gd_t *global_descriptor = NULL;
 
-extern ulong _IRQ_STACK_START_IN_;
-#ifdef CONFIG_USE_IRQ
-extern ulong _IRQ_STACK_START_;
-extern ulong _FIQ_STACK_START_;
-#endif
-
-void global_data_setup(gd_t *gd, ulong text, ulong sp)
+void gdt_reset(gd_t *gd, ulong text, ulong sp)
 {
-	struct stack *stk = &stacks;
 	ulong text_start, text_end, heap_end;
-	ulong pc, bd;
+	ulong bd;
+
+	/* for smp cores */
+	global_descriptor = gd;
 
 	/* reconfig stack info */
-	gd->relocaddr 	  = text;
+	gd->relocaddr = text;
 	gd->start_addr_sp = sp;
-	gd->reloc_off 	  = 0;
-	gd->irq_sp = (unsigned long)stk->abt;	/* Abort stack */
-
-	_IRQ_STACK_START_IN_ = gd->irq_sp + 8;
-#ifdef CONFIG_USE_IRQ
-	_IRQ_STACK_START_ = gd->irq_sp - 4;
-	_FIQ_STACK_START_ = _IRQ_STACK_START_ - CONFIG_STACKSIZE_IRQ;
-#endif
+	gd->reloc_off = 0;
 
 	/* copy bd info  */
 	bd = (unsigned int)gd - sizeof(bd_t);
@@ -182,12 +195,8 @@ void global_data_setup(gd_t *gd, ulong text, ulong sp)
 	gd->bd = (bd_t *)bd;
 
 	/* prevent dataabort, when access enva_addr + data (0x04) */
-#if (0)
-	gd->env_addr = CONFIG_SYS_SDRAM_BASE;
-	*(unsigned int*)CONFIG_SYS_SDRAM_BASE = CONFIG_SYS_SDRAM_BASE;
-#else
 	gd->env_addr = (ulong)default_environment;
-#endif
+
 	/* get cpu info */
 	text_start = (unsigned int)(gd->relocaddr);
 	text_end = (unsigned int)(gd->relocaddr + _bss_end_ofs);
@@ -197,6 +206,10 @@ void global_data_setup(gd_t *gd, ulong text, ulong sp)
 	/* refer initr_malloc (common/board_r.c) */
 	gd->relocaddr = heap_end;
 #endif
+	flush_dcache_all();
+
+#if defined(CONFIG_DISPLAY_CPUINFO)
+	ulong pc;
 
 	asm("mov %0, pc":"=r" (pc));
 	asm("mov %0, sp":"=r" (sp));
@@ -213,9 +226,13 @@ void global_data_setup(gd_t *gd, ulong text, ulong sp)
 	ulong page_tlb =  (text_end & 0xffff0000) + 0x10000;
 	printf("PAGE = 0x%08lx~0x%08lx\n", page_tlb, page_tlb + 0xc000 );
 	#endif
+	#ifdef CONFIG_SMP
+	printf("SMPSP= 0x%08x (-0x%08x)\n", CONFIG_SYS_SMP_SP_ADDR, CONFIG_SYS_SMP_SP_SIZE*(NR_CPUS-1));
+	#endif
 	printf("MACH = [%ld]   \n", gd->bd->bi_arch_number);
 	printf("VER  = %u      \n", nxp_cpu_version());
 	printf("BOARD= [%s]    \n", CONFIG_SYS_BOARD);
+#endif
 }
 #endif
 

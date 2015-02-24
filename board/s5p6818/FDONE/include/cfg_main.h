@@ -79,6 +79,16 @@
 #define CFG_DISP_PRI_RESOL_WIDTH          		1024	// X Resolution
 #define CFG_DISP_PRI_RESOL_HEIGHT				600	    // Y Resolution
 
+#if 1 // modified ischoi, BF500 setting
+#define CFG_DISP_PRI_HSYNC_SYNC_WIDTH            43 
+#define CFG_DISP_PRI_HSYNC_BACK_PORCH           147
+#define CFG_DISP_PRI_HSYNC_FRONT_PORCH          78
+#define CFG_DISP_PRI_HSYNC_ACTIVE_HIGH          CFALSE
+#define CFG_DISP_PRI_VSYNC_SYNC_WIDTH            4
+#define CFG_DISP_PRI_VSYNC_BACK_PORCH            3
+#define CFG_DISP_PRI_VSYNC_FRONT_PORCH           35
+#define CFG_DISP_PRI_VSYNC_ACTIVE_HIGH 	        CFALSE
+#else
 #define CFG_DISP_PRI_HSYNC_SYNC_WIDTH           20
 #define CFG_DISP_PRI_HSYNC_BACK_PORCH           160
 #define CFG_DISP_PRI_HSYNC_FRONT_PORCH          160
@@ -87,11 +97,13 @@
 #define CFG_DISP_PRI_VSYNC_BACK_PORCH           23
 #define CFG_DISP_PRI_VSYNC_FRONT_PORCH          12
 #define CFG_DISP_PRI_VSYNC_ACTIVE_HIGH 	        CTRUE
+#endif
 
+// PLL : [0] =  600000000, [1] = 1200000000, [2] =  800000000, [3] =  614394000
 #define CFG_DISP_PRI_CLKGEN0_SOURCE             DPC_VCLK_SRC_PLL0
-#define CFG_DISP_PRI_CLKGEN0_DIV                20 //15//12
+#define CFG_DISP_PRI_CLKGEN0_DIV                  12 // 20
 #define CFG_DISP_PRI_CLKGEN0_DELAY              0
-#define CFG_DISP_PRI_CLKGEN0_INVERT				0
+#define CFG_DISP_PRI_CLKGEN0_INVERT		0
 #define CFG_DISP_PRI_CLKGEN1_SOURCE             DPC_VCLK_SRC_VCLK2
 #define CFG_DISP_PRI_CLKGEN1_DIV                1
 #define CFG_DISP_PRI_CLKGEN1_DELAY              0
@@ -101,8 +113,8 @@
 
 #define	CFG_DISP_PRI_PIXEL_CLOCK				800000000/CFG_DISP_PRI_CLKGEN0_DIV
 
-#define	CFG_DISP_PRI_OUT_SWAPRB 				CFALSE
-#define CFG_DISP_PRI_OUT_FORMAT                 DPC_FORMAT_RGB666
+#define	CFG_DISP_PRI_OUT_SWAPRB 			CFALSE
+#define CFG_DISP_PRI_OUT_FORMAT                 DPC_FORMAT_RGB666//DPC_FORMAT_MRGB888A, DPC_FORMAT_RGB666(original)
 #define CFG_DISP_PRI_OUT_YCORDER                DPC_YCORDER_CbYCrY
 #define CFG_DISP_PRI_OUT_INTERLACE              CFALSE
 #define CFG_DISP_PRI_OUT_INVERT_FIELD           CFALSE
@@ -110,7 +122,7 @@
 /*------------------------------------------------------------------------------
  * 	LVDS
  */
-#define CFG_DISP_LVDS_LCD_FORMAT             	LVDS_LCDFORMAT_VESA
+#define CFG_DISP_LVDS_LCD_FORMAT             	LVDS_LCDFORMAT_VESA//LVDS_LCDFORMAT_VESA(original), LVDS_LCDFORMAT_JEIDA
 
 /*------------------------------------------------------------------------------
  *  SPI

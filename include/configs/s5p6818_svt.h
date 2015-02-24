@@ -209,13 +209,36 @@
 /*-----------------------------------------------------------------------
  * NAND FLASH
  */
-//#define CONFIG_CMD_NAND
+#define CONFIG_CMD_NAND
+#define CONFIG_NAND_FTL
+//#define CONFIG_NAND_MTD
 //#define CONFIG_ENV_IS_IN_NAND
 
+#if defined(CONFIG_NAND_FTL) && defined(CONFIG_NAND_MTD)
+#error "Duplicated config for NAND Driver!!!"
+#endif
+
+#if defined(CONFIG_NAND_FTL)
+#define HAVE_BLOCK_DEVICE
+#endif
+
 #if defined(CONFIG_CMD_NAND)
+	#if !defined(CONFIG_NAND_FTL) && !defined(CONFIG_NAND_MTD)
+	#error "Select FTL or MTD for NAND Driver!!!"
+	#endif
+
 	#define CONFIG_SYS_MAX_NAND_DEVICE		(1)
 	#define CONFIG_SYS_NAND_MAX_CHIPS   	(1)
 	#define CONFIG_SYS_NAND_BASE		   	PHY_BASEADDR_CS_NAND							/* Nand data register, nand->IO_ADDR_R/_W */
+
+	#if defined(CONFIG_ENV_IS_IN_NAND)
+		#define	CONFIG_ENV_OFFSET			(0x1000000)									/* 4MB */
+		#define CONFIG_ENV_SIZE           	(0x100000)									/* 1 block size */
+		#define CONFIG_ENV_RANGE			(0x400000)		 							/* avoid bad block */
+	#endif
+#endif
+
+#if defined(CONFIG_NAND_MTD)
 	#define CONFIG_SYS_NAND_ONFI_DETECTION
 	#define CONFIG_CMD_NAND_TRIMFFS
 
@@ -232,11 +255,6 @@
 		#define	CONFIG_NAND_ECC_BCH
 	#endif
 
-	#if defined(CONFIG_ENV_IS_IN_NAND)
-		#define	CONFIG_ENV_OFFSET			(0x400000)									/* 4MB */
-		#define CONFIG_ENV_SIZE           	(0x100000)									/* 1 block size */
-		#define CONFIG_ENV_RANGE			(0x400000)		 							/* avoid bad block */
-	#endif
 
 	#undef  CONFIG_CMD_IMLS
 
@@ -291,7 +309,7 @@
 		#define CMD_SPI_DP				0xB9		// Deep Power-down
 		#define CMD_SPI_RES				0xAB		// Release from Deep Power-down
 
-		#define CONFIG_SPI_EEPROM_WRITE_PROTECT
+		//#define CONFIG_SPI_EEPROM_WRITE_PROTECT
 		#if defined(CONFIG_SPI_EEPROM_WRITE_PROTECT)
 			#define	CONFIG_SPI_EEPROM_WP_PAD 			CFG_IO_SPI_EEPROM_WP
 			#define	CONFIG_SPI_EEPROM_WP_ALT			CFG_IO_SPI_EEPROM_WP_ALT
@@ -474,7 +492,7 @@
  * #> fatload mmc 0  0x.....	"file"
  *
  */
-#define	CONFIG_CMD_MMC
+//#define	CONFIG_CMD_MMC
 //#define CONFIG_ENV_IS_IN_MMC
 
 #if defined(CONFIG_CMD_MMC)
@@ -529,7 +547,7 @@
 /*-----------------------------------------------------------------------
  * FAT Partition
  */
-#if defined(CONFIG_MMC) || defined(CONFIG_CMD_USB)
+#if defined(CONFIG_MMC) || defined(CONFIG_CMD_USB) || defined(CONFIG_NAND_FTL)
 	#define CONFIG_DOS_PARTITION
 
 	#define CONFIG_CMD_FAT
@@ -589,9 +607,10 @@
 #define CONFIG_DISPLAY_OUT
 
 #define CONFIG_LOGO_DEVICE_MMC
+//#define CONFIG_LOGO_DEVICE_NAND
 
 #if defined(CONFIG_LOGO_DEVICE_MMC) && defined(CONFIG_LOGO_DEVICE_NAND)
-#error "Duplicated config for logo device!!!"
+#error "Select one LOGO DEVICE!"
 #endif
 
 #if	defined(CONFIG_DISPLAY_OUT)
@@ -606,17 +625,10 @@
 //	#define CONFIG_CMD_LOGO_LOAD
 
 	/* Logo command: board.c */
-	#if defined(CONFIG_LOGO_DEVICE_NAND)
-	/* From NAND */
+	/* From MMC */
     #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
     #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
     #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
-	#else
-	/* From SDFS */
-    #define CONFIG_CMD_LOGO_WALLPAPERS 	"fatload mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_BATTERY 	"fatload mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_UPDATE 		"fatload mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
-	#endif
 #endif
 
 /*-----------------------------------------------------------------------

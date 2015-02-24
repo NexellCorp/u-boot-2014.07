@@ -29,7 +29,16 @@ PLATFORM_RELFLAGS += -fno-short-enums -fstrict-aliasing
 # If armv7-a is not supported by GCC fall-back to armv5, which is
 # supported by more tool-chains
 PF_CPPFLAGS_ARMV8 := $(call cc-option, -march=armv8-a)
+
+GCCMACHINE =  $(shell $(CC) -dumpmachine | cut -f1 -d-)
+GCCVERSION =  $(shell $(CC) -dumpversion | cut -f2 -d.)
+
+ifeq "$(GCCMACHINE)" "arm"
+ifneq "$(GCCVERSION)" "8" 
 PLATFORM_CPPFLAGS += $(PF_CPPFLAGS_ARMV8)
+endif
+endif   # ifeq "$(GCCMACHINE)" "arm"
+
 
 # =========================================================================
 #

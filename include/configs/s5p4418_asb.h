@@ -420,7 +420,8 @@
 #define CONFIG_NXP_RTC_USE
 
 #define CONFIG_SW_UBC_DETECT	/* need with CONFIG_FASTBOOT. */
- #define CONFIG_NXE2000_REG_DUMP
+
+//#define CONFIG_NXE2000_REG_DUMP
 #endif
 
 

@@ -118,7 +118,7 @@
 #define CONFIG_GATEWAYIP				192.168.1.254
 #define CONFIG_BOOTFILE					"uImage"  		/* File to load	*/
 
-#define CONFIG_BOOTCOMMAND "ext4load nand 0:1 0x48000000 uImage;ext4load nand 0:1 0x49000000 root.img.gz;bootm 0x48000000"
+#define CONFIG_BOOTCOMMAND "run boot0"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -232,8 +232,8 @@
 /*-----------------------------------------------------------------------
  * NAND FLASH
  */
-#define CONFIG_CMD_NAND
-#define CONFIG_NAND_FTL
+//#define CONFIG_CMD_NAND
+//#define CONFIG_NAND_FTL
 //#define CONFIG_NAND_MTD
 //#define CONFIG_ENV_IS_IN_NAND
 
@@ -433,31 +433,22 @@
 #define CONFIG_PMIC_CHARGING_PATH_ADP_UBC_LINKED    (3) // Using VADP, VUSB power path. Linked power path.
 #define CONFIG_PMIC_NXE2000_CHARGING_PATH           CONFIG_PMIC_CHARGING_PATH_ADP
 
-#define CONFIG_NXP_RTC_USE
-
 #define CONFIG_SW_UBC_DETECT	/* need with CONFIG_FASTBOOT. */
 
-// #define CONFIG_NXE2000_REG_DUMP
+//#define CONFIG_NXE2000_REG_DUMP
 #endif
 
-/*-----------------------------------------------------------------------
- * BATTERY CHECK (FUEL GAUGE)
- */
 #if defined(CONFIG_HAVE_BATTERY)
-
-//#define CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE
-//#define CONFIG_PMIC_SET_BOOTUP_VOLTAGE
-
-//#define CONFIG_POWER_BATTERY_SMALL
-
-#ifndef CONFIG_POWER_BATTERY_SMALL
-#define CONFIG_BAT_CHECK
-#define CONFIG_FAST_BOOTUP
-#endif
-
 #define CONFIG_POWER_BATTERY
 #define CONFIG_POWER_BATTERY_NXE2000
-#endif	// #if defined(CONFIG_HAVE_BATTERY)
+
+//#define CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE
+//#define CONFIG_POWER_BATTERY_SMALL
+	#ifndef CONFIG_POWER_BATTERY_SMALL
+	#define CONFIG_BAT_CHECK
+	#define CONFIG_NXP_RTC_USE
+	#endif
+#endif
 
 #if defined(CONFIG_PMIC) && defined(CONFIG_PMIC_NXE2000)
 #define CONFIG_POWER
@@ -633,8 +624,8 @@
  */
 #define CONFIG_DISPLAY_OUT
 
-//#define CONFIG_LOGO_DEVICE_MMC
-#define CONFIG_LOGO_DEVICE_NAND
+#define CONFIG_LOGO_DEVICE_MMC
+//#define CONFIG_LOGO_DEVICE_NAND
 
 #if defined(CONFIG_LOGO_DEVICE_MMC) && defined(CONFIG_LOGO_DEVICE_NAND)
 #error "Select one LOGO DEVICE!"
@@ -644,6 +635,7 @@
 	#define	CONFIG_PWM			/* backlight */
 	/* display out device */
 	#define	CONFIG_DISPLAY_OUT_LVDS
+	// #define	CONFIG_DISPLAY_OUT_MIPI
     #define	CONFIG_DISPLAY_OUT_HDMI
 
 	/* display logo */
@@ -652,9 +644,9 @@
 
 	/* Logo command: board.c */
 	/* From MMC */
-    #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load nand 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_BATTERY "ext4load nand 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_UPDATE "ext4load nand 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_WALLPAPERS 	"fatload mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_BATTERY 	"fatload mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_UPDATE 		"fatload mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
 
 
 #endif

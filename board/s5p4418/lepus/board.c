@@ -26,7 +26,6 @@
 #include <pwm.h>
 #include <asm/io.h>
 #include <asm/gpio.h>
-//#include <asm/sections.h>
 
 #include <platform.h>
 #include <mach-api.h>
@@ -51,8 +50,94 @@ DECLARE_GLOBAL_DATA_PTR;
 #endif
 
 /*------------------------------------------------------------------------------
+ * BUS Configure
+ */
+#if (CFG_BUS_RECONFIG_ENB == 1)
+#include <asm/arch/s5p4418_bus.h>
+
+const u16 g_DrexQoS[2] = {
+	0x100,		// S0
+	0xFFF		// S1, Default value
+};
+
+const u8 g_TopBusSI[8] = {
+	TOPBUS_SI_SLOT_DMAC0,
+	TOPBUS_SI_SLOT_USBOTG,
+	TOPBUS_SI_SLOT_USBHOST0,
+	TOPBUS_SI_SLOT_DMAC1,
+	TOPBUS_SI_SLOT_SDMMC,
+	TOPBUS_SI_SLOT_USBOTG,
+	TOPBUS_SI_SLOT_USBHOST1,
+	TOPBUS_SI_SLOT_USBOTG
+};
+
+const u8 g_BottomBusSI[8] = {
+	BOTBUS_SI_SLOT_1ST_ARM,
+	BOTBUS_SI_SLOT_MALI,
+	BOTBUS_SI_SLOT_DEINTERLACE,
+	BOTBUS_SI_SLOT_1ST_CODA,
+	BOTBUS_SI_SLOT_2ND_ARM,
+	BOTBUS_SI_SLOT_SCALER,
+	BOTBUS_SI_SLOT_TOP,
+	BOTBUS_SI_SLOT_2ND_CODA
+};
+
+#if 0
+// default
+const u8 g_BottomQoSSI[2] = {
+	1,	// Tidemark
+	(1<<BOTBUS_SI_SLOT_1ST_ARM) |	// Control
+	(1<<BOTBUS_SI_SLOT_2ND_ARM) |
+	(1<<BOTBUS_SI_SLOT_MALI) |
+	(1<<BOTBUS_SI_SLOT_TOP) |
+	(1<<BOTBUS_SI_SLOT_DEINTERLACE) |
+	(1<<BOTBUS_SI_SLOT_1ST_CODA)
+};
+#else
+const u8 g_BottomQoSSI[2] = {
+	1,	// Tidemark
+	(1<<BOTBUS_SI_SLOT_TOP)	// Control
+};
+#endif
+
+const u8 g_DispBusSI[3] = {
+	DISBUS_SI_SLOT_1ST_DISPLAY,
+	DISBUS_SI_SLOT_2ND_DISPLAY,
+	DISBUS_SI_SLOT_GMAC
+};
+#endif	/* #if (CFG_BUS_RECONFIG_ENB == 1) */
+
+
+/*------------------------------------------------------------------------------
  * intialize nexell soc and board status.
  */
+static void set_gpio_strenth(U32 Group, U32 BitNumber, U32 mA)
+{
+	U32 drv1=0, drv0=0;
+	U32 drv1_value, drv0_value;
+
+	switch( mA )
+	{
+		case 0 : drv0 = 0; drv1 = 0; break;
+		case 1 : drv0 = 0; drv1 = 1; break;
+		case 2 : drv0 = 1; drv1 = 0; break;
+		case 3 : drv0 = 1; drv1 = 1; break;
+		default: drv0 = 0; drv1 = 0; break;
+	}
+	DBGOUT("DRV Strength : GRP : i %x Bit: %x  ma :%d  \n",
+				Group, BitNumber, mA);
+
+	drv1_value = NX_GPIO_GetDRV1(Group) & ~(1 << BitNumber);
+	drv0_value = NX_GPIO_GetDRV0(Group) & ~(1 << BitNumber);
+
+	if (drv1) drv1_value |= (drv1 << BitNumber);
+	if (drv0) drv0_value |= (drv0 << BitNumber);
+
+	DBGOUT(" Value : drv1 :%8x  drv0 %8x \n ",drv1_value, drv0_value);
+
+	NX_GPIO_SetDRV0 ( Group, drv0_value );
+	NX_GPIO_SetDRV1 ( Group, drv1_value );
+}
 
 static void bd_gpio_init(void)
 {
@@ -126,9 +211,12 @@ static void bd_gpio_init(void)
 			NX_GPIO_SetOutputValue(index, bit,  (lv  ? CTRUE : CFALSE));
 			NX_GPIO_SetInterruptMode(index, bit, (lv));
 
-			NX_GPIO_SetPullEnable(index, bit, (NX_GPIO_PULL)plup );
-			NX_GPIO_SetDriveStrength(index, bit, (NX_GPIO_DRVSTRENGTH)stren); /* pad strength */
+			NX_GPIO_SetPullMode(index, bit, plup);
+			set_gpio_strenth(index, bit, stren); /* pad strength */
 		}
+
+		NX_GPIO_SetDRV0_DISABLE_DEFAULT(index, 0xFFFFFFFF);
+		NX_GPIO_SetDRV1_DISABLE_DEFAULT(index, 0xFFFFFFFF);
 	}
 }
 

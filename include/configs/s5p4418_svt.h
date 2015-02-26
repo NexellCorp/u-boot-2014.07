@@ -232,8 +232,8 @@
 /*-----------------------------------------------------------------------
  * NAND FLASH
  */
-//#define CONFIG_CMD_NAND
-//#define CONFIG_NAND_FTL
+#define CONFIG_CMD_NAND
+#define CONFIG_NAND_FTL
 //#define CONFIG_NAND_MTD
 //#define CONFIG_ENV_IS_IN_NAND
 

@@ -269,36 +269,53 @@ typedef struct __WARN__
  * Parameter Of Exchange.ftl.fnFormat & Exchange.ftl.fnOpen
  ******************************************************************************/
 
-//#define __SUPPORT_CHIP_NXP4330__
-//#define __SUPPORT_CHIP_S5P4418__
-//#define __SUPPORT_CHIP_NXP5430__
-#define __SUPPORT_CHIP_S5P6818__
+#if defined (__BUILD_MODE_ARM_LINUX_DEVICE_DRIVER__)
 
-#if   defined (__SUPPORT_CHIP_NXP4330__)
+#if   defined (CONFIG_ARCH_NXP4330)
+#define __SUPPORT_MIO_CHIP_NXP4330__
+#elif defined (CONFIG_ARCH_S5P4418)
+#define __SUPPORT_MIO_CHIP_S5P4418__
+#elif defined (CONFIG_ARCH_NXP5430)
+#define __SUPPORT_MIO_CHIP_NXP5430__
+#elif defined (CONFIG_ARCH_S5P6818)
+#define __SUPPORT_MIO_CHIP_S5P6818__
+#endif
+
+#elif defined (__BUILD_MODE_ARM_UBOOT_DEVICE_DRIVER__)
+
+#if   defined (__SUPPORT_MIO_UBOOT_CHIP_NXP4330__)
+#define __SUPPORT_MIO_CHIP_NXP4330__
+#elif defined (__SUPPORT_MIO_UBOOT_CHIP_S5P4418__)
+#define __SUPPORT_MIO_CHIP_S5P4418__
+#elif defined (__SUPPORT_MIO_UBOOT_CHIP_NXP5430__)
+#define __SUPPORT_MIO_CHIP_NXP5430__
+#elif defined (__SUPPORT_MIO_UBOOT_CHIP_S5P6818__)
+#define __SUPPORT_MIO_CHIP_S5P6818__
+#endif
+
+#endif
+
+#if   defined (__SUPPORT_MIO_CHIP_NXP4330__)
 #define CHIP_NAME           "NXP4330"
 #define CHIP_ID_BASE        0xF0067000
 #define CHIP_ID_PHY_BASE    0xC0067000
-
-#elif defined (__SUPPORT_CHIP_S5P4418__)
+#elif defined (__SUPPORT_MIO_CHIP_S5P4418__)
 #define CHIP_NAME           "S5P4418"
 #define CHIP_ID_BASE        0xF0067000
 #define CHIP_ID_PHY_BASE    0xC0067000
-
-#elif defined (__SUPPORT_CHIP_NXP5430__)
+#elif defined (__SUPPORT_MIO_CHIP_NXP5430__)
 #define CHIP_NAME           "NXP5430"
 #define CHIP_ID_BASE        0xF0067000
 #define CHIP_ID_PHY_BASE    0xC0067000
-
-#elif defined (__SUPPORT_CHIP_S5P6818__)
+#elif defined (__SUPPORT_MIO_CHIP_S5P6818__)
 #define CHIP_NAME           "S5P6818"
 #define CHIP_ID_BASE        0xF0067000
 #define CHIP_ID_PHY_BASE    0xC0067000
-
 #else
 #define CHIP_NAME           "UNKNOWN"
-#define CHIP_ID_BASE        0xF0067000
-#define CHIP_ID_PHY_BASE    0xC0067000
-
+#define CHIP_ID_BASE        0x00000000
+#define CHIP_ID_PHY_BASE    0x00000000
+#error "EWS.FTL Warn : Can't Find Proper CPU"
 #endif
 
 /******************************************************************************

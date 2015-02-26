@@ -141,7 +141,11 @@ int __memcmp(const void * _p1, const void * _p2, unsigned int _n)
 
 unsigned long long __div64(unsigned long long _dividend, unsigned long long _divisor)
 {
+#if defined (__BUILD_MODE_ARM_LINUX_DEVICE_DRIVER__)
+    return div64_u64(_dividend, _divisor);
+#elif defined (__BUILD_MODE_ARM_UBOOT_DEVICE_DRIVER__)
     return div_u64(_dividend, _divisor);
+#endif
 }
 
 void __ratio(unsigned char * _sz, unsigned long long _v1, unsigned long long _v2)

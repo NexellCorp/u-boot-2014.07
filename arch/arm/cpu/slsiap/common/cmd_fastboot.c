@@ -552,7 +552,9 @@ static int nand_part_write(struct fastboot_part *fpart, void *buf, uint64_t leng
 		int repeat = CFG_BOOTIMG_REPEAT;
 
 		/* erase */
-		nand_part_ftl(start, length, buf, MIO_NAND_ERASE);
+		for (i = 0; i < repeat; i++, start += offset) {
+			nand_part_ftl(start, length, buf, MIO_NAND_ERASE);
+		}
 
 		/* write */
 		for (i = 0; i < repeat; i++, start += offset) {

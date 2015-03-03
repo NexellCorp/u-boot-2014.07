@@ -1352,6 +1352,7 @@ static int fboot_cmd_reboot(const char *cmd, f_cmd_inf *inf, struct f_trans_stat
 {
 	fboot_response("OKAY", strlen("OKAY"), FASTBOOT_TX_SYNC);
 	run_command("env default -a", 0);
+	run_command("save", 0);
 	return do_reset (NULL, 0, 0, NULL);
 }
 

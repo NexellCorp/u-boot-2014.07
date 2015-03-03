@@ -500,7 +500,7 @@ static int nand_part_ftl(uint64_t start, uint64_t length, void *buf, int command
 		p += sprintf(args+p, "nandrawwrite 0x%x ", (unsigned int)buf);
 		break;
 	case MIO_NAND_RAWREAD:
-	default: 
+	default:
 		p += sprintf(args+p, "nandrawread 0x%x ", (unsigned int)buf);
 		break;
 	}
@@ -1351,6 +1351,7 @@ static int fboot_response(const char *resp, unsigned int len, unsigned int sync)
 static int fboot_cmd_reboot(const char *cmd, f_cmd_inf *inf, struct f_trans_stat *fst)
 {
 	fboot_response("OKAY", strlen("OKAY"), FASTBOOT_TX_SYNC);
+	run_command("env default -a", 0);
 	return do_reset (NULL, 0, 0, NULL);
 }
 

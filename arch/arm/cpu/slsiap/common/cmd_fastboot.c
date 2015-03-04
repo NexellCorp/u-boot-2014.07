@@ -118,7 +118,8 @@ struct fastboot_device {
 	uint64_t parts[FASTBOOT_DEV_PART_MAX][2];	/* 0: start, 1: length */
 	struct list_head link;
 	int (*write_part)(struct fastboot_part *fpart, void *buf, uint64_t length);
-	int (*capacity)  (struct fastboot_device *fd, int devno, uint64_t *length);
+	int (*capacity)(struct fastboot_device *fd, int devno, uint64_t *length);
+	int (*create_part)(int dev, uint64_t (*parts)[2], int count);
 };
 
 struct fastboot_fs_type {
@@ -176,7 +177,7 @@ static void part_dev_print(struct fastboot_device *fd);
 extern ulong mmc_bwrite(int dev_num, lbaint_t start, lbaint_t blkcnt, const void *src);
 extern int mmc_get_part_table(block_dev_desc_t *desc, uint64_t (*parts)[2], int *count);
 
-static inline int mmc_make_parts(int dev, uint64_t (*parts)[2], int count)
+static int mmc_make_parts(int dev, uint64_t (*parts)[2], int count)
 {
 	char cmd[128];
 	int i = 0, l = 0, p = 0;
@@ -424,7 +425,7 @@ extern ulong nand_bwrite(int dev_num, lbaint_t start, lbaint_t blkcnt, const voi
 extern int nand_get_part_table(block_dev_desc_t *desc, uint64_t (*parts)[2], int *count);
 extern void mio_set_autosend_standbycmd(int enable);
 
-static inline int nand_make_parts(int dev, uint64_t (*parts)[2], int count)
+static int nand_make_parts(int dev, uint64_t (*parts)[2], int count)
 {
 	char cmd[128];
 	int i = 0, l = 0, p = 0;
@@ -500,7 +501,7 @@ static int nand_part_ftl(uint64_t start, uint64_t length, void *buf, int command
 		p += sprintf(args+p, "nandrawwrite 0x%x ", (unsigned int)buf);
 		break;
 	case MIO_NAND_RAWREAD:
-	default: 
+	default:
 		p += sprintf(args+p, "nandrawread 0x%x ", (unsigned int)buf);
 		break;
 	}
@@ -552,9 +553,7 @@ static int nand_part_write(struct fastboot_part *fpart, void *buf, uint64_t leng
 		int repeat = CFG_BOOTIMG_REPEAT;
 
 		/* erase */
-		for (i = 0; i < repeat; i++, start += offset) {
-			nand_part_ftl(start, length, buf, MIO_NAND_ERASE);
-		}
+		nand_part_ftl(start, length, buf, MIO_NAND_ERASE);
 
 		/* write */
 		for (i = 0; i < repeat; i++, start += offset) {
@@ -668,7 +667,8 @@ static struct fastboot_device f_devices[] = {
 						FASTBOOT_FS_RAW_PART | FASTBOOT_FS_FACTORY),
 	#ifdef CONFIG_CMD_NAND
 		.write_part	= nand_part_write,
-		.capacity	= &nand_part_capacity,
+		.capacity = nand_part_capacity,
+		.create_part = nand_make_parts
 	#endif
 	},
 
@@ -681,8 +681,9 @@ static struct fastboot_device f_devices[] = {
 		.fs_support	= (FASTBOOT_FS_2NDBOOT | FASTBOOT_FS_BOOT | FASTBOOT_FS_RAW |
 						FASTBOOT_FS_FAT | FASTBOOT_FS_EXT4 | FASTBOOT_FS_RAW_PART),
 	#ifdef CONFIG_CMD_MMC
-		.write_part	= &mmc_part_write,
-		.capacity	= &mmc_part_capacity,
+		.write_part	= mmc_part_write,
+		.capacity = mmc_part_capacity,
+		.create_part = mmc_make_parts,
 	#endif
 	},
 };
@@ -1149,6 +1150,65 @@ static int part_dev_capacity(const char *device, uint64_t *length)
 	return !len ? -1 : 0;
 }
 
+static void part_mbr_update(void)
+{
+	struct fastboot_device *fd = f_devices;
+	struct fastboot_part *fp;
+	struct list_head *entry, *n;
+	int i = 0, j = 0;
+
+	debug("%s:\n", __func__);
+	for (i = 0; FASTBOOT_DEV_SIZE > i; i++, fd++) {
+		struct list_head *head = &fd->link;
+		uint64_t part_dev[FASTBOOT_DEV_PART_MAX][3] = { {0,0,0}, };
+		int count = 0, dev = 0;
+		int total = 0;
+
+		if (list_empty(head))
+			continue;
+
+		list_for_each_safe(entry, n, head) {
+			fp = list_entry(entry, struct fastboot_part, link);
+			if (FASTBOOT_FS_MASK & fp->fs_type) {
+				part_dev[total][0] = fp->start;
+				part_dev[total][1] = fp->length;
+				part_dev[total][2] = fp->dev_no;
+				total++;
+			}
+		}
+
+		count = total;
+		while (count > 0) {
+			uint64_t parts[FASTBOOT_DEV_PART_MAX][2] = { {0,0 }, };
+			int mbrs = 0;
+
+			if (dev > fd->dev_max) {
+				printf("** Fail make to %s dev %d is over max %d **\n",
+					fd->device, dev, fd->dev_max);
+				break;
+			}
+
+			for (j = 0; total > j; j++) {
+				if (dev == part_dev[j][2]) {
+					parts[mbrs][0] = part_dev[j][0];
+					parts[mbrs][1] = part_dev[j][1];
+					debug("MBR %s.%d 0x%llx, 0x%llx\n",
+						fd->device, dev, parts[mbrs][0], parts[mbrs][1]);
+					mbrs++;
+				}
+			}
+
+			/* new MBR */
+			if (mbrs && fd->create_part)
+				fd->create_part(dev, parts, mbrs);
+
+			count -= mbrs;
+			if (count)
+				dev++;
+		}
+	}
+}
+
 static int get_parts_from_lists(struct fastboot_part *fpart, uint64_t (*parts)[2], int *count)
 {
 	struct fastboot_part *fp = fpart;
@@ -1483,6 +1543,7 @@ static int fboot_cmd_flash(const char *cmd, f_cmd_inf *inf, struct f_trans_stat 
 		}
 
 		part_lists_print();
+		part_mbr_update();
 		parse_comment(p, &p);
 
 		if (0 == setenv("fastboot", (char *)p) &&

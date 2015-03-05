@@ -305,8 +305,8 @@
  * EEPROM
  */
 
-//#define CONFIG_CMD_EEPROM
-//#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
+#define CONFIG_CMD_EEPROM
+#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
 //#define CONFIG_ENV_IS_IN_EEPROM
 
 #if defined(CONFIG_CMD_EEPROM)

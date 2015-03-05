@@ -1173,14 +1173,17 @@ static void part_mbr_update(void)
 				part_dev[total][0] = fp->start;
 				part_dev[total][1] = fp->length;
 				part_dev[total][2] = fp->dev_no;
+				debug("%s.%d 0x%llx, 0x%llx\n",
+					fd->device, fp->dev_no, part_dev[total][0], part_dev[total][1]);
 				total++;
 			}
 		}
+		debug("total parts : %d\n", total);
 
 		count = total;
 		while (count > 0) {
 			uint64_t parts[FASTBOOT_DEV_PART_MAX][2] = { {0,0 }, };
-			int mbrs = 0;
+			volatile int mbrs = 0;
 
 			if (dev > fd->dev_max) {
 				printf("** Fail make to %s dev %d is over max %d **\n",
@@ -1189,11 +1192,11 @@ static void part_mbr_update(void)
 			}
 
 			for (j = 0; total > j; j++) {
-				if (dev == part_dev[j][2]) {
+				if (dev == (int)part_dev[j][2]) {
 					parts[mbrs][0] = part_dev[j][0];
 					parts[mbrs][1] = part_dev[j][1];
-					debug("MBR %s.%d 0x%llx, 0x%llx\n",
-						fd->device, dev, parts[mbrs][0], parts[mbrs][1]);
+					debug("MBR %s.%d 0x%llx, 0x%llx (%d:%d)\n",
+						fd->device, dev, parts[mbrs][0], parts[mbrs][1], total, count);
 					mbrs++;
 				}
 			}
@@ -1203,6 +1206,7 @@ static void part_mbr_update(void)
 				fd->create_part(dev, parts, mbrs);
 
 			count -= mbrs;
+			debug("count %d, mbrs %d, dev %d\n", count, mbrs, dev);
 			if (count)
 				dev++;
 		}
@@ -1478,7 +1482,6 @@ static int fboot_cmd_getvar(const char *cmd, f_cmd_inf *inf, struct f_trans_stat
 		strncpy(p, CONFIG_SYS_PROMPT, 7);
 		goto done_getvar;
 	}
-
 
 	fastboot_getvar(cmd, p);
 

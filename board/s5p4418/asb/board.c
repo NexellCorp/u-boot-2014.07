@@ -267,8 +267,8 @@ int board_early_init_f(void)
 {
 	bd_gpio_init();
 	bd_alive_init();
-#if defined(CONFIG_PMIC_NXE2000) && !defined(CONFIG_NXE2000_REG_DUMP)
-	bd_pmic_init_nxe2000();
+#if (defined(CONFIG_PMIC_NXE2000)||defined(CONFIG_PMIC_AXP228))&& !defined(CONFIG_PMIC_REG_DUMP)
+	bd_pmic_init();
 #endif
 	return 0;
 }

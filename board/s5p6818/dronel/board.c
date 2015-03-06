@@ -35,9 +35,16 @@
 
 #include <draw_lcd.h>
 
-#if defined(CONFIG_PMIC_NXE2000)
+#if defined(CONFIG_PMIC)
 #include <power/pmic.h>
+#endif
+
+#if defined(CONFIG_PMIC_NXE2000)
 #include <nxe2000-private.h>
+#endif
+
+#if defined(CONFIG_PMIC_AXP228)
+#include <power/axp228.h>
 #endif
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -184,8 +191,8 @@ int board_early_init_f(void)
 {
 	bd_gpio_init();
 	bd_alive_init();
-#if defined(CONFIG_PMIC_NXE2000) && !defined(CONFIG_NXE2000_REG_DUMP)
-	bd_pmic_init_nxe2000();
+#if (defined(CONFIG_PMIC_NXE2000)||defined(CONFIG_PMIC_AXP228))&& !defined(CONFIG_PMIC_REG_DUMP)
+	bd_pmic_init();
 #endif
 #if defined(CONFIG_NXP_RTC_USE)
 	nxp_rtc_init();
@@ -199,12 +206,12 @@ int board_init(void)
 	return 0;
 }
 
-#if defined(CONFIG_PMIC_NXE2000)
+#if defined(CONFIG_PMIC_NXE2000)||defined(CONFIG_PMIC_AXP228)
 int power_init_board(void)
 {
 	int ret = 0;
-#if defined(CONFIG_NXE2000_REG_DUMP)
-	bd_pmic_init_nxe2000();
+#if defined(CONFIG_PMIC_REG_DUMP)
+	bd_pmic_init();
 #endif
 	ret = power_pmic_function_init();
 	return ret;
@@ -293,7 +300,7 @@ int board_late_init(void)
 	    // psw0523 for cts
 	    // bat_check_skip = 1;
 
-		ret = power_nxe2000_battery_check(bat_check_skip, bd_display_run);
+		ret = power_battery_check(bat_check_skip, bd_display_run);
 
 		if(ret == 1)
 			auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);

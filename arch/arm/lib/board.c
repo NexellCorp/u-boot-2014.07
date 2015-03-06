@@ -551,7 +551,7 @@ void board_init_r(gd_t *id, ulong dest_addr)
 	arch_early_init_r();
 #endif
 
-#ifndef CONFIG_NXE2000_REG_DUMP
+#ifndef CONFIG_PMIC_REG_DUMP
 	power_init_board();
 #endif
 
@@ -633,7 +633,7 @@ void board_init_r(gd_t *id, ulong dest_addr)
 
 	console_init_r();	/* fully init console as a device */
 
-#ifdef CONFIG_NXE2000_REG_DUMP
+#ifdef CONFIG_PMIC_REG_DUMP
 	power_init_board();
 #endif
 

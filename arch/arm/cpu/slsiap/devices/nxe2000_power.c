@@ -42,7 +42,7 @@
 /*
  * Debug
  */
-#if defined(CONFIG_NXE2000_REG_DUMP)
+#if defined(CONFIG_PMIC_REG_DUMP)
 #define DBGOUT(msg...)		do { printf("pmic: " msg); } while (0)
 #else
 #define DBGOUT(msg...)		do {} while (0)
@@ -156,7 +156,7 @@ u8 nxe2000_get_dcdc_step(u8 dcdc_num, int want_vol)
 	return	(u8)(vol_step & 0xFF);
 }
 
-#if defined(CONFIG_NXE2000_REG_DUMP)
+#if defined(CONFIG_PMIC_REG_DUMP)
 void nxe2000_register_dump(struct nxe2000_power *power)
 {
 	s32 ret=0;
@@ -362,21 +362,21 @@ static int nxe2000_param_setup(struct nxe2000_power *power)
 									(NXE2000_DEF_CHG_USB_EN			<< NXE2000_POS_CHGCTL1_VUSBCHGEN)	|
 									(NXE2000_DEF_CHG_ADP_EN			<< NXE2000_POS_CHGCTL1_VADPCHGEN) );
 
-	#if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP_UBC)
+	#if (CONFIG_PMIC_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP_UBC)
 		cache[NXE2000_REG_CHGCTL1] &= ~(1 << NXE2000_POS_CHGCTL1_CHGP);
 	#endif
-	#if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP)
+	#if (CONFIG_PMIC_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP)
 		cache[NXE2000_REG_CHGCTL1] &= ~(1 << NXE2000_POS_CHGCTL1_CHGP);
 		cache[NXE2000_REG_CHGCTL1] &= ~(1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
 	#endif
 
-	#if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_UBC)
+	#if (CONFIG_PMIC_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_UBC)
 		cache[NXE2000_REG_CHGCTL1] &= ~(1 << NXE2000_POS_CHGCTL1_VADPCHGEN);
 	#endif
 
 #else
 
-	#if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP)
+	#if (CONFIG_PMIC_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP)
 		cache[NXE2000_REG_CHGCTL1]	= (1 << NXE2000_POS_CHGCTL1_SUSPEND);
 	#endif
 #endif	/* CONFIG_HAVE_BATTERY */
@@ -444,7 +444,7 @@ static int nxe2000_device_setup(struct nxe2000_power *power)
 {
 	u_char	*cache = nxe2000_cache_reg;
 	int		bus = power->i2c_bus;
-#if defined(CONFIG_NXE2000_REG_DUMP)
+#if defined(CONFIG_PMIC_REG_DUMP)
 	int i;
 	s32 ret=0;
 #endif
@@ -454,7 +454,7 @@ static int nxe2000_device_setup(struct nxe2000_power *power)
 	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
 	i2c_set_bus_num(bus);
 
-#if defined(CONFIG_NXE2000_REG_DUMP)
+#if defined(CONFIG_PMIC_REG_DUMP)
 	printf("##########################################################\n");
 	printf("##\e[31m PMIC OTP Value \e[0m \n");
 	printf("       0  1  2  3   4  5  6  7   8  9  A  B   C  D  E  F\n");
@@ -574,7 +574,7 @@ static int nxe2000_device_setup(struct nxe2000_power *power)
 
 	nxe2000_i2c_write(NXE2000_REG_PWRIREN	, cache[NXE2000_REG_PWRIREN]	, power);
 
-#if defined(CONFIG_NXE2000_REG_DUMP)
+#if defined(CONFIG_PMIC_REG_DUMP)
 	nxe2000_register_dump(power);
 #endif
 
@@ -624,7 +624,7 @@ static int power_nxe2000_init(void)
     return 0;
 }
 
-int power_nxe2000_battery_check(int skip, void (*bd_display_run)(char *, int, int))
+int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 {
 #if defined(CONFIG_DISPLAY_OUT)
 	lcd_info lcd = {
@@ -641,10 +641,10 @@ int power_nxe2000_battery_check(int skip, void (*bd_display_run)(char *, int, in
 		.alphablend		= 0,
 	};
 
-#if defined(CONFIG_NXE2000_REG_DUMP)
+#if defined(CONFIG_PMIC_REG_DUMP)
 	struct nxe2000_power nxe_power_config = {
 		.i2c_addr = NXE2000_I2C_ADDR,
-		.i2c_bus = CONFIG_NXE2000_I2C_BUS,
+		.i2c_bus = CONFIG_PMIC_I2C_BUS,
 	};
 #endif
 
@@ -994,7 +994,7 @@ skip_bat_animation:
 		//auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
 	}
 
-#if defined(CONFIG_NXE2000_REG_DUMP)
+#if defined(CONFIG_PMIC_REG_DUMP)
 	nxe2000_register_dump(&nxe_power_config);
 #endif
 	pmic_reg_read(p_chrg, NXE2000_REG_REGISET1, &ilim_adp);
@@ -1016,7 +1016,7 @@ enter_shutdown:
 	else
 		chrg = p_chrg->chrg->chrg_type(p_chrg, 1);
 
-#if defined(CONFIG_NXE2000_REG_DUMP)
+#if defined(CONFIG_PMIC_REG_DUMP)
 	nxe2000_register_dump(&nxe_power_config);
 #endif
 
@@ -1043,7 +1043,7 @@ enter_shutdown:
 int power_pmic_function_init(void)
 {
 	int ret = 0;
-	int i2c_bus = CONFIG_NXE2000_I2C_BUS;
+	int i2c_bus = CONFIG_PMIC_I2C_BUS;
 
 	ret = power_pmic_init(i2c_bus);
 #if defined(CONFIG_BAT_CHECK)
@@ -1056,11 +1056,11 @@ int power_pmic_function_init(void)
 	return ret;
 }
 
-int bd_pmic_init_nxe2000(void)
+int bd_pmic_init(void)
 {
 	struct nxe2000_power nxe_power_config = {
 		.i2c_addr = NXE2000_I2C_ADDR,
-		.i2c_bus = CONFIG_NXE2000_I2C_BUS,
+		.i2c_bus = CONFIG_PMIC_I2C_BUS,
 	};
 
 	nxe2000_device_setup(&nxe_power_config);

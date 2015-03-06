@@ -1,35 +1,34 @@
 /*
- * (C) Copyright 2013
- * bong kwan kook, Nexell Co, <kook@nexell.co.kr>
+ * (C) Copyright 2015
+ *  Jongshin Park, Nexell Co, <pjsin865@nexell.co.kr>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * See file CREDITS for list of people who contributed to this
+ * project.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+ * MA 02111-1307 USA
  */
 
-#ifndef __NXE2000_POWER_H_
-#define __NXE2000_POWER_H_
-
-#include <power/pmic.h>
-#include <platform.h>
-#include "nxe2000-private.h"
-
+#ifndef __AXP228_POWER_H_
+#define __AXP228_POWER_H_
 
 /*
  *	Config Value
  */
 
-#define NXE2000_I2C_ADDR					(0x64 >> 1)
+#define AXP228_I2C_ADDR				(0x68 >> 1)
 
 #define CHARGER_MIN_CURRENT					100		/* VAL(mV) */
 #define CHARGER_MAX_CURRENT					800		/* VAL(mV) */
@@ -159,16 +158,10 @@
 #define	NXE2000_DEF_DDC4_RAMP_SLOP			0		/* VAL(mV/us) = 0: 14, 1: 7, 2: 3.5, 3: prohibit, default = 14mV/us */
 #define	NXE2000_DEF_DDC5_RAMP_SLOP			0		/* VAL(mV/us) = 0: 14, 1: 7, 2: 3.5, 3: prohibit, default = 14mV/us */
 
-// psw0523 for 1.2GHz Overcurrent power down
-#if 0
-#define	NXE2000_DEF_DDC1_CUR_LIMIT			1		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
-#define	NXE2000_DEF_DDC2_CUR_LIMIT			1		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
-#define	NXE2000_DEF_DDC3_CUR_LIMIT			1		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
-#else
+
 #define	NXE2000_DEF_DDC1_CUR_LIMIT			0		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
 #define	NXE2000_DEF_DDC2_CUR_LIMIT			0		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
 #define	NXE2000_DEF_DDC3_CUR_LIMIT			0		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
-#endif
 #define	NXE2000_DEF_DDC4_CUR_LIMIT			1		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
 #define	NXE2000_DEF_DDC5_CUR_LIMIT			1		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
 
@@ -266,4 +259,4 @@
 #define NXE2000_DEF_CMPSET					0x00
 #define NXE2000_DEF_SUSPEND					0x01
 
-#endif  //#ifndef __NXE2000_POWER_H_
+#endif	/* __AXP228_POWER_H_ */

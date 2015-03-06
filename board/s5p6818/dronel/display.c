@@ -93,6 +93,7 @@ int bd_display(void)
 
 	display_rgb(CFG_DISP_OUTPUT_MODOLE, CONFIG_FB_ADDR,
 		&vsync, &syncgen, &multily, &rgb);
+	mdelay(50);
 #endif
 	return 0;
 }

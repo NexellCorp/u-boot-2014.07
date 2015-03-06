@@ -150,7 +150,7 @@ obj-$(CONFIG_CMD_MMC_SPI) += cmd_mmc_spi.o
 obj-$(CONFIG_MP) += cmd_mp.o
 obj-$(CONFIG_CMD_MTDPARTS) += cmd_mtdparts.o
 ifdef CONFIG_CMD_NAND
-COBJS-$(CONFIG_NAND_MTD) += cmd_nand.o
+obj-$(CONFIG_NAND_MTD) += cmd_nand.o
 endif
 obj-$(CONFIG_CMD_NET) += cmd_net.o
 obj-$(CONFIG_CMD_ONENAND) += cmd_onenand.o

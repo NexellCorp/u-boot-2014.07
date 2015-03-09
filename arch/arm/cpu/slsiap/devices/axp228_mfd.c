@@ -183,6 +183,29 @@ void axp228_register_dump(struct axp228_power *power)
 }
 #endif
 
+static u8 axp228_get_vol_step(int want_vol, int step, int min, int max)
+{
+	u32	vol_step = 0;
+	//u32	temp = 0;
+
+	if (want_vol < min)
+	{
+		want_vol = min;
+	}
+	else if (want_vol > max)
+	{
+		want_vol = max;
+	}
+
+	//temp		= (want_vol - min);
+	//vol_step	= (temp / step);
+
+	vol_step = (want_vol - min + step - 1) / step;
+
+
+	return	(u8)(vol_step & 0xFF);
+}
+
 static int axp228_param_setup(struct axp228_power *power)
 {
 	int ret=0, i=0;
@@ -196,6 +219,97 @@ static int axp228_param_setup(struct axp228_power *power)
 	/* Enable DC-DC 2&3 Poly-phase Function*/
 	axp228_i2c_set_bits(power, AXP22_DCDC_FREQSET, 0x10);
 #endif
+
+
+	/* REG 10H: DCDC1/2/3/4/5&ALDO1/2&DC5LDO Enable Set */
+	val = 	( AXP_ALDO2_ENABLE << AXP_ALDO2_EN_BIT)
+			|(AXP_ALDO1_ENABLE << AXP_ALDO1_EN_BIT)
+			|(AXP_DCDC5_ENABLE << AXP_DCDC5_EN_BIT)
+			|(AXP_DCDC4_ENABLE << AXP_DCDC4_EN_BIT)
+			|(AXP_DCDC3_ENABLE << AXP_DCDC3_EN_BIT)
+			|(AXP_DCDC2_ENABLE << AXP_DCDC2_EN_BIT)
+			|(AXP_DCDC1_ENABLE << AXP_DCDC1_EN_BIT)
+			|(AXP_DC5LDO_ENABLE << AXP_DC5LDO_EN_BIT);
+	axp228_i2c_write(power, AXP22_LDO_DC_EN1, val);
+
+	/* REG 12H: Power Output Control */
+	val = 	( AXP_DC1SW_ENABLE << AXP_DC1SW_EN_BIT)
+			|(AXP_DLDO4_ENABLE << AXP_DLDO4_EN_BIT)
+			|(AXP_DLDO3_ENABLE << AXP_DLDO3_EN_BIT)
+			|(AXP_DLDO2_ENABLE << AXP_DLDO2_EN_BIT)
+			|(AXP_DLDO1_ENABLE << AXP_DLDO1_EN_BIT)
+			|(AXP_ELDO3_ENABLE << AXP_ELDO3_EN_BIT)
+			|(AXP_ELDO2_ENABLE << AXP_ELDO2_EN_BIT)
+			|(AXP_ELDO1_ENABLE << AXP_ELDO1_EN_BIT);
+	axp228_i2c_write(power, AXP22_LDO_DC_EN2, val);
+
+	/* REG 13H:Power Output Control */
+	val = 	( AXP_ALDO3_ENABLE << AXP_ALDO3_EN_BIT) | 0x00 ;
+	axp228_i2c_write(power, AXP22_LDO_DC_EN3, val);
+
+	/* REG 21H:DCDC1 Output Voltage Set */
+	val = axp228_get_vol_step(AXP_DCDC1_VALUE, AXP22_DCDC1_STEP, AXP22_DCDC1_MIN, AXP22_DCDC1_MAX);
+	axp228_i2c_write(power, AXP22_DC1OUT_VOL, val);
+
+	/* REG 22H:DCDC2 Output Voltage Set */
+	val = axp228_get_vol_step(AXP_DCDC2_VALUE, AXP22_DCDC2_STEP, AXP22_DCDC2_MIN, AXP22_DCDC2_MAX);
+	axp228_i2c_write(power, AXP22_DC2OUT_VOL, val);
+
+	/* REG 23H:DCDC3 Output Voltage Set */
+	val = axp228_get_vol_step(AXP_DCDC3_VALUE, AXP22_DCDC3_STEP, AXP22_DCDC3_MIN, AXP22_DCDC3_MAX);
+	axp228_i2c_write(power, AXP22_DC3OUT_VOL, val);
+
+	/* REG 24H:DCDC4 Output Voltage Set */
+	val = axp228_get_vol_step(AXP_DCDC4_VALUE, AXP22_DCDC4_STEP, AXP22_DCDC4_MIN, AXP22_DCDC4_MAX);
+	axp228_i2c_write(power, AXP22_DC4OUT_VOL, val);
+
+	/* REG 25H:DCDC5 Output Voltage Set */
+	val = axp228_get_vol_step(AXP_DCDC5_VALUE, AXP22_DCDC5_STEP, AXP22_DCDC5_MIN, AXP22_DCDC5_MAX);
+	axp228_i2c_write(power, AXP22_DC5OUT_VOL, val);
+
+	/* REG 15H:DLDO1 Output Voltage Set */
+	val = axp228_get_vol_step(AXP_DLDO1_VALUE, AXP22_DLDO1_STEP, AXP22_DLDO1_MIN, AXP22_DLDO1_MAX);
+	axp228_i2c_write(power, AXP22_DLDO1OUT_VOL, val);
+
+	/* REG 16H:DLDO2 Output Voltage Set */
+	val = axp228_get_vol_step(AXP_DLDO2_VALUE, AXP22_DLDO2_STEP, AXP22_DLDO2_MIN, AXP22_DLDO2_MAX);
+	axp228_i2c_write(power, AXP22_DLDO2OUT_VOL, val);
+
+	/* REG 17H:DLDO3 Output Voltage Set */
+	val = axp228_get_vol_step(AXP_DLDO3_VALUE, AXP22_DLDO3_STEP, AXP22_DLDO3_MIN, AXP22_DLDO3_MAX);
+	axp228_i2c_write(power, AXP22_DLDO3OUT_VOL, val);
+
+	/* REG 18H:DLDO4 Output Voltage Set */
+	val = axp228_get_vol_step(AXP_DLDO4_VALUE, AXP22_DLDO4_STEP, AXP22_DLDO4_MIN, AXP22_DLDO4_MAX);
+	axp228_i2c_write(power, AXP22_DLDO4OUT_VOL, val);
+
+	/* REG 19H:ELDO1 Output Voltage Set */
+	val = axp228_get_vol_step(AXP_ELDO1_VALUE, AXP22_ELDO1_STEP, AXP22_ELDO1_MIN, AXP22_ELDO1_MAX);
+	axp228_i2c_write(power, AXP22_ELDO1OUT_VOL, val);
+
+	/* REG 1AH:ELDO2 Output Voltage Set */
+	val = axp228_get_vol_step(AXP_ELDO2_VALUE, AXP22_ELDO2_STEP, AXP22_ELDO2_MIN, AXP22_ELDO2_MAX);
+	axp228_i2c_write(power, AXP22_ELDO2OUT_VOL, val);
+
+	/* REG 1BH:ELDO3 Output Voltage Set */
+	val = axp228_get_vol_step(AXP_ELDO3_VALUE, AXP22_ELDO3_STEP, AXP22_ELDO3_MIN, AXP22_ELDO3_MAX);
+	axp228_i2c_write(power, AXP22_ELDO3OUT_VOL, val);
+
+	/* REG 1CH:DC5LDO Output Voltage Set */
+	val = axp228_get_vol_step(AXP_DC5LDO_VALUE, AXP22_DC5LDO_STEP, AXP22_DC5LDO_MIN, AXP22_DC5LDO_MAX);
+	axp228_i2c_write(power, AXP22_DC5LDOOUT_VOL, val);
+
+	/* REG 28H:ALDO1 Output Voltage Set */
+	val = axp228_get_vol_step(AXP_ALDO1_VALUE, AXP22_ALDO1_STEP, AXP22_ALDO1_MIN, AXP22_ALDO1_MAX);
+	axp228_i2c_write(power, AXP22_ALDO1OUT_VOL, val);
+
+	/* REG 29H:ALDO2 Output Voltage Set */
+	val = axp228_get_vol_step(AXP_ALDO2_VALUE, AXP22_ALDO2_STEP, AXP22_ALDO2_MIN, AXP22_ALDO2_MAX);
+	axp228_i2c_write(power, AXP22_ALDO2OUT_VOL, val);
+
+	/* REG 2AH:ALDO3 Output Voltage Set */
+	val = axp228_get_vol_step(AXP_ALDO3_VALUE, AXP22_ALDO3_STEP, AXP22_ALDO3_MIN, AXP22_ALDO3_MAX);
+	axp228_i2c_write(power, AXP22_ALDO3OUT_VOL, val);
 
 
 	/* PWREN Control1 */
@@ -549,6 +663,35 @@ int bd_pmic_init(void)
 }
 
 #if defined(CONFIG_BAT_CHECK)
+static int skip_check(struct power_battery *pb, int bat_state)
+{
+	static int skip_bat_ani = 0;
+	int ret = 0;
+
+	if(bat_state != 3)
+	{
+		if (!gpio_get_value(GPIO_POWER_KEY_DET))
+			skip_bat_ani++;
+		else
+			skip_bat_ani = 0;
+
+		if ((skip_bat_ani > 20) && (pb->bat->capacity > BATLOW_ANIMATION_CAP))
+		{
+			printf("\n");
+			ret = 1;
+		}
+	}
+
+	if(ctrlc())
+	{
+		printf("\n");
+		ret = 1;
+	}
+
+	return ret;	
+}
+
+
 int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 {
 #if defined(CONFIG_DISPLAY_OUT)
@@ -580,8 +723,8 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 	int chrg;
 	int bl_duty = CFG_LCD_PRI_PWM_DUTYCYCLE;
 	int show_bat_state = 0;
-	int power_key_depth = 0;
-	u8  power_depth = 10;
+	int skip_bat_ani = 0;
+	u8  power_depth = 6;
 	u32 chg_state=0, val=0;
 
 	PMIC_DBGOUT("%s\n", __func__);
@@ -635,33 +778,33 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 
 	if(pb->bat->capacity <= BATLOW_ANIMATION_CAP)
 	{
-		bl_duty = (CFG_LCD_PRI_PWM_DUTYCYCLE / 25);
 		show_bat_state = 2;
-		power_key_depth = 0;
-
+		skip_bat_ani = 0;
 		if(chrg == CHARGER_NO || chrg == CHARGER_UNKNOWN)
-			power_depth = 4;
+		{
+			bl_duty = (CFG_LCD_PRI_PWM_DUTYCYCLE / 25);
+			power_depth = 3;
+		}
 	}
 	else if(chrg == CHARGER_NO || chrg == CHARGER_UNKNOWN)
 	{
 		show_bat_state = 0;
-		power_key_depth = 2;
+		skip_bat_ani = 2;
 	}
 	else
 	{
-		bl_duty = CFG_LCD_PRI_PWM_DUTYCYCLE;
 		show_bat_state = 1;
-		power_key_depth = 0;
+		skip_bat_ani = 0;
 	}
 
 	/*===========================================================*/
 	if(skip)
-		power_key_depth = 2;
+		skip_bat_ani = 2;
 
 	/*===========================================================*/
-    if (power_key_depth > 1)
+    if (skip_bat_ani > 1)
     {
-        bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, bl_duty, 1);
+        //bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, bl_duty, 1);
         goto skip_bat_animation;
     }
     else if (show_bat_state)
@@ -676,12 +819,19 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 	{
 		int lcdw = lcd.lcd_width, lcdh = lcd.lcd_height;
 		int bmpw = 240, bmph = 320;
-		int bw = 82, bh = 55;
-		int bx = 79, by = 60+4;
+#if (CONFIG_BAT_GAUGE_CNT == 10)
+		int bw = 82, bh = 22;
+		int bx = 80, by = 61;
 		int sx, sy, dy, str_dy, clr_str_size;
 		unsigned int color = (54<<16) + (221 << 8) + (19);
-		int i = 0;
-		//u32 time_pwr_prev;
+		int i=0, cnt=0, time_delay = 1000, msec = 10;
+#else
+		int bw = 82, bh = 55;
+		int bx = 80, by = 68;
+		int sx, sy, dy, str_dy, clr_str_size;
+		unsigned int color = (54<<16) + (221 << 8) + (19);
+		int i=0, cnt=0, msec = 10;
+#endif
 		char *str_charging		= " Charging...   ";
 		char *str_discharging	= " Discharging...";
 		char *str_lowbatt  		= " Low Battery...";
@@ -690,7 +840,7 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 		clr_str_size = max(strlen(str_charging), strlen(str_lowbatt));
 		sx = (lcdw - bmpw)/2 + bx;
 		sy = (lcdh - bmph)/2 + by;
-		dy = sy + (bh+4)*3;
+		dy = sy + (bh+2)*(CONFIG_BAT_GAUGE_CNT-1);
 		str_dy = dy;
 
 		if(!p_chrg->chrg->chrg_bat_present(p_chrg))
@@ -698,8 +848,6 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 			printf("## No Battery \n");
 			show_bat_state = 3;
 		}
-
-		//printf(".");
 
 		lcd_debug_init(&lcd);
 
@@ -715,53 +863,108 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 				lcd_draw_text(str_charging, (lcdw - strlen(str_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
 		}
 
-		//time_pwr_prev = nxp_rtc_get();
-
-		while(!ctrlc())
+		while(1)
 		{
 			printf(".");
-			if(power_depth > 0)
+			p_fg->fg->fg_battery_check(p_fg, p_bat);
+
+#if (CONFIG_BAT_GAUGE_CNT == 10)
+			if(pb->bat->capacity < 50)
+				time_delay = 100;
+			else
+				time_delay = 50;
+
+			if(pb->bat->capacity < 10)
+				cnt = 1;
+			else if(pb->bat->capacity < 20)
+				cnt = 2;
+			else if(pb->bat->capacity < 30)
+				cnt = 3;
+			else if(pb->bat->capacity < 40)
+				cnt = 4;	
+			else if(pb->bat->capacity < 50)
+				cnt = 5;	
+			else if(pb->bat->capacity < 60)
+				cnt = 6;	
+			else if(pb->bat->capacity < 70)
+				cnt = 7;	
+			else if(pb->bat->capacity < 80)
+				cnt = 8;	
+			else if(pb->bat->capacity < 90)
+				cnt = 9;	
+			else
+				cnt = 10;
+
+			if(i == 0)
+				color = (255<<16) + (0 << 8) + (0);
+			else if(i == 1)
+				color = (255<<16) + (80 << 8) + (0);
+			else if(i ==  2)
+				color = (255<<16) + (150 << 8) + (0);
+			else if(i ==  3)
+				color = (255<<16) + (200 << 8) + (0);
+			else if(i ==  4)
+				color = (255<<16) + (255 << 8) + (0);
+			else if(i ==  5)
+				color = (255<<16) + (255 << 8) + (0);
+			else if(i ==  6)
+				color = (200<<16) + (255 << 8) + (0);
+			else if(i ==  7)
+				color = (150<<16) + (255 << 8) + (0);	
+			else if(i ==  8)
+				color = (80<<16) + (255 << 8) + (0);
+			else
+				color = (0<<16) + (255 << 8) + (0);
+
+#else
+			if(pb->bat->capacity < 20)
 			{
-				bd_display_run(NULL, bl_duty, 1);
-				power_depth--;
+				color = (255<<16) + (0 << 8) + (0);		cnt = 1;
+			}
+			else if(pb->bat->capacity < 50)
+			{
+				color = (255<<16) + (150 << 8) + (0);		cnt = 2;	
+			}
+			else if(pb->bat->capacity < 75)
+			{
+				color = (150<<16) + (255 << 8) + (0);		cnt = 3;	
 			}
 			else
 			{
-				bd_display_run(NULL, 0, 0);
-				memset((void*)lcd.fb_base, 0, lcd.lcd_width * lcd.lcd_height * (lcd.bit_per_pixel/8));
+				color = (0<<16) + (255 << 8) + (0);		cnt = 4;
 			}
-
-			p_fg->fg->fg_battery_check(p_fg, p_bat);
-
-			if(show_bat_state != 3)
+#endif
+			if(skip_check(pb, show_bat_state))
 			{
-				if (!gpio_get_value(GPIO_POWER_KEY_DET))
-					power_key_depth++;
-				else
-					power_key_depth = 0;
-
-				if ((power_key_depth > 1) && (pb->bat->capacity > BATLOW_ANIMATION_CAP))
-				{
-
-					printf("\n");
-					break;
-				}
+		        goto skip_bat_animation;
 			}
 
 			/* Draw battery status */
-			if (power_depth > 0)
+			if(power_depth > 0)
 			{
 				i++;
-				if(i<5)
+				if(i <= cnt)
 				{
 					lcd_fill_rectangle(sx, dy, bw, bh, color, 0);
-					dy -= (bh+4);
+					dy -= (bh+2);
 				}
 				else
 				{
-					dy = sy + (bh+4)*3;
+					power_depth--;
+#if (CONFIG_BAT_GAUGE_CNT == 10)
+					while(msec--)
+					{
+						if(skip_check(pb, show_bat_state))
+						{
+					        goto skip_bat_animation;
+						}
+						udelay(100000);
+					}
+					msec = 10;
+#endif
 					printf("\n");
 					lcd_draw_boot_logo(CONFIG_FB_ADDR, CFG_DISP_PRI_RESOL_WIDTH, CFG_DISP_PRI_RESOL_HEIGHT, CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
+					dy = sy + (bh+2)*(CONFIG_BAT_GAUGE_CNT-1);
 					i = 0;
 				}
 
@@ -777,23 +980,35 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 						lcd_draw_text(str_charging, (lcdw - strlen(str_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
 				}
 			}
-
-			if(!power_depth)
+			else
 			{
 				printf("\n");
+				lcd_draw_boot_logo(CONFIG_FB_ADDR, CFG_DISP_PRI_RESOL_WIDTH, CFG_DISP_PRI_RESOL_HEIGHT, CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
 				goto enter_shutdown;
 			}
-
-			mdelay(1000);
+#if (CONFIG_BAT_GAUGE_CNT == 10)
+			mdelay(time_delay);
+#else
+			while(msec--)
+			{
+				if(skip_check(pb, show_bat_state))
+				{
+			        goto skip_bat_animation;
+				}
+				udelay(100000);
+			}
+			msec = 10;
+#endif
 		}
-		printf("\n");
-		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
-		printf("## Skip BAT Animation. \n");
-		mdelay(500);
+
 	}
 
 skip_bat_animation:
 #endif  /* CONFIG_DISPLAY_OUT */
+
+	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, bl_duty, 1);
+	printf("## Skip BAT Animation. \n");
+	//mdelay(200);
 
 #if defined(CONFIG_PMIC_REG_DUMP)
 	axp228_register_dump(&nxe_power_config);
@@ -811,7 +1026,7 @@ skip_bat_animation:
 	printf("## battery_cap : %d%%\n", pb->bat->capacity);
 	printf("## Booting \n");
 
-	chrg = p_muic->chrg->chrg_type(p_muic, 1);
+	//chrg = p_muic->chrg->chrg_type(p_muic, 1);
 	if (chrg == CHARGER_USB)
 	{
 		ret = 1;

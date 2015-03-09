@@ -27,6 +27,8 @@
 
 #include <axp228_cfg.h>
 
+#define AXP228_I2C_ADDR				(0x68 >> 1)
+
 /* AXP228 registers */
 #define	AXP228_NUM_OF_REGS			0xEF
 
@@ -139,6 +141,78 @@
 
 
 /* register bit position */
+
+
+/* bit definitions for AXP events ,irq event */
+/*  AXP22  */
+#define	AXP22_IRQ_USBLO				(1 <<  1)
+#define	AXP22_IRQ_USBRE				(1 <<  2)
+#define	AXP22_IRQ_USBIN				(1 <<  3)
+#define	AXP22_IRQ_USBOV				(1 <<  4)
+#define	AXP22_IRQ_ACRE				(1 <<  5)
+#define	AXP22_IRQ_ACIN				(1 <<  6)
+#define	AXP22_IRQ_ACOV				(1 <<  7)
+#define	AXP22_IRQ_TEMLO				(1 <<  8)
+#define	AXP22_IRQ_TEMOV				(1 <<  9)
+#define	AXP22_IRQ_CHAOV				(1 << 10)
+#define	AXP22_IRQ_CHAST				(1 << 11)
+#define	AXP22_IRQ_BATATOU			(1 << 12)
+#define	AXP22_IRQ_BATATIN 			(1 << 13)
+#define AXP22_IRQ_BATRE				(1 << 14)
+#define AXP22_IRQ_BATIN				(1 << 15)
+#define	AXP22_IRQ_POKLO				(1 << 16)
+#define	AXP22_IRQ_POKSH				(1 << 17)
+#define AXP22_IRQ_CHACURLO			(1 << 22)
+#define AXP22_IRQ_ICTEMOV			(1 << 23)
+#define AXP22_IRQ_EXTLOWARN2		(1 << 24)
+#define AXP22_IRQ_EXTLOWARN1		(1 << 25)
+#define AXP22_IRQ_GPIO0TG			((uint64_t)1 << 32)
+#define AXP22_IRQ_GPIO1TG			((uint64_t)1 << 33)
+#define AXP22_IRQ_GPIO2TG			((uint64_t)1 << 34)
+#define AXP22_IRQ_GPIO3TG			((uint64_t)1 << 35)
+
+#define AXP22_IRQ_PEKFE     		((uint64_t)1 << 37)
+#define AXP22_IRQ_PEKRE     		((uint64_t)1 << 38)
+#define AXP22_IRQ_TIMER     		((uint64_t)1 << 39)
+
+
+/* Status Query Interface */
+/*  AXP22  */
+#define AXP22_STATUS_SOURCE			(1 << 0)
+#define AXP22_STATUS_ACUSBSH		(1 << 1)
+#define AXP22_STATUS_BATCURDIR		(1 << 2)
+#define AXP22_STATUS_USBLAVHO		(1 << 3)
+#define AXP22_STATUS_USBVA			(1 << 4)
+#define AXP22_STATUS_USBEN			(1 << 5)
+#define AXP22_STATUS_ACVA			(1 << 6)
+#define AXP22_STATUS_ACEN			(1 << 7)
+
+#define AXP22_STATUS_BATINACT		(1 << 3)
+#define AXP22_STATUS_BATEN			(1 << 5)
+#define AXP22_STATUS_INCHAR			(1 << 6)
+#define AXP22_STATUS_ICTEMOV		(1 << 7)
+
+
+#define AXP_DC5LDO_EN_BIT			(0)
+#define AXP_DCDC1_EN_BIT			(1)
+#define AXP_DCDC2_EN_BIT			(2)
+#define AXP_DCDC3_EN_BIT			(3)
+#define AXP_DCDC4_EN_BIT			(4)
+#define AXP_DCDC5_EN_BIT			(5)
+#define AXP_ALDO1_EN_BIT			(6)
+#define AXP_ALDO2_EN_BIT			(7)
+
+#define AXP_ELDO1_EN_BIT			(0)
+#define AXP_ELDO2_EN_BIT			(1)
+#define AXP_ELDO3_EN_BIT			(2)
+#define AXP_DLDO1_EN_BIT			(3)
+#define AXP_DLDO2_EN_BIT			(4)
+#define AXP_DLDO3_EN_BIT			(5)
+#define AXP_DLDO4_EN_BIT			(6)
+#define AXP_DC1SW_EN_BIT			(7)
+
+#define AXP_ALDO3_EN_BIT			(7)
+
 #define AXP_DCDC1_BIT				(7)
 #define AXP_DCDC2_BIT				(6)
 #define AXP_DCDC3_BIT				(5)
@@ -157,104 +231,67 @@
 #define AXP_ELDO3_BIT				(1)
 #define AXP_DC5LDO_BIT				(0)
 
-
-
-/* bit definitions for AXP events ,irq event */
-/*  AXP22  */
-#define	AXP22_IRQ_USBLO				( 1 <<  1)
-#define	AXP22_IRQ_USBRE				( 1 <<  2)
-#define	AXP22_IRQ_USBIN				( 1 <<  3)
-#define	AXP22_IRQ_USBOV				( 1 <<  4)
-#define	AXP22_IRQ_ACRE				( 1 <<  5)
-#define	AXP22_IRQ_ACIN				( 1 <<  6)
-#define	AXP22_IRQ_ACOV				( 1 <<  7)
-#define	AXP22_IRQ_TEMLO				( 1 <<  8)
-#define	AXP22_IRQ_TEMOV				( 1 <<  9)
-#define	AXP22_IRQ_CHAOV				( 1 << 10)
-#define	AXP22_IRQ_CHAST				( 1 << 11)
-#define	AXP22_IRQ_BATATOU			( 1 << 12)
-#define	AXP22_IRQ_BATATIN 			( 1 << 13)
-#define AXP22_IRQ_BATRE				( 1 << 14)
-#define AXP22_IRQ_BATIN				( 1 << 15)
-#define	AXP22_IRQ_POKLO				( 1 << 16)
-#define	AXP22_IRQ_POKSH				( 1 << 17)
-#define AXP22_IRQ_CHACURLO			( 1 << 22)
-#define AXP22_IRQ_ICTEMOV			( 1 << 23)
-#define AXP22_IRQ_EXTLOWARN2		( 1 << 24)
-#define AXP22_IRQ_EXTLOWARN1		( 1 << 25)
-#define AXP22_IRQ_GPIO0TG			((uint64_t)1 << 32)
-#define AXP22_IRQ_GPIO1TG			((uint64_t)1 << 33)
-#define AXP22_IRQ_GPIO2TG			((uint64_t)1 << 34)
-#define AXP22_IRQ_GPIO3TG			((uint64_t)1 << 35)
-
-#define AXP22_IRQ_PEKFE     		((uint64_t)1 << 37)
-#define AXP22_IRQ_PEKRE     		((uint64_t)1 << 38)
-#define AXP22_IRQ_TIMER     		((uint64_t)1 << 39)
-
-
-/* Status Query Interface */
-/*  AXP22  */
-#define AXP22_STATUS_SOURCE			( 1 <<  0)
-#define AXP22_STATUS_ACUSBSH		( 1 <<  1)
-#define AXP22_STATUS_BATCURDIR		( 1 <<  2)
-#define AXP22_STATUS_USBLAVHO		( 1 <<  3)
-#define AXP22_STATUS_USBVA			( 1 <<  4)
-#define AXP22_STATUS_USBEN			( 1 <<  5)
-#define AXP22_STATUS_ACVA			( 1 <<  6)
-#define AXP22_STATUS_ACEN			( 1 <<  7)
-
-#define AXP22_STATUS_BATINACT		( 1 << 3)
-#define AXP22_STATUS_BATEN			( 1 << 5)
-#define AXP22_STATUS_INCHAR			( 1 << 6)
-#define AXP22_STATUS_ICTEMOV		( 1 << 7)
-
+#define AXP22_DCDC1_MIN				1600000		/* VCC3P3_SYS			DCDC1	 : 	AXP22:1600~3400, 100/setp*/
+#define AXP22_DCDC1_MAX				3400000
+#define AXP22_DCDC1_STEP			100000
+#define AXP22_DCDC2_MIN				600000		/* VCC1P1_ARM			DCDC2	£º 	AXP22:  600~1540,   20/step*/
+#define AXP22_DCDC2_MAX				1540000
+#define AXP22_DCDC2_STEP			20000
+#define AXP22_DCDC3_MIN				600000		/* VCC1P0_CORE		DCDC3	£º 	AXP22:  600~1860,   20/step*/
+#define AXP22_DCDC3_MAX				1860000
+#define AXP22_DCDC3_STEP			20000
+#define AXP22_DCDC4_MIN				600000		/* VCC1P5_SYS			DCDC4	£º 	AXP22:  600~1540,   20/step*/
+#define AXP22_DCDC4_MAX				1540000
+#define AXP22_DCDC4_STEP			20000
+#define AXP22_DCDC5_MIN				1000000		/* VCC1P5_DDR			DCDC5	£º 	AXP22:1000~2550,   50/step*/
+#define AXP22_DCDC5_MAX				2550000
+#define AXP22_DCDC5_STEP			50000
 #define AXP22_LDO1_MIN				3000000
 #define AXP22_LDO1_MAX				3000000
-#define AXP22_ALDO1_MIN				700000
+#define AXP22_ALDO1_MIN				700000		/* VCC3P3_ALIVE		ALDO1	£º 	AXP22:  700~3300, 100/step*/	
 #define AXP22_ALDO1_MAX				3300000
-#define AXP22_ALDO2_MIN				700000
+#define AXP22_ALDO1_STEP			100000
+#define AXP22_ALDO2_MIN				700000		/* VCC1P8_ALIVE		ALDO2	£º 	AXP22:  700~3300, 100/step*/
 #define AXP22_ALDO2_MAX				3300000
-#define AXP22_ALDO3_MIN				700000
+#define AXP22_ALDO2_STEP			100000
+#define AXP22_ALDO3_MIN				700000		/* VCC1P0_ALIVE		ALDO3	£º 	AXP22:  700~3300, 100/step*/
 #define AXP22_ALDO3_MAX				3300000
-#define AXP22_DLDO1_MIN				700000
+#define AXP22_ALDO3_STEP			100000
+#define AXP22_DLDO1_MIN				700000		/* VCC_WIDE			DLDO1	£º 	AXP22:  700~3300, 100/step*/
 #define AXP22_DLDO1_MAX				3300000
-#define AXP22_DLDO2_MIN				700000
+#define AXP22_DLDO1_STEP			100000
+#define AXP22_DLDO2_MIN				700000		/* VCC1P8_CAM			DLDO2	£º 	AXP22 : 700~3300, 100/step*/
 #define AXP22_DLDO2_MAX				3300000
-#define AXP22_DLDO3_MIN				700000
+#define AXP22_DLDO2_STEP			100000
+#define AXP22_DLDO3_MIN				700000		/* NC					DLDO3	£º 	AXP22:  700~3300, 100/step*/
 #define AXP22_DLDO3_MAX				3300000
-#define AXP22_DLDO4_MIN				700000
+#define AXP22_DLDO3_STEP			100000
+#define AXP22_DLDO4_MIN				700000		/* NC					DLDO4	£º 	AXP22:  700~3300, 100/step*/
 #define AXP22_DLDO4_MAX				3300000
-#define AXP22_ELDO1_MIN				700000
+#define AXP22_DLDO4_STEP			100000
+#define AXP22_ELDO1_MIN				700000		/* VCC1P8_SYS			ELDO1	£º 	AXP22:  700~3300, 100/step*/
 #define AXP22_ELDO1_MAX				3300000
-#define AXP22_ELDO2_MIN				700000
+#define AXP22_ELDO1_STEP			100000
+#define AXP22_ELDO2_MIN				700000		/* VCC3P3_WIFI			ELDO2	£º 	AXP22:  700~3300, 100/step*/
 #define AXP22_ELDO2_MAX				3300000
-#define AXP22_ELDO3_MIN				700000
+#define AXP22_ELDO2_STEP			100000
+#define AXP22_ELDO3_MIN				700000		/* NC					ELDO3	£º 	AXP22:  700~3300, 100/step*/
 #define AXP22_ELDO3_MAX				3300000
-#define AXP22_DC5LDO_MIN			700000
+#define AXP22_ELDO3_STEP			100000
+#define AXP22_DC5LDO_MIN			700000		/* VCC1P2_CVBS		DC5LDO	£º 	AXP22:  700~1400, 100/step*/
 #define AXP22_DC5LDO_MAX			1400000
-
-#define AXP22_DCDC1_MIN				1600000
-#define AXP22_DCDC1_MAX				3400000
-#define AXP22_DCDC2_MIN				600000
-#define AXP22_DCDC2_MAX				1540000
-#define AXP22_DCDC3_MIN				600000
-#define AXP22_DCDC3_MAX				1860000
-#define AXP22_DCDC4_MIN				600000
-#define AXP22_DCDC4_MAX				1540000
-#define AXP22_DCDC5_MIN				1000000
-#define AXP22_DCDC5_MAX				2550000
-
+#define AXP22_DC5LDO_STEP			100000
 #define AXP22_LDOIO0_MIN			700000
 #define AXP22_LDOIO0_MAX			3300000
 #define AXP22_LDOIO1_MIN			700000
 #define AXP22_LDOIO1_MAX			3300000
+
 
 /* ETC */
 #define	AXP228_REG_BANKSEL			0xFF
 
 
 #define ABS(x)						((x) >0 ? (x) : -(x) )
-
 
 
 #define CFG_POLY_PHASE_FUNCTION		(1) /* DC-DC 2&3 Poly-phase function enable/disable,   0: disable   1: enable */
@@ -281,41 +318,6 @@
 
 /* set lowe power animation level */
 #define BATLOW_ANIMATION_CAP		1		/* AXP22:0%~100% */
-
-
-/* OCV Table */
-#define OCVREG0						0		//3.13V
-#define OCVREG1						0		//3.27V
-#define OCVREG2						0		//3.34V
-#define OCVREG3						0		//3.41V
-#define OCVREG4						0		//3.48V
-#define OCVREG5						0		//3.52V
-#define OCVREG6						0		//3.55V
-#define OCVREG7						0		//3.57V
-#define OCVREG8						0		//3.59V
-#define OCVREG9						0		//3.61V
-#define OCVREGA						1		//3.63V
-#define OCVREGB						2		//3.64V
-#define OCVREGC						3		//3.66V
-#define OCVREGD						8		//3.70V
-#define OCVREGE						15		//3.73V 
-#define OCVREGF						23		//3.77V
-#define OCVREG10					29		//3.78V
-#define OCVREG11					37		//3.80V
-#define OCVREG12					42		//3.82V 
-#define OCVREG13					48		//3.84V
-#define OCVREG14					51		//3.85V
-#define OCVREG15					55		//3.87V
-#define OCVREG16					62		//3.91V
-#define OCVREG17					68		//3.94V
-#define OCVREG18					73		//3.98V
-#define OCVREG19					78		//4.01V
-#define OCVREG1A					82		//4.05V
-#define OCVREG1B					86		//4.08V
-#define OCVREG1C					89		//4.10V 
-#define OCVREG1D					93		//4.12V
-#define OCVREG1E					96		//4.14V
-#define OCVREG1F					100		//4.15V
 
 /* pek open time set */
 #define PEKOPEN						1000		/* AXP22:128/1000/2000/3000 */
@@ -365,9 +367,6 @@
 #define BATDET						1
 
 #define BATRDC						137 //100 
-
-#define BATCAP						3000
-
 
 
 

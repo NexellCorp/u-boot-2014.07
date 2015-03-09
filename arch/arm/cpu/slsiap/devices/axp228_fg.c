@@ -113,7 +113,6 @@ static int axp228_power_check_battery(struct pmic *p, struct pmic *bat)
 
 	PMIC_DBGOUT("%s\n", __func__);
 
-
 	for(i=0; i<5; i++)
 	{
 		mdelay(1);

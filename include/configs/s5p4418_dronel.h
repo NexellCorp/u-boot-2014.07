@@ -420,7 +420,6 @@
 		//#define CONFIG_POWER_BATTERY_SMALL
 			#ifndef CONFIG_POWER_BATTERY_SMALL
 			#define CONFIG_BAT_CHECK
-			#define CONFIG_BAT_GAUGE_CNT		4
 			#define CONFIG_NXP_RTC_USE
 			#endif
 	#endif

@@ -663,6 +663,8 @@ int bd_pmic_init(void)
 }
 
 #if defined(CONFIG_BAT_CHECK)
+#define CONFIG_BAT_GAUGE_CNT		4
+
 static int skip_check(struct power_battery *pb, int bat_state)
 {
 	static int skip_bat_ani = 0;

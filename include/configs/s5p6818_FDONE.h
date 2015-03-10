@@ -133,7 +133,8 @@
 #define CONFIG_BOOTFILE					"uImage"  		/* File to load	*/
 
 //#define CONFIG_BOOTCOMMAND "ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 root.img.gz;bootm 0x48000000"
-#define CONFIG_BOOTCOMMAND "ext4load mmc 2:1 0x48000000 uImage;bootm 0x48000000"
+//#define CONFIG_BOOTCOMMAND "ext4load mmc 2:1 0x48000000 uImage;bootm 0x48000000"
+#define CONFIG_BOOTCOMMAND "ext4load mmc 2:1 0x40008000 Image;goimage 0x40008000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options

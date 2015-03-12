@@ -98,9 +98,9 @@
 #define CONFIG_ARCH_CPU_INIT													/* board_init_f->init_sequence, call arch_cpu_init */
 #define	CONFIG_BOARD_EARLY_INIT_F												/* board_init_f->init_sequence, call board_early_init_f */
 #define	CONFIG_BOARD_LATE_INIT													/* board_init_r, call board_early_init_f */
-#define	CONFIG_DISPLAY_CPUINFO													/* board_init_f->init_sequence, call print_cpuinfo */
+//#define	CONFIG_DISPLAY_CPUINFO													[> board_init_f->init_sequence, call print_cpuinfo <]
 #define	CONFIG_SYS_DCACHE_OFF													/* board_init_f, CONFIG_SYS_ICACHE_OFF */
-#define	CONFIG_ARCH_MISC_INIT													/* board_init_r, call arch_misc_init */
+//#define	CONFIG_ARCH_MISC_INIT													[> board_init_r, call arch_misc_init <]
 //#define	CONFIG_SYS_ICACHE_OFF
 
 #define CONFIG_MMU_ENABLE
@@ -111,13 +111,11 @@
 /*-----------------------------------------------------------------------
  *	U-Boot default cmd
  */
-#define CONFIG_CMD_MEMORY   /* md mm nm mw cp cmp crc base loop mtest */
 //#define CONFIG_CMD_NET      [> bootp, tftpboot, rarpboot    <]
-#define CONFIG_CMD_RUN      /* run command in env variable  */
 #define CONFIG_CMD_SAVEENV  /* saveenv          */
-#define CONFIG_CMD_SOURCE   /* "source" command support */
+//#define CONFIG_CMD_SOURCE   [> "source" command support <]
 #define CONFIG_CMD_BOOTD	/* "boot" command support */
-#define	CONFIG_CMD_MEMTEST
+//#define	CONFIG_CMD_MEMTEST
 
 /*-----------------------------------------------------------------------
  *	U-Boot Environments
@@ -157,9 +155,9 @@
 /*-----------------------------------------------------------------------
  * Etc Command definition
  */
-#define	CONFIG_CMD_BDI					/* board info	*/
-#define	CONFIG_CMD_IMI					/* image info	*/
-#define	CONFIG_CMD_MEMORY
+//#define	CONFIG_CMD_BDI					[> board info	<]
+//#define	CONFIG_CMD_IMI					[> image info	<]
+//#define	CONFIG_CMD_MEMORY
 #define	CONFIG_CMD_RUN					/* run commands in an environment variable	*/
 #define CONFIG_CMDLINE_EDITING			/* add command line history	*/
 #define	CONFIG_CMDLINE_TAG				/* use bootargs commandline */
@@ -170,6 +168,9 @@
 
 #undef	CONFIG_BOOTM_NETBSD
 #undef	CONFIG_BOOTM_RTEMS
+#undef  CONFIG_BOOTM_VXWORKS
+#undef  CONFIG_CMD_IMPORTENV
+#undef  CONFIG_CMD_EXPORTENV
 // #undef	CONFIG_GZIP
 
 /*-----------------------------------------------------------------------
@@ -664,6 +665,8 @@
  * Debug message
  */
 //#define DEBUG							/* u-boot debug macro, nand, ethernet,... */
+#define CONFIG_SILENT_CONSOLE
+#define CONFIG_SYS_CONSOLE_INFO_QUIET
 
 #define CONFIG_VIP
 #define CONFIG_MLC_VIDEO

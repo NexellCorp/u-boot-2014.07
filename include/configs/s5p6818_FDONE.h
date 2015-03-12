@@ -619,9 +619,9 @@
 /*-----------------------------------------------------------------------
  * Logo command
  */
-#define CONFIG_DISPLAY_OUT
+//#define CONFIG_DISPLAY_OUT
 
-#define CONFIG_LOGO_DEVICE_MMC
+//#define CONFIG_LOGO_DEVICE_MMC
 
 #if defined(CONFIG_LOGO_DEVICE_MMC) && defined(CONFIG_LOGO_DEVICE_NAND)
 #error "Duplicated config for logo device!!!"
@@ -635,7 +635,7 @@
 
 
 	/* display logo */
-	#define CONFIG_LOGO_NEXELL				/* Draw loaded bmp file to FB or fill FB */
+    #define CONFIG_LOGO_NEXELL
 //	#define CONFIG_CMD_LOGO_LOAD
 
 	/* Logo command: board.c */

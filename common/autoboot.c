@@ -188,7 +188,7 @@ static int abortboot_normal(int bootdelay)
 		printf("\b\b\b%2d ", bootdelay);
 	}
 
-	putc('\n');
+	/*putc('\n');*/
 
 #ifdef CONFIG_SILENT_CONSOLE
 	if (abort)
@@ -225,6 +225,7 @@ static void process_fdt_options(const void *blob)
 #endif /* CONFIG_OF_CONTROL */
 }
 
+#if 0
 const char *bootdelay_process(void)
 {
 	char *s;
@@ -276,6 +277,14 @@ const char *bootdelay_process(void)
 
 	return s;
 }
+#else
+const char *bootdelay_process(void)
+{
+	char *s = getenv("bootcmd");
+	stored_bootdelay = 0;
+	return s;
+}
+#endif
 
 void autoboot_command(const char *s)
 {

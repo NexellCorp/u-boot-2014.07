@@ -123,12 +123,12 @@
 /* refer to common/env_common.c	*/
 #define CONFIG_BOOTDELAY	   			0
 #define CONFIG_ZERO_BOOTDELAY_CHECK
-#define CONFIG_ETHADDR		   			00:e2:1c:ba:e8:60
-#define CONFIG_NETMASK		   			255.255.255.0
-#define CONFIG_IPADDR					192.168.1.165
-#define CONFIG_SERVERIP					192.168.1.164
-#define CONFIG_GATEWAYIP				192.168.1.254
-#define CONFIG_BOOTFILE					"uImage"  		/* File to load	*/
+//#define CONFIG_ETHADDR		   			00:e2:1c:ba:e8:60
+//#define CONFIG_NETMASK		   			255.255.255.0
+//#define CONFIG_IPADDR					192.168.1.165
+//#define CONFIG_SERVERIP					192.168.1.164
+//#define CONFIG_GATEWAYIP				192.168.1.254
+//#define CONFIG_BOOTFILE					"uImage"  		[> File to load	<]
 
 //#define CONFIG_BOOTCOMMAND "ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 root.img.gz;bootm 0x48000000"
 //#define CONFIG_BOOTCOMMAND "ext4load mmc 2:1 0x48000000 uImage;bootm 0x48000000"
@@ -147,7 +147,7 @@
  * allow to overwrite serial and ethaddr
  */
 #define CONFIG_ENV_OVERWRITE
-#define CONFIG_SYS_HUSH_PARSER			/* use "hush" command parser	*/
+//#define CONFIG_SYS_HUSH_PARSER			[> use "hush" command parser	<]
 #ifdef 	CONFIG_SYS_HUSH_PARSER
 #define CONFIG_SYS_PROMPT_HUSH_PS2	"> "
 #endif
@@ -514,7 +514,7 @@
 	#define CONFIG_MMC2_CLOCK			50000000
 	#define CONFIG_MMC2_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(3)| DW_MMC_SAMPLE_PHASE(2)
     #define CONFIG_MMC2_BUS_WIDTH       8
-    #define CONFIG_MMC2_TRANS_MODE      0 //1 : DDR_MODE, 0: SDR_MODE
+    #define CONFIG_MMC2_TRANS_MODE      1 //1 : DDR_MODE, 0: SDR_MODE
 
 	#define CONFIG_DWMMC
 	#define CONFIG_NXP_DWMMC

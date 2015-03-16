@@ -668,8 +668,8 @@
 #define CONFIG_SILENT_CONSOLE
 #define CONFIG_SYS_CONSOLE_INFO_QUIET
 
-#define CONFIG_VIP
-#define CONFIG_MLC_VIDEO
+//#define CONFIG_VIP
+//#define CONFIG_MLC_VIDEO
 
 #if defined(CONFIG_VIP)
 // start address must be checked by kernel booting

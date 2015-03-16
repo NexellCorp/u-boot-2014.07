@@ -283,13 +283,13 @@ typedef struct __WARN__
 
 #elif defined (__BUILD_MODE_ARM_UBOOT_DEVICE_DRIVER__)
 
-#if   defined (CONFIG_MACH_NXP4330Q)
+#if   defined (__SUPPORT_MIO_UBOOT_CHIP_NXP4330__)
 #define __SUPPORT_MIO_CHIP_NXP4330__
-#elif defined (CONFIG_MACH_S5P4418)
+#elif defined (__SUPPORT_MIO_UBOOT_CHIP_S5P4418__)
 #define __SUPPORT_MIO_CHIP_S5P4418__
-#elif defined (CONFIG_MACH_NXP5430)
+#elif defined (__SUPPORT_MIO_UBOOT_CHIP_NXP5430__)
 #define __SUPPORT_MIO_CHIP_NXP5430__
-#elif defined (CONFIG_MACH_S5P6818)
+#elif defined (__SUPPORT_MIO_UBOOT_CHIP_S5P6818__)
 #define __SUPPORT_MIO_CHIP_S5P6818__
 #endif
 

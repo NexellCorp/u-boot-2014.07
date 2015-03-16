@@ -76,7 +76,6 @@ endif
 #   EWS FTL Build Option
 # =========================================================================
 ARCH_CFLAGS += -D__SUPPORT_MIO_UBOOT__
-ARCH_CFLAGS += -D__SUPPORT_MIO_UBOOT_CHIP_S5P6818__
 
 # =========================================================================
 #	Build options for HOSTCC

@@ -44,6 +44,7 @@
 
 
 static u8 axp228_ocv_table[] = {
+	OCVREG0,
 	OCVREG1,
 	OCVREG2,
 	OCVREG3,
@@ -413,7 +414,7 @@ static int axp228_param_setup(struct axp228_power *power)
 
 
 	/* OCV Table */
-	for(i=0; i<= 0x1f; i++)
+	for(i=0; i<ARRAY_SIZE(axp228_ocv_table); i++)
 	{
 		ret = axp228_i2c_write(power, AXP22_OCV_TABLE+i, axp228_ocv_table[i]);
 	}

@@ -193,6 +193,12 @@
 #define AXP22_STATUS_ICTEMOV		(1 << 7)
 
 
+#define AXP_DCDC1_MODE_BIT			(0)
+#define AXP_DCDC2_MODE_BIT			(1)
+#define AXP_DCDC3_MODE_BIT			(2)
+#define AXP_DCDC4_MODE_BIT			(3)
+#define AXP_DCDC5_MODE_BIT			(4)
+
 #define AXP_DC5LDO_EN_BIT			(0)
 #define AXP_DCDC1_EN_BIT			(1)
 #define AXP_DCDC2_EN_BIT			(2)
@@ -285,6 +291,8 @@
 #define AXP22_LDOIO0_MAX			3300000
 #define AXP22_LDOIO1_MIN			700000
 #define AXP22_LDOIO1_MAX			3300000
+
+
 
 
 /* ETC */

@@ -114,6 +114,14 @@
 #define AXP_DC5LDO_SLEEP_OFF				(1)		/* VCC1P2_CVBS		0 : sleep on, 1 : sleep off */
 
 
+/* REG 80H:DC-DC Work mode */
+#define AXP_DCDC1_MODE_ENABLE				(0)
+#define AXP_DCDC2_MODE_ENABLE				(0)
+#define AXP_DCDC3_MODE_ENABLE				(0)
+#define AXP_DCDC4_MODE_ENABLE				(1)
+#define AXP_DCDC5_MODE_ENABLE				(1)
+
+
 /* OCV Table */
 #define OCVREG0								0		//3.13V
 #define OCVREG1								0		//3.27V

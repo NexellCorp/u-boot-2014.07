@@ -660,8 +660,9 @@ typedef struct __ExSYS__
         unsigned int (*get_crc32)(unsigned int _initial, void * _buffer, unsigned int _length);
 
         int (*print)(const char *, ...);
-        int (*sprintf)(char *, const char *, ...);
+        int (*sprint)(char *, const char *, ...);
         unsigned int (*strlen)(const char *);
+
         void * (*_memset)(void *, int, unsigned int);
         void * (*_memcpy)(void *, const void *, unsigned int);
         int (*_memcmp)(const void *, const void *, unsigned int);

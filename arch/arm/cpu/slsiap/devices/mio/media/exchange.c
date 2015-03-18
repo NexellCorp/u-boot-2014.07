@@ -305,7 +305,7 @@ void EXCHANGE_init(void)
     Exchange.sys.fn.usleep = usleep_range;
     Exchange.sys.fn.msleep = msleep;
     Exchange.sys.fn.print = printk;
-    Exchange.sys.fn.sprintf = sprintf;
+    Exchange.sys.fn.sprint = sprintf;
     Exchange.sys.fn.strlen = strlen;
     Exchange.sys.fn._memset = __memset;
     Exchange.sys.fn._memcpy = __memcpy;
@@ -333,7 +333,7 @@ void EXCHANGE_init(void)
     Exchange.nfc.fnRandomize_DeInit = NFC_PHY_RAND_DeInit;
 
     Exchange.sys.fn.print = printf;
-    Exchange.sys.fn.sprintf = sprintf;
+    Exchange.sys.fn.sprint = sprintf;
     Exchange.sys.fn.strlen = strlen;
     Exchange.sys.fn._memset = __memset;
     Exchange.sys.fn._memcpy = __memcpy;

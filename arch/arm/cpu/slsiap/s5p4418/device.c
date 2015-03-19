@@ -83,8 +83,8 @@ int i2c_gpio_init(int bus)
 {
 	int scl, sda;
 
-	if (bus > NUMBER_OF_I2C_MODULE - 1) {
-		printf("i2c bus %d is not exist (max bus %d)\n", bus, sizeof(i2c_devices)-1);
+	if (bus > ARRAY_SIZE(i2c_devices) - 1) {
+		printf("i2c bus %d is not exist (max bus %d)\n", bus, ARRAY_SIZE(i2c_devices)-1);
 		return -1;
 	}
 

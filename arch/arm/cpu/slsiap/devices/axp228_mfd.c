@@ -788,11 +788,10 @@ void axp228_raw_image_draw(lcd_info *lcd, int sx, int sy, unsigned int *img_data
 
 	flush_dcache_all();
 }
-
+#else
+#define CONFIG_BAT_GAUGE_CNT		10
 #endif
 
-
-#define CONFIG_BAT_GAUGE_CNT		10
 #define GAUGE_MAX					235
 
 static int skip_check(struct power_battery *pb, int bat_state)

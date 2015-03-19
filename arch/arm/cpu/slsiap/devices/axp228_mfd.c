@@ -44,6 +44,7 @@
 
 
 static u8 axp228_ocv_table[] = {
+	OCVREG0,
 	OCVREG1,
 	OCVREG2,
 	OCVREG3,
@@ -220,6 +221,15 @@ static int axp228_param_setup(struct axp228_power *power)
 	axp228_i2c_set_bits(power, AXP22_DCDC_FREQSET, 0x10);
 #endif
 
+	/* REG 80H:DC-DC Work mode */
+	axp228_i2c_read(power, AXP22_DCDC_MODESET, &val);
+	val &= 0xE0;
+	val |= 	( AXP_DCDC1_MODE_ENABLE << AXP_DCDC1_MODE_BIT)
+			|(AXP_DCDC2_MODE_ENABLE << AXP_DCDC2_MODE_BIT)
+			|(AXP_DCDC3_MODE_ENABLE << AXP_DCDC3_MODE_BIT)
+			|(AXP_DCDC4_MODE_ENABLE << AXP_DCDC4_MODE_BIT)
+			|(AXP_DCDC5_MODE_ENABLE << AXP_DCDC5_MODE_BIT);
+	axp228_i2c_write(power, AXP22_DCDC_MODESET, val);
 
 	/* REG 10H: DCDC1/2/3/4/5&ALDO1/2&DC5LDO Enable Set */
 	val = 	( AXP_ALDO2_ENABLE << AXP_ALDO2_EN_BIT)
@@ -413,7 +423,7 @@ static int axp228_param_setup(struct axp228_power *power)
 
 
 	/* OCV Table */
-	for(i=0; i<= 0x1f; i++)
+	for(i=0; i<ARRAY_SIZE(axp228_ocv_table); i++)
 	{
 		ret = axp228_i2c_write(power, AXP22_OCV_TABLE+i, axp228_ocv_table[i]);
 	}
@@ -663,7 +673,127 @@ int bd_pmic_init(void)
 }
 
 #if defined(CONFIG_BAT_CHECK)
-#define CONFIG_BAT_GAUGE_CNT		4
+#if 1
+#define HEADER_PIXEL(data,pixel) {\
+pixel[0] = (((data[0] - 33) << 2) | ((data[1] - 33) >> 4)); \
+pixel[1] = ((((data[1] - 33) & 0xF) << 4) | ((data[2] - 33) >> 2)); \
+pixel[2] = ((((data[2] - 33) & 0x3) << 6) | ((data[3] - 33))); \
+data += 4; \
+}
+
+#define IMAGE_WIDTH 		240
+#define IMAGE_HEIGHT		1
+#define IMAGE_PIXELBYTE		4
+
+static char *color1 =
+	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!(#M=.6)V-6]R+'AI"
+	")(-A&H=7#(1)!()!!(9!!(A!!(E!!(I!!(I!!8M\"&9]6-;QR.\\%X.<!V.+]U.+YU"
+	"-[UT-KQS-;MR-+IQ,[IP,KEO,;=N,+=M,+9M+K5K+K1K++-I*[)H*[%H*K!G*;!F"
+	"**]E)ZUD)JUC)JQC)*MA)*IA(ZI@(ZE@(:A>(:=>(*=='J1;':-:'J1;'*)9%YU4"
+	"\"I!'!XU$!XU$!XU$!XU$!XU$!XU$!XU$!XY$!XY$!XY$!XY$\"8]&\"9!&\"(Y%\"(Y%"
+	"\"I!'\"9!&\"9!&#)))$9=.$IA/$IA/$YI0%)I1%)M1%9M2%IQ3%YU4&)]5&)]5&:!6"
+	"&J!7&Z%8'*)9'*-9':-:'J1;'Z5<(*==(:A>(JA?(ZE@)*IA)*MA)JUC)ZUD*:]F"
+	"+K1K-;MR.+]U.\\%X/\\9\\0\\E`1LV#2]&(3=2*2]&(2,V%2LZ'2<J&-K)S*9MF*(UE"
+	".(QU4Y60;9VJ:HJG0UE`#1U*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	"";
+
+static char *color2 =
+	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!,35;4U1Q7E9L95-C"
+	";$Y;;T13;#E(:C!!;\"]!;2]!;B]!;R]!;B]!<#%\"@4)3FEMLGV!QG5YPG5UOG%UN"
+	"FUQMFUMLF5IKF%EKF%EJEUAIEE=HEE9GE59GE%5FDU1EDE-DD5)CD5%CD%%BCU!A"
+	"CD]ACDY@C4U?C$U>C$Q=BDM<BDM<B4I<B4I;B$E:ATA9A497A$57A497A$56?T!1"
+	"=#5&<3)#<3)#<3)#<3)#<3)#<3)#<3)#<C-$<C-$<C-$<C-$<S-%<S1%<S-$<S-$"
+	"=#1&<S1%<S1%=39(>CM,>SQ->SQ-?#U.?3U.?3Y/?CY0?C]0?T!2@$%2@$%2@D)3"
+	"@D-4@T-5A$56A$56A$57A497AT=8ATA9B4I;B4I;B4I<BDM<C$Q=C4U?CDY@CU!A"
+	"DU1FF5IKG5UOGV!QHF-UIF9XJ6I[K&U_KV^!K&U_JFI[JFQ]IVM\\E5IK@T]?>DQ>"
+	">UAJA&R!C'^:?7F;45)[%AU*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	"";
+
+static char *color3 =
+	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!-\"M<6T1U:3]P<S9G"
+	"?\"]@?R56?!A)>!!!>Q!!?1!!?A!!?A!!?A!!?Q%\"DR56L$%RM4=XM$5VLT1ULD1U"
+	"L4-TL$)SKT%RKD!QKC]PK3YOJSUNJSQMJCQMJ3IKJ#IKISAIIC=HI3=HI#9GI#5F"
+	"HS1EH3-DH3)CH#)CGS!AGC!AGB]@G2]@G\"U>FRU>FRQ=F\"I;ERE:F\"I;EBA9D2-4"
+	"A!9'@1-$@1-$@1-$@1-$@1-$@1-$@1-$@A-$@A-$@A-$@A-$@Q5&A!5&@A1%@A1%"
+	"A!9'A!5&A!5&AAA)BQU.C!Y/C!Y/CA]0CB!1CR!1CR%2D\")3D2-4DR15DR15E\"56"
+	"E\"97E2=8EBA9ERA9ERE:F\"I;F2M<FRQ=G\"U>G\"Y?G2]@GC!AGS!AH3)CH3-DHS5F"
+	"J#IKKT%RLT1UM4=XNDM\\O4]`P5*#Q5>(R%F*Q5>(PE.$PE6&OU2%J4%RES-DBS%B"
+	"C#]PE%B)FG\"AAF^@54Q]&!E*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	"";
+
+#define	AXP228_RGB888TO565(c)		((((c>>16)&0xFF)&0xF8)<<8) | ((((c>>8)&0xFF)&0xFC)<<3) | ((((c>>0 )&0xFF)&0xF8)>>3)
+
+static void AXP228_PutPixel888To565(unsigned int base,
+			int xpos, int ypos, int width, int height, unsigned int color)
+{
+	*(U16*)(base + (ypos * width + xpos) * 2) = (U16)AXP228_RGB888TO565(color);
+}
+
+static void AXP228_PutPixel888To888(unsigned int base,
+			int xpos, int ypos, int width, int height, unsigned int color)
+{
+	base = base + (ypos * width + xpos) * 3;
+	*(U8*)(base++) = ((color>> 0)&0xFF);	// B
+	*(U8*)(base++) = ((color>> 8)&0xFF);	// G
+	*(U8*)(base)   = ((color>>16)&0xFF);	// R
+}
+
+static void AXP228_PutPixel888To8888(unsigned int base,
+			int xpos, int ypos, int width, int height, unsigned int color)
+{
+	*(U32*)(base + (ypos * width + xpos) * 4) = (0xFF000000) | (color & 0xFFFFFF);
+}
+
+
+static void (*AXP228_PUTPIXELTABLE[])(U32, int, int, int, int, U32) =
+{
+	AXP228_PutPixel888To565,
+	AXP228_PutPixel888To888,
+	AXP228_PutPixel888To8888,
+};
+
+void axp228_raw_image_draw(lcd_info *lcd, int sx, int sy, unsigned int *img_data, int img_width, int img_height, int pixelbyte)
+{
+	lcd_info *plcd = lcd;
+	int x = 0, y = 0;
+
+	void (*draw_pixel)(unsigned int, int, int, int, int, unsigned int)
+						= AXP228_PUTPIXELTABLE[pixelbyte-2];
+
+	for (y = 0; y < img_height; y++)
+	{
+		for (x = 0; x < img_width; x++)
+		{
+			draw_pixel(plcd->fb_base, sx+x, sy+y, plcd->lcd_width, plcd->lcd_height, img_data[img_width*y+x]);
+		}
+	}
+
+	flush_dcache_all();
+}
+
+#endif
+
+
+#define CONFIG_BAT_GAUGE_CNT		10
+#define GAUGE_MAX					235
 
 static int skip_check(struct power_battery *pb, int bat_state)
 {
@@ -727,7 +857,8 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 	int show_bat_state = 0;
 	int skip_bat_ani = 0;
 	u8  power_depth = 6;
-	u32 chg_state=0, val=0;
+	u32 chg_state=0, val=0, poweron=0;
+	u16 tmp=0;
 
 	PMIC_DBGOUT("%s\n", __func__);
 
@@ -762,7 +893,6 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 	chrg = p_muic->chrg->chrg_type(p_muic, 1);
 	p_fg->fg->fg_battery_check(p_fg, p_bat);
 
-
 	printf("## STATUS(0x%02x) : ", AXP22_STATUS);
 	for(i=AXP22_STATUS; i<=AXP22_MODE_CHGSTATUS; i++)
 	{
@@ -772,10 +902,23 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 	printf("## IRQ(0x%02x)    : ", AXP22_INTSTS1);
 	for(i=AXP22_INTSTS1; i<=AXP22_INTSTS5; i++)
 	{
-		pmic_reg_read(p_chrg, (u32)i, &val);	printf("0x%02x ", val);
+		if(i == AXP22_INTSTS1)
+		{
+			pmic_reg_read(p_chrg, (u32)i, &poweron);	printf("0x%02x ", poweron); 	pmic_reg_write(p_chrg, (u32)i, 0xff);
+		}
+		else
+		{
+			pmic_reg_read(p_chrg, (u32)i, &val);	printf("0x%02x ", val); 	pmic_reg_write(p_chrg, (u32)i, 0xff);
+		}
 	}
 	printf("\n");
 	printf("## CHG_TYPE     : %s\n", chrg == CHARGER_USB ? "USB" : (chrg == CHARGER_TA ? (((chg_state>>6) & 0x2) ? "ADP(USB)" : "ADP"): "NONE"));
+
+	pmic_reg_read(p_chrg, AXP22_VBATH_RES, &val);
+	tmp = (val<< 8);
+	pmic_reg_read(p_chrg, AXP22_VBATL_RES, &val);
+	tmp |= val;
+	printf("## BAT_VOL      : %dmV \n", axp22_vbat_to_mV(tmp));
 	printf("## BAT_CAP      : %d%%\n", pb->bat->capacity);
 
 	if(pb->bat->capacity <= BATLOW_ANIMATION_CAP)
@@ -788,15 +931,15 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 			power_depth = 3;
 		}
 	}
-	else if(chrg == CHARGER_NO || chrg == CHARGER_UNKNOWN)
-	{
-		show_bat_state = 0;
-		skip_bat_ani = 2;
-	}
-	else
+	else if((poweron & AXP22_IRQ_ACIN) || (poweron & AXP22_IRQ_USBIN))
 	{
 		show_bat_state = 1;
 		skip_bat_ani = 0;
+	}
+	else
+	{
+		show_bat_state = 0;
+		skip_bat_ani = 2;
 	}
 
 	/*===========================================================*/
@@ -817,6 +960,7 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 
 	/*===========================================================*/
 	// draw charing image
+#if 0
 	if (show_bat_state)
 	{
 		int lcdw = lcd.lcd_width, lcdh = lcd.lcd_height;
@@ -824,22 +968,22 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 #if (CONFIG_BAT_GAUGE_CNT == 10)
 		int bw = 82, bh = 22;
 		int bx = 80, by = 61;
-		int sx, sy, dy, str_dy, clr_str_size;
+		int sx, sy, dy, str_dy;
 		unsigned int color = (54<<16) + (221 << 8) + (19);
 		int i=0, cnt=0, time_delay = 1000, msec = 10;
 #else
 		int bw = 82, bh = 55;
 		int bx = 80, by = 68;
-		int sx, sy, dy, str_dy, clr_str_size;
+		int sx, sy, dy, str_dy;
 		unsigned int color = (54<<16) + (221 << 8) + (19);
 		int i=0, cnt=0, msec = 10;
 #endif
-		char *str_charging		= " Charging...   ";
+		char *str_ac_charging	= " AC Charging...   ";
+		char *str_usb_charging	= " USB Charging...  ";
 		char *str_discharging	= " Discharging...";
 		char *str_lowbatt  		= " Low Battery...";
 		char *str_nobatt  		= " No Battery... ";
 
-		clr_str_size = max(strlen(str_charging), strlen(str_lowbatt));
 		sx = (lcdw - bmpw)/2 + bx;
 		sy = (lcdh - bmph)/2 + by;
 		dy = sy + (bh+2)*(CONFIG_BAT_GAUGE_CNT-1);
@@ -859,10 +1003,12 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 			lcd_draw_text(str_lowbatt, (lcdw - strlen(str_lowbatt)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
 		else
 		{
-			if(chrg == CHARGER_NO || chrg == CHARGER_UNKNOWN)
-				lcd_draw_text(str_discharging, (lcdw - strlen(str_discharging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+			if(chrg == CHARGER_TA)
+				lcd_draw_text(str_ac_charging, (lcdw - strlen(str_ac_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+			else if(chrg == CHARGER_USB)
+				lcd_draw_text(str_usb_charging, (lcdw - strlen(str_usb_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
 			else
-				lcd_draw_text(str_charging, (lcdw - strlen(str_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+				lcd_draw_text(str_discharging, (lcdw - strlen(str_discharging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
 		}
 
 		while(1)
@@ -956,11 +1102,11 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 #if (CONFIG_BAT_GAUGE_CNT == 10)
 					while(msec--)
 					{
+						udelay(100000);
 						if(skip_check(pb, show_bat_state))
 						{
 					        goto skip_bat_animation;
 						}
-						udelay(100000);
 					}
 					msec = 10;
 #endif
@@ -976,10 +1122,12 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 					lcd_draw_text(str_lowbatt, (lcdw - strlen(str_lowbatt)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
 				else
 				{
-					if(chrg == CHARGER_NO || chrg == CHARGER_UNKNOWN)
-						lcd_draw_text(str_discharging, (lcdw - strlen(str_discharging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+					if(chrg == CHARGER_TA)
+						lcd_draw_text(str_ac_charging, (lcdw - strlen(str_ac_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+					else if(chrg == CHARGER_USB)
+						lcd_draw_text(str_usb_charging, (lcdw - strlen(str_usb_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
 					else
-						lcd_draw_text(str_charging, (lcdw - strlen(str_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+						lcd_draw_text(str_discharging, (lcdw - strlen(str_discharging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
 				}
 			}
 			else
@@ -993,17 +1141,142 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 #else
 			while(msec--)
 			{
+				udelay(100000);
 				if(skip_check(pb, show_bat_state))
 				{
 			        goto skip_bat_animation;
 				}
-				udelay(100000);
 			}
 			msec = 10;
 #endif
 		}
 
 	}
+#else
+	if (show_bat_state)
+	{
+		int lcdw = lcd.lcd_width, lcdh = lcd.lcd_height;
+		int bmpw = 240, bmph = 320;
+		int bh = 22;
+		int bx = 80, by = 61;
+		int sx, sy, dy, str_dy;
+		int cnt=0, frame_time=5000, percent=0, max_percent=0;
+
+		ulong start_time_us=0, time_us=0, time_s=0, time_old=0;
+		int ani_time = power_depth+6;
+
+		char *org_image=NULL;
+
+		char *str_ac_charging	= " AC Charging...   ";
+		char *str_usb_charging	= " USB Charging...  ";
+		char *str_discharging	= " Discharging...   ";
+		char *str_lowbatt  		= " Low Battery...   ";
+		char *str_nobatt  		= " No Battery...    ";
+
+		sx = (lcdw - bmpw)/2 + bx;
+		sy = (lcdh - bmph)/2 + by;
+		dy = sy + (bh+2)*(9);
+		str_dy = dy;
+
+		if(!p_chrg->chrg->chrg_bat_present(p_chrg))
+		{
+			printf("## No Battery \n");
+			show_bat_state = 3;
+		}
+
+		lcd_debug_init(&lcd);
+
+		if(show_bat_state == 3)
+			lcd_draw_text(str_nobatt, (lcdw - strlen(str_lowbatt)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+		else if(show_bat_state == 2)
+		{
+			lcd_draw_text(str_lowbatt, (lcdw - strlen(str_lowbatt)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+		}
+		else
+		{
+			if(chrg == CHARGER_TA)
+				lcd_draw_text(str_ac_charging, (lcdw - strlen(str_ac_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+			else if(chrg == CHARGER_USB)
+				lcd_draw_text(str_usb_charging, (lcdw - strlen(str_usb_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+			else
+				lcd_draw_text(str_discharging, (lcdw - strlen(str_discharging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+		}
+
+		start_time_us = timer_get_us();
+
+		max_percent = (pb->bat->capacity*GAUGE_MAX)/100;
+		if(max_percent < 5)
+			max_percent = 5;
+
+		while(1)
+		{
+			time_us = timer_get_us();
+			if(time_us-start_time_us > 1000000)
+			{
+				start_time_us = timer_get_us();
+				time_s++;
+				printf(".");
+				p_fg->fg->fg_battery_check(p_fg, p_bat);
+			}
+
+			if(cnt <= max_percent)
+			{
+				unsigned int img_data[IMAGE_WIDTH*IMAGE_HEIGHT] = {0};
+				int j=0;
+
+				percent = (++cnt*100)/max_percent;
+				if(percent >= 90)
+					frame_time = 30000;
+				else
+					frame_time = 5000;
+
+				if(pb->bat->capacity < 20)
+					org_image = color3;
+				else if(pb->bat->capacity < 50)
+					org_image = color2;
+				else
+					org_image = color1;
+
+				for(j=0; j<IMAGE_WIDTH; j++)
+				{
+					char temp[3];
+					HEADER_PIXEL(org_image,temp);
+					img_data[j] = (temp[0]<<16)|(temp[1] << 8)|temp[2];
+					//lcd_fill_rectangle(sx+j-bx, 438-cnt, 240, 1, img_data[j], 0);
+				}
+				axp228_raw_image_draw(&lcd, sx-bx, 438-cnt, img_data, IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_PIXELBYTE);
+
+				udelay(frame_time);
+
+				time_old = time_s;
+			}
+			else
+			{
+				if(time_s-time_old >= 2)
+				{
+					time_old = time_s;
+					cnt = 0;
+					printf("\n");
+					lcd_draw_boot_logo(CONFIG_FB_ADDR, CFG_DISP_PRI_RESOL_WIDTH, CFG_DISP_PRI_RESOL_HEIGHT, CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
+				}
+				udelay(100000);
+			}
+
+			if(skip_check(pb, show_bat_state))
+			{
+				printf("\n");
+		        goto skip_bat_animation;
+			}
+
+			if(time_s >= ani_time)
+			{
+				printf("\n");
+				goto enter_shutdown;
+			}
+
+		}
+	}
+#endif
 
 skip_bat_animation:
 #endif  /* CONFIG_DISPLAY_OUT */
@@ -1025,6 +1298,11 @@ skip_bat_animation:
 	}
 	printf("\n");
 	printf("## chg_type    : %s \n", (chrg == CHARGER_USB ? "USB" : (chrg == CHARGER_TA ? (((chg_state>>6) & 0x2) ? "ADP(USB)" : "ADP"): "NONE")));
+	pmic_reg_read(p_chrg, AXP22_VBATH_RES, &val);
+	tmp = (val<< 8);
+	pmic_reg_read(p_chrg, AXP22_VBATL_RES, &val);
+	tmp |= val;
+	printf("## battery_vol : %dmV \n", axp22_vbat_to_mV(tmp));
 	printf("## battery_cap : %d%%\n", pb->bat->capacity);
 	printf("## Booting \n");
 
@@ -1050,6 +1328,11 @@ enter_shutdown:
 	}
 	printf("\n");
 	printf("## chg_type    : %s \n", (chrg == CHARGER_USB ? "USB" : (chrg == CHARGER_TA ? (((chg_state>>6) & 0x2) ? "ADP(USB)" : "ADP"): "NONE")));
+	pmic_reg_read(p_chrg, AXP22_VBATH_RES, &val);
+	tmp = (val<< 8);
+	pmic_reg_read(p_chrg, AXP22_VBATL_RES, &val);
+	tmp |= val;
+	printf("## battery_vol : %dmV \n", axp22_vbat_to_mV(tmp));
 	printf("## battery_cap : %d%%\n", pb->bat->capacity);
 	printf("## Power Off\n");
 

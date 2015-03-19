@@ -60,40 +60,40 @@
 
 /* DCDC-LDO Voltage Value */
 #define AXP_DCDC1_VALUE						3300000		/* VCC3P3_SYS			DCDC1	 : 	AXP22:1600~3400, 100/setp*/
-#define AXP_DCDC2_VALUE						1100000		/* VCC1P1_ARM			DCDC2	£º 	AXP22:  600~1540,   20/step*/
-#define AXP_DCDC3_VALUE						1100000		/* VCC1P0_CORE		DCDC3	£º 	AXP22:  600~1860,   20/step*/
-#define AXP_DCDC4_VALUE						1500000		/* VCC1P5_SYS			DCDC4	£º 	AXP22:  600~1540,   20/step*/
-#define AXP_DCDC5_VALUE						1500000		/* VCC1P5_DDR			DCDC5	£º 	AXP22:1000~2550,   50/step*/
-#define AXP_ALDO1_VALUE						3300000		/* VCC3P3_ALIVE		ALDO1	£º 	AXP22:  700~3300, 100/step*/
-#define AXP_ALDO2_VALUE						1800000		/* VCC1P8_ALIVE		ALDO2	£º 	AXP22:  700~3300, 100/step*/
-#define AXP_ALDO3_VALUE						1000000		/* VCC1P0_ALIVE		ALDO3	£º 	AXP22:  700~3300, 100/step*/
-#define AXP_DLDO1_VALUE						3300000		/* VCC_WIDE			DLDO1	£º 	AXP22:  700~3300, 100/step*/
-#define AXP_DLDO2_VALUE						1800000		/* VCC1P8_CAM			DLDO2	£º 	AXP22 : 700~3300, 100/step*/
-#define AXP_DLDO3_VALUE						 700000		/* NC					DLDO3	£º 	AXP22:  700~3300, 100/step*/
-#define AXP_DLDO4_VALUE						 700000		/* NC					DLDO4	£º 	AXP22:  700~3300, 100/step*/
-#define AXP_ELDO1_VALUE						1800000		/* VCC1P8_SYS			ELDO1	£º 	AXP22:  700~3300, 100/step*/
-#define AXP_ELDO2_VALUE						3300000		/* VCC3P3_WIFI			ELDO2	£º 	AXP22:  700~3300, 100/step*/
-#define AXP_ELDO3_VALUE						 700000		/* NC					ELDO3	£º 	AXP22:  700~3300, 100/step*/
-#define AXP_DC5LDO_VALUE					1200000		/* VCC1P2_CVBS		DC5LDO	£º 	AXP22:  700~1400, 100/step*/
+#define AXP_DCDC2_VALUE						1100000		/* VCC1P1_ARM			DCDC2	 : 	AXP22:  600~1540,   20/step*/
+#define AXP_DCDC3_VALUE						1100000		/* VCC1P0_CORE		DCDC3	 : 	AXP22:  600~1860,   20/step*/
+#define AXP_DCDC4_VALUE						1500000		/* VCC1P5_SYS			DCDC4	 : 	AXP22:  600~1540,   20/step*/
+#define AXP_DCDC5_VALUE						1500000		/* VCC1P5_DDR			DCDC5	 : 	AXP22:1000~2550,   50/step*/
+#define AXP_ALDO1_VALUE						3300000		/* VCC3P3_ALIVE		ALDO1	 : 	AXP22:  700~3300, 100/step*/
+#define AXP_ALDO2_VALUE						1800000		/* VCC1P8_ALIVE		ALDO2	 : 	AXP22:  700~3300, 100/step*/
+#define AXP_ALDO3_VALUE						1000000		/* VCC1P0_ALIVE		ALDO3	 : 	AXP22:  700~3300, 100/step*/
+#define AXP_DLDO1_VALUE						3300000		/* VCC_WIDE			DLDO1	 : 	AXP22:  700~3300, 100/step*/
+#define AXP_DLDO2_VALUE						1800000		/* VCC1P8_CAM			DLDO2	 : 	AXP22 : 700~3300, 100/step*/
+#define AXP_DLDO3_VALUE						 700000		/* NC					DLDO3	 : 	AXP22:  700~3300, 100/step*/
+#define AXP_DLDO4_VALUE						 700000		/* NC					DLDO4	 : 	AXP22:  700~3300, 100/step*/
+#define AXP_ELDO1_VALUE						1800000		/* VCC1P8_SYS			ELDO1	 : 	AXP22:  700~3300, 100/step*/
+#define AXP_ELDO2_VALUE						3300000		/* VCC3P3_WIFI			ELDO2	 : 	AXP22:  700~3300, 100/step*/
+#define AXP_ELDO3_VALUE						 700000		/* NC					ELDO3	 : 	AXP22:  700~3300, 100/step*/
+#define AXP_DC5LDO_VALUE					1200000		/* VCC1P2_CVBS		DC5LDO	 : 	AXP22:  700~1400, 100/step*/
 
 /* DCDC-LDO Voltage Enable Value */
 #define AXP_DCDC1_ENABLE					1		/* VCC3P3_SYS			DCDC1	 : 	AXP22:1600~3400, 100/setp*/
-#define AXP_DCDC2_ENABLE					1		/* VCC1P1_ARM			DCDC2	£º 	AXP22:  600~1540,   20/step*/
-#define AXP_DCDC3_ENABLE					1		/* VCC1P0_CORE		DCDC3	£º 	AXP22:  600~1860,   20/step*/
-#define AXP_DCDC4_ENABLE					1		/* VCC1P5_SYS			DCDC4	£º 	AXP22:  600~1540,   20/step*/
-#define AXP_DCDC5_ENABLE					1		/* VCC1P5_DDR			DCDC5	£º 	AXP22:1000~2550,   50/step*/
-#define AXP_ALDO1_ENABLE					1		/* VCC3P3_ALIVE		ALDO1	£º 	AXP22:  700~3300, 100/step*/
-#define AXP_ALDO2_ENABLE					1		/* VCC1P8_ALIVE		ALDO2	£º 	AXP22:  700~3300, 100/step*/
-#define AXP_ALDO3_ENABLE					1		/* VCC1P0_ALIVE		ALDO3	£º 	AXP22:  700~3300, 100/step*/
-#define AXP_DLDO1_ENABLE					1		/* VCC_WIDE			DLDO1	£º 	AXP22:  700~3300, 100/step*/
-#define AXP_DLDO2_ENABLE					0		/* VCC1P8_CAM			DLDO2	£º 	AXP22 : 700~3300, 100/step*/
-#define AXP_DLDO3_ENABLE					0		/* NC					DLDO3	£º 	AXP22:  700~3300, 100/step*/
-#define AXP_DLDO4_ENABLE					0		/* NC					DLDO4	£º 	AXP22:  700~3300, 100/step*/
-#define AXP_ELDO1_ENABLE					1		/* VCC1P8_SYS			ELDO1	£º 	AXP22:  700~3300, 100/step*/
-#define AXP_ELDO2_ENABLE					0		/* VCC3P3_WIFI			ELDO2	£º 	AXP22:  700~3300, 100/step*/
-#define AXP_ELDO3_ENABLE					0		/* NC					ELDO3	£º 	AXP22:  700~3300, 100/step*/
-#define AXP_DC5LDO_ENABLE					0		/* VCC1P2_CVBS		DC5LDO	£º 	AXP22:  700~1400, 100/step*/
-#define AXP_DC1SW_ENABLE					0		/* NC					DC1SW	£º 	AXP22: */
+#define AXP_DCDC2_ENABLE					1		/* VCC1P1_ARM			DCDC2	 : 	AXP22:  600~1540,   20/step*/
+#define AXP_DCDC3_ENABLE					1		/* VCC1P0_CORE		DCDC3	 : 	AXP22:  600~1860,   20/step*/
+#define AXP_DCDC4_ENABLE					1		/* VCC1P5_SYS			DCDC4	 : 	AXP22:  600~1540,   20/step*/
+#define AXP_DCDC5_ENABLE					1		/* VCC1P5_DDR			DCDC5	 : 	AXP22:1000~2550,   50/step*/
+#define AXP_ALDO1_ENABLE					1		/* VCC3P3_ALIVE		ALDO1	 : 	AXP22:  700~3300, 100/step*/
+#define AXP_ALDO2_ENABLE					1		/* VCC1P8_ALIVE		ALDO2	 : 	AXP22:  700~3300, 100/step*/
+#define AXP_ALDO3_ENABLE					1		/* VCC1P0_ALIVE		ALDO3	 : 	AXP22:  700~3300, 100/step*/
+#define AXP_DLDO1_ENABLE					1		/* VCC_WIDE			DLDO1	 : 	AXP22:  700~3300, 100/step*/
+#define AXP_DLDO2_ENABLE					0		/* VCC1P8_CAM			DLDO2	 : 	AXP22 : 700~3300, 100/step*/
+#define AXP_DLDO3_ENABLE					0		/* NC					DLDO3	 : 	AXP22:  700~3300, 100/step*/
+#define AXP_DLDO4_ENABLE					0		/* NC					DLDO4	 : 	AXP22:  700~3300, 100/step*/
+#define AXP_ELDO1_ENABLE					1		/* VCC1P8_SYS			ELDO1	 : 	AXP22:  700~3300, 100/step*/
+#define AXP_ELDO2_ENABLE					0		/* VCC3P3_WIFI			ELDO2	 : 	AXP22:  700~3300, 100/step*/
+#define AXP_ELDO3_ENABLE					0		/* NC					ELDO3	 : 	AXP22:  700~3300, 100/step*/
+#define AXP_DC5LDO_ENABLE					0		/* VCC1P2_CVBS		DC5LDO	 : 	AXP22:  700~1400, 100/step*/
+#define AXP_DC1SW_ENABLE					0		/* NC					DC1SW	 : 	AXP22: */
 
 /* DCDC-LDO Sleep Enable Value */
 #define AXP_DCDC1_SLEEP_OFF					(1)		/* VCC3P3_SYS			0 : sleep on, 1 : sleep off */
@@ -112,6 +112,14 @@
 #define AXP_ELDO2_SLEEP_OFF					(1)		/* VCC3P3_WIFI			0 : sleep on, 1 : sleep off */
 #define AXP_ELDO3_SLEEP_OFF					(1)		/* NC					0 : sleep on, 1 : sleep off */
 #define AXP_DC5LDO_SLEEP_OFF				(1)		/* VCC1P2_CVBS		0 : sleep on, 1 : sleep off */
+
+
+/* REG 80H:DC-DC Work mode */
+#define AXP_DCDC1_MODE_ENABLE				(0)
+#define AXP_DCDC2_MODE_ENABLE				(0)
+#define AXP_DCDC3_MODE_ENABLE				(0)
+#define AXP_DCDC4_MODE_ENABLE				(1)
+#define AXP_DCDC5_MODE_ENABLE				(1)
 
 
 /* OCV Table */

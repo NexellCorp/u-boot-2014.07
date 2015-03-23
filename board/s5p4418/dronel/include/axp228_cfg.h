@@ -122,7 +122,7 @@
 #define AXP_DCDC2_MODE_ENABLE				(1)
 #define AXP_DCDC3_MODE_ENABLE				(1)
 #define AXP_DCDC4_MODE_ENABLE				(1)
-#define AXP_DCDC5_MODE_ENABLE				(1)
+#define AXP_DCDC5_MODE_ENABLE				(0)
 
 
 /* OCV Table */
@@ -158,6 +158,8 @@
 #define OCVREG1D							93		//4.12V
 #define OCVREG1E							96		//4.14V
 #define OCVREG1F							100		//4.15V
+
+#define BATRDC								137 //100 
 
 /* Battery capacity */
 #define BATCAP								3000

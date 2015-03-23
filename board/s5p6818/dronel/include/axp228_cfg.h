@@ -160,6 +160,8 @@
 #define OCVREG1E							96		//4.14V
 #define OCVREG1F							100		//4.15V
 
+#define BATRDC								137 //100 
+
 /* Battery capacity */
 #define BATCAP								3000
 

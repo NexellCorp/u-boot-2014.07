@@ -370,8 +370,6 @@
 
 #define BATDET						1
 
-#define BATRDC						137 //100 
-
 
 
 /* Charger */

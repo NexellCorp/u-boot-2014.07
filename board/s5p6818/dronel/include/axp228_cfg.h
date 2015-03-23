@@ -40,6 +40,10 @@
 #define AXP228_USB_LIMIT_500				0x01		/* USB2.0 : 500mA */
 #define AXP228_USB_LIMIT_NO					0x03		/* No limit current */
 
+
+/* DC-DC 2&3 Poly-phase function enable/disable,   0: disable   1: enable */
+#define CFG_POLY_PHASE_FUNCTION				(1)
+
 /* DCDC-LDO Name */
 #define AXP_DCDC1_NAME						"vdd_sys_3.3V"		/* VCC3P3_SYS			*/
 #define AXP_DCDC2_NAME						"vdd_arm_1.3V"		/* VCC1P1_ARM			*/
@@ -155,6 +159,8 @@
 #define OCVREG1D							93		//4.12V
 #define OCVREG1E							96		//4.14V
 #define OCVREG1F							100		//4.15V
+
+#define BATRDC								137 //100 
 
 /* Battery capacity */
 #define BATCAP								3000

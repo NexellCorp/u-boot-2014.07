@@ -293,16 +293,12 @@
 #define AXP22_LDOIO1_MAX			3300000
 
 
-
-
 /* ETC */
 #define	AXP228_REG_BANKSEL			0xFF
 
 
 #define ABS(x)						((x) >0 ? (x) : -(x) )
 
-
-#define CFG_POLY_PHASE_FUNCTION		(1) /* DC-DC 2&3 Poly-phase function enable/disable,   0: disable   1: enable */
 
 #define USBVOLLIM					4700		/* AXP22:4000~4700£¬100/step */
 #define USBVOLLIMEN					1
@@ -373,8 +369,6 @@
 #define BATREGUEN					0
 
 #define BATDET						1
-
-#define BATRDC						137 //100 
 
 
 

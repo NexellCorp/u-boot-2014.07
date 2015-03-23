@@ -234,6 +234,26 @@ typedef struct __NFC_PHY_AC_TIME__
 
 } NFC_PHY_AC_TIME;
 
+
+
+/******************************************************************************
+ *
+ * NFC Timing Register
+ *
+ ******************************************************************************/
+
+typedef struct __NF_TIME_REGS__ {
+	volatile unsigned int nftacs;
+	volatile unsigned int nftcos;
+	volatile unsigned int nftacc;
+	volatile unsigned int nftoch;
+	volatile unsigned int nftcah;
+} NF_TIME_REGS;
+
+NFC_PHY_EXT int NFC_PHY_ForceSet_Nftime(NF_TIME_REGS _t);
+
+
+
 /******************************************************************************
  *
  * ECC error information.

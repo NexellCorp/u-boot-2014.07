@@ -794,6 +794,26 @@ int mio_powerdown(void)
 /*******************************************************************************
  * low level api.
  *******************************************************************************/
+int mio_boost_time_regval(ulong tacs, ulong tcos, ulong tacc, ulong tcoh, ulong tcah)
+{
+	NF_TIME_REGS _t = { tacs, tcos, tacc, tcoh, tcah };
+
+	NFC_PHY_Boost_time_regval(_t);
+
+	return 0;
+}
+
+int mio_force_origin_time_regval(ulong tacs, ulong tcos, ulong tacc, ulong tcoh, ulong tcah)
+{
+	NF_TIME_REGS _t = { tacs, tcos, tacc, tcoh, tcah };
+
+	NFC_PHY_Origin_time_regval(_t);
+	NFC_PHY_ForceSet_Nftime(_t);
+
+	return 0;
+}
+
+
 int mio_init_without_ftl(void)
 {
     int ret = 0;
@@ -923,6 +943,27 @@ int mio_nand_raw_write(loff_t ofs, size_t *len, u_char *buf)
     return ret;
 }
 
+#if 0
+int mio_nand_raw_read(loff_t ofs, size_t *len, u_char *buf)
+{
+    int ret = 0;
+    MIO_NAND_RAW_INFO info;
+
+	info.channel = 0;
+	info.phyway = 0;
+	info.pages_per_block = 256;
+	info.bytes_per_page = 8192;
+	info.blocks_per_lun = 2048;
+
+    /*******************************************************************************
+     * NFC_PHY_LOWAPI_nand_raw_read() function has no prerequisite including 
+     * the NFC_PHY_LOWAPI_init() function.
+     *******************************************************************************/
+    ret = NFC_PHY_LOWAPI_nand_raw_read(&info, ofs, len, buf);
+
+    return ret;
+}
+#else
 int mio_nand_raw_read(loff_t ofs, size_t *len, u_char *buf)
 {
     int ret = 0;
@@ -938,6 +979,7 @@ int mio_nand_raw_read(loff_t ofs, size_t *len, u_char *buf)
 
     return ret;
 }
+#endif
 
 int mio_nand_raw_erase(loff_t ofs, size_t size)
 {

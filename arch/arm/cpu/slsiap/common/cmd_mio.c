@@ -17,8 +17,8 @@
 #include <nand_ftl.h>
 #include <mio.uboot.h>
 
-//#define DBG_CMD_MIO(fmt, args...) printf(fmt, ##args)
-#define DBG_CMD_MIO(fmt, args...)
+#define DBG_CMD_MIO(fmt, args...) printf(fmt, ##args)
+//#define DBG_CMD_MIO(fmt, args...)
 
 
 int get_number(void)
@@ -247,9 +247,14 @@ static int do_mio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
                 ulong blk = simple_strtoul(argv[3], NULL, 16);
                 ulong seccnt = simple_strtoul(argv[4], NULL, 16);
                 ulong n = 0;
+				ulong _t;
 
                 DBG_CMD_MIO("MIO read: block# %lu seccnt %lu addr %lXh ...", blk, seccnt, addr);
+				_t = get_timer(0);
                 n = mio_read(blk, seccnt, (ulong *)addr);
+				_t = get_timer(_t);
+				DBG_CMD_MIO("%ld sectors read. delta:%lu. speed:%lu.%lu\n", seccnt, _t,
+					(seccnt*512/1024UL/1024UL)/(_t/1000)), (seccnt*512/1024UL/1024UL)%(_t/1000);
                 DBG_CMD_MIO("%ld sectors read: %s\n", n, (n == seccnt) ? "OK" : "ERROR");
                 return 0;
             }
@@ -270,8 +275,13 @@ static int do_mio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
                 loff_t ofs = (loff_t)simple_strtoull(argv[3], NULL, 16);
                 size_t len = (size_t)simple_strtoul(argv[4], NULL, 16);
                 ulong n = 0;
+				ulong _t;
                 DBG_CMD_MIO("MIO nandread: ofs %llu len %u addr %lX ...", ofs, len, addr);
+				_t = get_timer(0);
                 n = mio_nand_read(ofs, &len, (u_char *)addr);
+				_t = get_timer(_t);
+				DBG_CMD_MIO("0x%lx bytes read. delta:%lu. speed:%lu.%lu\n", len, _t,
+					(len/1024UL/1024UL)/(_t/1000)), (len/1024UL/1024UL)%(_t/1000);
                 DBG_CMD_MIO("last block: %ld\n", n);
                 return 0;
             }
@@ -337,6 +347,38 @@ static int do_mio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
             return CMD_RET_USAGE;
 
         } break;
+
+		case 7:
+		{
+			if (strcmp(argv[1], "boost") == 0)
+			{
+                ulong tacs = simple_strtoul(argv[2], NULL, 16);
+                ulong tcos = simple_strtoul(argv[3], NULL, 16);
+                ulong tacc = simple_strtoul(argv[4], NULL, 16);
+                ulong tcoh = simple_strtoul(argv[5], NULL, 16);
+                ulong tcah = simple_strtoul(argv[6], NULL, 16);
+
+				mio_boost_time_regval(tacs, tcos, tacc, tcoh, tcah);
+
+				return 0;
+			}
+
+			else if (strcmp(argv[1], "origin") == 0)
+			{
+                ulong tacs = simple_strtoul(argv[2], NULL, 16);
+                ulong tcos = simple_strtoul(argv[3], NULL, 16);
+                ulong tacc = simple_strtoul(argv[4], NULL, 16);
+                ulong tcoh = simple_strtoul(argv[5], NULL, 16);
+                ulong tcah = simple_strtoul(argv[6], NULL, 16);
+
+				mio_force_origin_time_regval(tacs, tcos, tacc, tcoh, tcah);
+
+				return 0;
+			}
+
+
+			return CMD_RET_USAGE;
+		} break;
 
         default:
         {

@@ -79,6 +79,10 @@ extern void NFC_PHY_READRETRY_DeInit(void);
 extern int NFC_PHY_RAND_Init(int _buf_size);
 extern void NFC_PHY_RAND_DeInit(void);
 
+extern void NFC_PHY_BoostOn(void);
+extern void NFC_PHY_BoostOff(void);
+
+
 /******************************************************************************
  * Declaration
  ******************************************************************************/
@@ -302,6 +306,11 @@ void EXCHANGE_init(void)
     Exchange.nfc.fnRandomize_Init = NFC_PHY_RAND_Init;
     Exchange.nfc.fnRandomize_DeInit = NFC_PHY_RAND_DeInit;
 
+#ifdef USING_BOOST_ON
+	Exchange.nfc.fnBoostOn = NFC_PHY_BoostOn;
+	Exchange.nfc.fnBoostOff = NFC_PHY_BoostOff;
+#endif
+
     Exchange.sys.fn.usleep = usleep_range;
     Exchange.sys.fn.msleep = msleep;
     Exchange.sys.fn.print = printk;
@@ -331,6 +340,11 @@ void EXCHANGE_init(void)
 
     Exchange.nfc.fnRandomize_Init = NFC_PHY_RAND_Init;
     Exchange.nfc.fnRandomize_DeInit = NFC_PHY_RAND_DeInit;
+
+#ifdef USING_BOOST_ON
+	Exchange.nfc.fnBoostOn = NFC_PHY_BoostOn;
+	Exchange.nfc.fnBoostOff = NFC_PHY_BoostOff;
+#endif
 
     Exchange.sys.fn.print = printf;
     Exchange.sys.fn.sprint = sprintf;

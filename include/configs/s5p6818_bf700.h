@@ -215,6 +215,27 @@
 	#define CONFIG_NXP_DWC_OTG_PHY
 #endif
 
+
+/*-----------------------------------------------------------------------
+ * PMIC
+ */
+
+#define CONFIG_PMIC
+	#if defined(CONFIG_PMIC)
+		#define CONFIG_CMD_I2C
+		#define CONFIG_PMIC_I2C
+		#define CONFIG_PMIC_I2C_BUSA						I2C_3
+		#define CONFIG_PMIC_I2C_BUSB						I2C_4
+
+		#define CONFIG_POWER
+		#define CONFIG_POWER_I2C
+
+		//#define CONFIG_PMIC_REG_DUMP
+
+		#define CONFIG_REGULATOR_MP8845C
+	#endif
+
+
 /*-----------------------------------------------------------------------
  * I2C
  *
@@ -270,12 +291,11 @@
     #define CFG_IO_I2C2_SCL             ((PAD_GPIO_D + 6) | PAD_FUNC_ALT0)
     #define CFG_IO_I2C2_SDA             ((PAD_GPIO_D + 7) | PAD_FUNC_ALT0)
 
-	#define	CFG_IO_I2C3_SCL				((PAD_GPIO_E + 11) | PAD_FUNC_ALT0)
-	#define	CFG_IO_I2C3_SDA				((PAD_GPIO_E + 10) | PAD_FUNC_ALT0)
+	#define	CFG_IO_I2C3_SCL				((PAD_GPIO_E + 9) | PAD_FUNC_ALT0)
+	#define	CFG_IO_I2C3_SDA				((PAD_GPIO_E + 8) | PAD_FUNC_ALT0)
 
-	#define	CFG_IO_I2C4_SCL				((PAD_GPIO_E + 9) | PAD_FUNC_ALT0)
-	#define	CFG_IO_I2C4_SDA				((PAD_GPIO_E + 8) | PAD_FUNC_ALT0)
-
+	#define	CFG_IO_I2C4_SCL				((PAD_GPIO_E + 11) | PAD_FUNC_ALT0)
+	#define	CFG_IO_I2C4_SDA				((PAD_GPIO_E + 10) | PAD_FUNC_ALT0)
 #endif
 
 /*-----------------------------------------------------------------------

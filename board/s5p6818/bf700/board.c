@@ -35,6 +35,10 @@
 
 #include <draw_lcd.h>
 
+#if defined(CONFIG_REGULATOR_MP8845C)
+#include <mp8845c_regulator.h>
+#endif
+
 DECLARE_GLOBAL_DATA_PTR;
 
 #if (0)
@@ -176,8 +180,21 @@ int board_early_init_f(void)
 {
 	bd_gpio_init();
 	bd_alive_init();
+#if defined(CONFIG_REGULATOR_MP8845C)&& !defined(CONFIG_PMIC_REG_DUMP)
+	bd_pmic_init();
+#endif
 	return 0;
 }
+
+#if defined(CONFIG_PMIC_REG_DUMP)
+int power_init_board(void)
+{
+	int ret = 0;
+	bd_pmic_init();
+	return ret;
+}
+#endif
+
 
 int board_init(void)
 {

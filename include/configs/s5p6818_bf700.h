@@ -183,160 +183,9 @@
 #define CONFIG_S5P_SERIAL_FLUSH_ON_INIT
 
 /*-----------------------------------------------------------------------
- * Ethernet configuration
- * depend on CONFIG_CMD_NET
- */
-//#define CONFIG_DRIVER_DM9000			1
-
-#if defined(CONFIG_CMD_NET)
-	/* DM9000 Ethernet device */
-	#if defined(CONFIG_DRIVER_DM9000)
-	#define CONFIG_DM9000_BASE	   		CFG_ETHER_EXT_PHY_BASEADDR		/* DM9000: 0x04000000(CS1) */
-	#define DM9000_IO	   				CONFIG_DM9000_BASE
-	#define DM9000_DATA	   				(CONFIG_DM9000_BASE + 0x4)
-//	#define CONFIG_DM9000_DEBUG
-	#endif
-#endif
-
-/*-----------------------------------------------------------------------
- * NAND FLASH
- */
-//#define CONFIG_CMD_NAND
-//#define CONFIG_ENV_IS_IN_NAND
-
-#if defined(CONFIG_CMD_NAND)
-	#define CONFIG_SYS_MAX_NAND_DEVICE		(1)
-	#define CONFIG_SYS_NAND_MAX_CHIPS   	(1)
-	#define CONFIG_SYS_NAND_BASE		   	PHY_BASEADDR_CS_NAND							/* Nand data register, nand->IO_ADDR_R/_W */
-	#define CONFIG_SYS_NAND_ONFI_DETECTION
-	#define CONFIG_CMD_NAND_TRIMFFS
-
-	#define	CONFIG_MTD_NAND_NXP
-//	#define	CONFIG_MTD_NAND_ECC_BCH															/* sync kernel config */
-	#define	CONFIG_MTD_NAND_ECC_HW
-//	#define	CONFIG_MTD_NAND_VERIFY_WRITE
-//	#define	CONFIG_MTD_NAND_BMT_FIRST_LAST													/* Samsumg 8192 page nand write bad mark on 1st and last block */
-
-	#define CONFIG_CMD_UPDATE_NAND
-
-	#if defined (CONFIG_MTD_NAND_ECC_BCH)
-		#define	CONFIG_BCH
-		#define	CONFIG_NAND_ECC_BCH
-	#endif
-
-	#if defined(CONFIG_ENV_IS_IN_NAND)
-		#define	CONFIG_ENV_OFFSET			(0x400000)									/* 4MB */
-		#define CONFIG_ENV_SIZE           	(0x100000)									/* 1 block size */
-		#define CONFIG_ENV_RANGE			(0x400000)		 							/* avoid bad block */
-	#endif
-
-	#undef  CONFIG_CMD_IMLS
-
-	#define	CONFIG_CMD_MTDPARTS
-	#if defined(CONFIG_CMD_MTDPARTS)
-		#define	CONFIG_MTD_DEVICE
-		#define	CONFIG_MTD_PARTITIONS
-		#define MTDIDS_DEFAULT				"nand0=mtd-nand"
-		#define MTDPARTS_DEFAULT			"mtdparts=mtd-nand:2m(u-boot),4m(kernel),8m(ramdisk),-(extra)"
-	#endif
-
-//	#define CONFIG_MTD_DEBUG
-	#ifdef  CONFIG_MTD_DEBUG
-		#define CONFIG_MTD_DEBUG_VERBOSE	0	/* For nand debug message = 0 ~ 3 *//* list all images found in flash	*/
-	#endif
-#endif	/* CONFIG_CMD_NAND */
-
-/*-----------------------------------------------------------------------
  * NOR FLASH
  */
 #define	CONFIG_SYS_NO_FLASH
-
-
-/*-----------------------------------------------------------------------
- * EEPROM
- */
-
-//#define CONFIG_CMD_EEPROM
-//#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
-//#define CONFIG_ENV_IS_IN_EEPROM
-
-#if defined(CONFIG_CMD_EEPROM)
-
-	#if defined(CONFIG_SPI)
- 		#define CONFIG_SPI_MODULE_0
- 		#define CONFIG_SPI0_TYPE				1 /* 1: EEPROM, 0: SPI device */
-// 		#define CONFIG_EEPROM_SPI_MODULE_NUM	0
-
-		#define CONFIG_EEPROM_ERASE_SIZE		32*1024
-		#define CONFIG_EEPROM_WRITE_PAGE_SIZE	256
-		#define CONFIG_EEPROM_ADDRESS_STEP		3
-
-		#define CMD_SPI_WREN			0x06		// Set Write Enable Latch
-		#define CMD_SPI_WRDI			0x04		// Reset Write Enable Latch
-		#define CMD_SPI_RDSR			0x05		// Read Status Register
-		#define CMD_SPI_WRSR			0x01		// Write Status Register
-		#define CMD_SPI_READ			0x03		// Read Data from Memory Array
-		#define CMD_SPI_WRITE			0x02		// Write Data to Memory Array
-
-		#define CMD_SPI_SE				0x52		// Sector Erase
-		#define CMD_SPI_BE				0xC7		// Bulk Erase
-		#define CMD_SPI_DP				0xB9		// Deep Power-down
-		#define CMD_SPI_RES				0xAB		// Release from Deep Power-down
-
-		#define CONFIG_SPI_EEPROM_WRITE_PROTECT
-		#if defined(CONFIG_SPI_EEPROM_WRITE_PROTECT)
-			#define	CONFIG_SPI_EEPROM_WP_PAD 			CFG_IO_SPI_EEPROM_WP
-			#define	CONFIG_SPI_EEPROM_WP_ALT			CFG_IO_SPI_EEPROM_WP_ALT
-		#endif
-
- 	 	#define CONFIG_CMD_SPI_EEPROM_UPDATE
- 	 	#if defined (CONFIG_CMD_SPI_EEPROM_UPDATE)
- 		/*
- 	  	 *	EEPROM Environment Organization
- 	 	 *	[Note R/W unit 64K]
- 	 	 *
-		 *    0 ~   16K Second Boot [NSIH + Sencond boot]
-		 *   16 ~   32K Reserved
-		 *   32 ~   64K Enviroment
-		 *   64 ~  512K U-Boot
- 	 	 */
-			#define	CONFIG_2STBOOT_OFFSET			   	0
-			#define	CONFIG_2STBOOT_SIZE				   	16*1024
-			#define	CONFIG_UBOOT_OFFSET				   	64*1024
-			#define	CONFIG_UBOOT_SIZE				   (512-64)*1024
- 	 	#endif
-		#if defined(CONFIG_ENV_IS_IN_EEPROM)
-			#define	CONFIG_ENV_OFFSET					32*1024	/* 248 ~ 256K Environment */
-			#define CONFIG_ENV_SIZE						32*1024
-			#define CONFIG_ENV_RANGE					CONFIG_ENV_SIZE
-			#define CONFIG_SYS_DEF_EEPROM_ADDR			0					/* Need 0, when SPI */
-			#define CONFIG_SYS_I2C_FRAM									/* To avoid max length limit when spi write */
-			//#define DEBUG_ENV
-		#endif
-	#endif
-#endif
-
-/*-----------------------------------------------------------------------
- * SPI
- */
-
-#if defined  (CONFIG_SPI)
-    #if defined (CONFIG_SPI_MODULE_0)
-		#define CONFIG_SPI_MODULE_0_SOURCE_CLOCK    CFG_SPI0_SRC_CLK
-        #define CONFIG_SPI_MODULE_0_CLOCK           CFG_SPI0_OUT_CLK
-        #define CONFIG_SPI_MODULE_0_EEPROM          CONFIG_SPI0_TYPE    /* 1: EEPROM, 0: SPI device */
-    #endif
-    #if defined (CONFIG_SPI_MODULE_1)
-		#define CONFIG_SPI_MODULE_1_SOURCE_CLOCK    CFG_SPI1_SRC_CLK
-        #define CONFIG_SPI_MODULE_1_CLOCK           CFG_SPI0_OUT_CLK
-        #define CONFIG_SPI_MODULE_1_EEPROM          CONFIG_SPI1_TYPE    /* 1: EEPROM, 0: SPI device */
-    #endif
-    #if defined (CONFIG_SPI_MODULE_2)
-		#define CONFIG_SPI_MODULE_2_SOURCE_CLOCK    CFG_SPI2_SRC_CLK
-        #define CONFIG_SPI_MODULE_2_CLOCK           CFG_SPI0_OUT_CLK
-        #define CONFIG_SPI_MODULE_2_EEPROM          CONFIG_SPI2_TYPE    /* 1: EEPROM, 0: SPI device */
-    #endif
-#endif
 
 /*-----------------------------------------------------------------------
  * USB Host / Gadget
@@ -365,61 +214,6 @@
 	#define CONFIG_NXP_USBDOWN
 	#define CONFIG_NXP_DWC_OTG
 	#define CONFIG_NXP_DWC_OTG_PHY
-#endif
-
-/*-----------------------------------------------------------------------
- * PMIC
- */
-//#define CONFIG_PMIC
-#if defined(CONFIG_PMIC)
-#define CONFIG_CMD_I2C
-#define CONFIG_PMIC_I2C
-#define CONFIG_PMIC_NXE2000
-#define CONFIG_HAVE_BATTERY
-
-#define CONFIG_NXE2000_I2C_BUS						I2C_0
-
-#define CONFIG_PMIC_CHARGING_PATH_ADP               (0) // Support only VADP. Do not supported USB ADP.
-#define CONFIG_PMIC_CHARGING_PATH_UBC               (1) // Support only VUSB. (USB connector - USB ADP & PC)
-#define CONFIG_PMIC_CHARGING_PATH_ADP_UBC           (2) // Using VADP, VUSB power path. Separated power path.
-#define CONFIG_PMIC_CHARGING_PATH_ADP_UBC_LINKED    (3) // Using VADP, VUSB power path. Linked power path.
-#define CONFIG_PMIC_NXE2000_CHARGING_PATH           CONFIG_PMIC_CHARGING_PATH_ADP_UBC
-
-#define CONFIG_SW_UBC_DETECT	/* need with CONFIG_FASTBOOT. */
-
-// #define CONFIG_NXE2000_REG_DUMP
-#endif
-
-/*-----------------------------------------------------------------------
- * BATTERY CHECK (FUEL GAUGE)
- */
-#if defined(CONFIG_HAVE_BATTERY)
-
-//#define CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE
-//#define CONFIG_POWER_BATTERY_SMALL
-
-#ifndef CONFIG_POWER_BATTERY_SMALL
-//#define CONFIG_BAT_CHECK
-#endif
-
-#define CONFIG_POWER_BATTERY
-#define CONFIG_POWER_BATTERY_NXE2000
-#ifdef CONFIG_BAT_CHECK
-#define CONFIG_NXP_RTC_USE
-#endif
-#endif	// #if defined(CONFIG_HAVE_BATTERY)
-
-#if defined(CONFIG_PMIC) && defined(CONFIG_PMIC_NXE2000)
-#define CONFIG_POWER
-#define CONFIG_POWER_I2C
-#define CONFIG_POWER_NXE2000
-#define CONFIG_POWER_FG
-#define CONFIG_POWER_FG_NXE2000
-#define CONFIG_POWER_MUIC
-#define CONFIG_POWER_MUIC_NXE2000
-
-#define	CFG_IO_I2C0_SCL	((PAD_GPIO_E + 14) | PAD_FUNC_ALT0)
-#define	CFG_IO_I2C0_SDA	((PAD_GPIO_E + 15) | PAD_FUNC_ALT0)
 #endif
 
 /*-----------------------------------------------------------------------
@@ -468,17 +262,21 @@
 
 
     // workaround for i2c ch1 sda, scl schematic bug : sda, scl changed
+	#define	CFG_IO_I2C0_SCL				((PAD_GPIO_D + 2) | PAD_FUNC_ALT0)
+	#define	CFG_IO_I2C0_SDA				((PAD_GPIO_D + 3) | PAD_FUNC_ALT0)
+
     #define CFG_IO_I2C1_SCL             ((PAD_GPIO_D + 5) | PAD_FUNC_ALT0)
     #define CFG_IO_I2C1_SDA             ((PAD_GPIO_D + 4) | PAD_FUNC_ALT0)
 
     #define CFG_IO_I2C2_SCL             ((PAD_GPIO_D + 6) | PAD_FUNC_ALT0)
     #define CFG_IO_I2C2_SDA             ((PAD_GPIO_D + 7) | PAD_FUNC_ALT0)
 
-	#define CFG_IO_I2C3_SCL				((PAD_GPIO_C + 10) | PAD_FUNC_ALT1)
-	#define CFG_IO_I2C3_SDA				((PAD_GPIO_C +  9) | PAD_FUNC_ALT1)
+	#define	CFG_IO_I2C3_SCL				((PAD_GPIO_E + 11) | PAD_FUNC_ALT0)
+	#define	CFG_IO_I2C3_SDA				((PAD_GPIO_E + 10) | PAD_FUNC_ALT0)
 
-	#define CFG_IO_I2C4_SCL				((PAD_GPIO_C + 11) | PAD_FUNC_ALT1)
-	#define CFG_IO_I2C4_SDA				((PAD_GPIO_C + 12) | PAD_FUNC_ALT1)
+	#define	CFG_IO_I2C4_SCL				((PAD_GPIO_E + 9) | PAD_FUNC_ALT0)
+	#define	CFG_IO_I2C4_SDA				((PAD_GPIO_E + 8) | PAD_FUNC_ALT0)
+
 #endif
 
 /*-----------------------------------------------------------------------
@@ -510,7 +308,7 @@
     #define CONFIG_MMC0_BUS_WIDTH       4
 
 	#define CONFIG_MMC2_CLOCK			50000000
-	#define CONFIG_MMC2_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(3)| DW_MMC_SAMPLE_PHASE(2)
+	#define CONFIG_MMC2_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(3)| DW_MMC_SAMPLE_PHASE(1)
     #define CONFIG_MMC2_BUS_WIDTH       8
     #define CONFIG_MMC2_TRANS_MODE      0 //1 : DDR_MODE, 0: SDR_MODE
 
@@ -600,18 +398,6 @@
 			"flash=mmc,2:recovery:emmc:0x4E900000,0x01600000;"	\
 			"flash=mmc,2:userdata:ext4:0x50000000,0x0;"
 
-#endif
-
-
-#if 0
-			//"flash=mmc,2:2ndboot:2nd:0x200,0x4000;"
-			//"flash=mmc,2:bootloader:boot:0x8000,0x70000;"
-			//"flash=mmc,2:boot:ext4:0x00100000,0x04000000;"
-			//"flash=mmc,2:system:ext4:0x04100000,0x28E00000;"
-			//"flash=mmc,2:cache:ext4:0x2CF00000,0x21000000;"
-			//"flash=mmc,2:misc:emmc:0x4E000000,0x00800000;"
-			//"flash=mmc,2:recovery:emmc:0x4E900000,0x01600000;"
-			//"flash=mmc,2:userdata:ext4:0x50000000,0x0;"
 #endif
 
 /*-----------------------------------------------------------------------

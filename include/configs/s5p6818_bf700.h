@@ -218,6 +218,7 @@
 	#define CONFIG_NXP_DWC_OTG_PHY
 #endif
 
+
 /*-----------------------------------------------------------------------
  * PMIC
  */
@@ -226,8 +227,8 @@
 	#if defined(CONFIG_PMIC)
 		#define CONFIG_CMD_I2C
 		#define CONFIG_PMIC_I2C
-		#define CONFIG_PMIC_I2C_BUSA						I2C_3
-		#define CONFIG_PMIC_I2C_BUSB						I2C_4
+		#define CONFIG_PMIC_I2C_BUSA						I2C_5
+		#define CONFIG_PMIC_I2C_BUSB						I2C_6
 
 		#define CONFIG_POWER
 		#define CONFIG_POWER_I2C
@@ -236,6 +237,8 @@
 
 		#define CONFIG_REGULATOR_MP8845C
 	#endif
+
+
 /*-----------------------------------------------------------------------
  * I2C
  *
@@ -280,6 +283,12 @@
 	#define	CONFIG_I2C4_NEXELL								/* 1 = i2c 1 */
 	#define	CONFIG_I2C4_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
 
+	#define	CONFIG_I2C5_NEXELL								/* 1 = i2c 1 */
+	#define	CONFIG_I2C5_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
+
+	#define	CONFIG_I2C6_NEXELL								/* 1 = i2c 1 */
+	#define	CONFIG_I2C6_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
+
 
     // workaround for i2c ch1 sda, scl schematic bug : sda, scl changed
 	#define	CFG_IO_I2C0_SCL				((PAD_GPIO_D + 2) | PAD_FUNC_ALT0)
@@ -291,11 +300,17 @@
     #define CFG_IO_I2C2_SCL             ((PAD_GPIO_D + 6) | PAD_FUNC_ALT0)
     #define CFG_IO_I2C2_SDA             ((PAD_GPIO_D + 7) | PAD_FUNC_ALT0)
 
-	#define	CFG_IO_I2C3_SCL				((PAD_GPIO_E + 9) | PAD_FUNC_ALT0)
-	#define	CFG_IO_I2C3_SDA				((PAD_GPIO_E + 8) | PAD_FUNC_ALT0)
+    #define CFG_IO_I2C3_SCL				((PAD_GPIO_C + 10) | PAD_FUNC_ALT1)
+    #define CFG_IO_I2C3_SDA				((PAD_GPIO_C +  9) | PAD_FUNC_ALT1)
 
-	#define	CFG_IO_I2C4_SCL				((PAD_GPIO_E + 11) | PAD_FUNC_ALT0)
-	#define	CFG_IO_I2C4_SDA				((PAD_GPIO_E + 10) | PAD_FUNC_ALT0)
+    #define CFG_IO_I2C4_SCL				((PAD_GPIO_C + 11) | PAD_FUNC_ALT1)
+    #define CFG_IO_I2C4_SDA				((PAD_GPIO_C + 12) | PAD_FUNC_ALT1)
+
+    #define CFG_IO_I2C5_SCL				((PAD_GPIO_E + 9) | PAD_FUNC_ALT0)
+    #define CFG_IO_I2C5_SDA				((PAD_GPIO_E + 8) | PAD_FUNC_ALT0)
+
+    #define CFG_IO_I2C6_SCL				((PAD_GPIO_E + 11) | PAD_FUNC_ALT0)
+    #define CFG_IO_I2C6_SDA				((PAD_GPIO_E + 10) | PAD_FUNC_ALT0)
 #endif
 
 /*-----------------------------------------------------------------------
@@ -424,7 +439,7 @@
  */
 //#define CONFIG_DISPLAY_OUT
 
-//#define CONFIG_LOGO_DEVICE_MMC
+#define CONFIG_LOGO_DEVICE_MMC
 
 #if defined(CONFIG_LOGO_DEVICE_MMC) && defined(CONFIG_LOGO_DEVICE_NAND)
 #error "Duplicated config for logo device!!!"
@@ -487,6 +502,10 @@
 #define CONFIG_VIP_CR_ADDR          0x7FDAF000
 #endif
 #endif
+
+
+//#define CONFIG_TW9992
+//#define	CONFIG_DISPLAY_OUT_MIPI
 
 #endif /* __CONFIG_H__ */
 

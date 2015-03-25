@@ -215,6 +215,41 @@ static int mp8845c_i2c_set_bits(struct mp8845c_power *power, int reg, uint8_t bi
 	return ret;
 }
 
+#if defined(CONFIG_PMIC_REG_DUMP)
+void mp8845c_register_dump(struct mp8845c_power *power)
+{
+	s32 ret=0;
+	u16 i=0;
+	u8 value=0;
+
+	printf("##########################################################\n");
+	printf("##\e[31m %s()\e[0m \n", __func__);
+	printf("----------------------------------------------------------\n");
+	printf("       0  1  2  3   4  5  6  7   8  9  A  B   C  D  E  F\n");
+
+	for(i=0; i<=0x5; i++)
+	{
+		if(i%16 == 0)
+			printf("  %02X:", i);
+
+		if(i%4 == 0)
+			printf(" ");
+
+		ret = mp8845c_i2c_read(power, i, &value);
+		if(!ret)
+			printf("%02x ", value);
+		else
+			printf("\e[31mxx\e[0m ");
+
+		if((i+1)%16 == 0)
+			printf("\n");
+	}
+	printf("\n##########################################################\n");
+
+}
+#endif
+
+
 #if 0 
 static int mp8845c_i2c_clr_bits(struct mp8845c_power *power, int reg, uint8_t bit_mask)
 {
@@ -253,7 +288,7 @@ static int mp8845c_device_setup(struct mp8845c_power *power)
 {
 	int	bus = power->i2c_bus;
 	int ret = 0;
-	//u8 reg_val;
+	u8 reg_val = 0;
 
 	PMIC_DBGOUT("%s\n", __func__);
 
@@ -262,8 +297,13 @@ static int mp8845c_device_setup(struct mp8845c_power *power)
 
 	mp8845c_i2c_set_bits(power, MP8845C_REG_SYSCNTL1, (1 << MP8845C_POS_MODE));
 
-	//mp8845c_i2c_read(power, MP8845C_REG_SYSCNTL1, &reg_val);
-	//PMIC_DBGOUT("reg_val:0x%x\n", reg_val);
+	reg_val = 0xCB; // 1.1018 V
+	mp8845c_i2c_set_bits(power, MP8845C_REG_VSEL, reg_val);
+
+#if defined(CONFIG_PMIC_REG_DUMP)
+	mp8845c_register_dump(power);
+#endif
+
 	return ret;
 }
 

@@ -1439,7 +1439,7 @@ int mmc_initialize(bd_t *bis)
 		cpu_mmc_init(bis);
 
 #ifndef CONFIG_SPL_BUILD
-	print_mmc_devices(',');
+	/*print_mmc_devices(',');*/
 #endif
 
 	do_preinit();

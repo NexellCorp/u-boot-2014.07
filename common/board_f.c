@@ -233,13 +233,13 @@ void dram_init_banksize(void)
 #if defined(CONFIG_HARD_I2C) || defined(CONFIG_SYS_I2C)
 static int init_func_i2c(void)
 {
-	puts("I2C:   ");
+	/*puts("I2C:   ");*/
 #ifdef CONFIG_SYS_I2C
 	i2c_init_all();
 #else
 	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
 #endif
-	puts("ready\n");
+	/*puts("ready\n");*/
 	return 0;
 }
 #endif
@@ -876,7 +876,7 @@ static init_fnc_t init_sequence_f[] = {
 	dram_init_f,		/* configure available RAM banks */
 	calculate_relocation_address,
 #endif
-	announce_dram_init,
+	/*announce_dram_init,*/
 	/* TODO: unify all these dram functions? */
 #ifdef CONFIG_ARM
 	dram_init,		/* configure available RAM banks */
@@ -940,7 +940,7 @@ static init_fnc_t init_sequence_f[] = {
 	reserve_fdt,
 	reserve_stacks,
 	setup_dram_config,
-	show_dram_config,
+	/*show_dram_config,*/
 #ifdef CONFIG_PPC
 	setup_board_part1,
 	INIT_FUNC_WATCHDOG_RESET

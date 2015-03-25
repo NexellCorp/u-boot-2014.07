@@ -222,8 +222,13 @@ int do_goImage (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	#endif
 	setup_end_tag(gd->bd);
 #endif
+
+#if 0
 	printf ("## Starting Image at 0x%08X with machine type %d ...\n",
 		(u_int)addr, (u_int)machtype);
+#else
+    printf("## Starting Kernel at 0x%08x\n", (u_int)addr);
+#endif
 
 	entry = (IMAGE*)addr;
 

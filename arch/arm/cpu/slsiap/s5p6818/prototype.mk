@@ -36,3 +36,4 @@ obj-$(CONFIG_DISPLAY_OUT_HDMI)	+= $(PROTOTYPE)/$(MODULES)/nx_i2s.o
 # 								   		$(PROTOTYPE)/$(MODULES)/nx_dpc.o
 obj-y	+= $(PROTOTYPE)/$(MODULES)/nx_rtc.o
 obj-$(CONFIG_VIP) += $(PROTOTYPE)/$(MODULES)/nx_vip.o
+obj-$(CONFIG_MLC_VIDEO) += $(PROTOTYPE)/$(MODULES)/nx_mlc.o

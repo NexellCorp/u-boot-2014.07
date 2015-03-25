@@ -195,7 +195,6 @@ int power_init_board(void)
 }
 #endif
 
-
 int board_init(void)
 {
 	DBGOUT("%s : done board init ...\n", CFG_SYS_BOARD_NAME);

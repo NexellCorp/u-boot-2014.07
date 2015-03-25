@@ -29,7 +29,6 @@ static void _hw_set_clock(int module, struct nxp_vip_param *param, bool on)
 #endif
 
         if (param->is_mipi) {
-            printf("%s: apply mipi csi clock!!!\n", __func__);
             NX_CLKGEN_SetClockSource(NX_VIP_GetClockNumber(module), 0, 2); /* external PCLK */
             NX_CLKGEN_SetClockDivisor(NX_VIP_GetClockNumber(module), 0, 2);
             NX_CLKGEN_SetClockDivisorEnable(NX_VIP_GetClockNumber(module), CTRUE);
@@ -39,7 +38,6 @@ static void _hw_set_clock(int module, struct nxp_vip_param *param, bool on)
             NX_CLKGEN_SetClockDivisorEnable(NX_VIP_GetClockNumber(module), CTRUE);
         }
 
-        printf("VIP CLK GEN VAL: 0x%x\n", *clkgen_base);
         NX_VIP_SetBaseAddress(module, IO_ADDRESS(NX_VIP_GetPhysicalAddress(module)));
     }
 }

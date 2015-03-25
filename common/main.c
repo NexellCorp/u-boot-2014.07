@@ -56,6 +56,7 @@ static void run_preboot_environment_command(void)
 /* We come here after U-Boot is initialised and ready to process commands */
 void main_loop(void)
 {
+#if 0
 	const char *s;
 
 	bootstage_mark_name(BOOTSTAGE_ID_MAIN_LOOP, "main_loop");
@@ -86,4 +87,9 @@ void main_loop(void)
 	autoboot_command(s);
 
 	cli_loop();
+#else
+	cli_init();
+    autoboot_command(bootdelay_process());
+    cli_loop();
+#endif
 }

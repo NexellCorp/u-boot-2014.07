@@ -556,7 +556,7 @@ void camera_run(void)
 #else
 	//initialize_tw9992();
 
-	module_id = 1;
+	module_id = 0;
     nxp_vip_register_param(module_id, &tw9992_vip_param);
 
     //nxp_vip_set_addr(module_id, CONFIG_VIP_LU_ADDR, CONFIG_VIP_CB_ADDR, CONFIG_VIP_CR_ADDR);
@@ -811,7 +811,7 @@ void camera_run(void)
 		}
 	}
     DEBUG_POINT;
-	NX_VIP_SetVIPEnable(VIP_ModuleIndex, CTRUE, CTRUE, CTRUE, CFALSE);  // bVIPEnb, bSepEnb, bClipEnb, bDeciEnb  // modify @ junseo relocate this line
+	//NX_VIP_SetVIPEnable(VIP_ModuleIndex, CTRUE, CTRUE, CTRUE, CFALSE);  // bVIPEnb, bSepEnb, bClipEnb, bDeciEnb  // modify @ junseo relocate this line
     
     DEBUG_POINT;
     nxp_mlc_video_set_param(0, &tw9992_mlc_param);
@@ -821,7 +821,7 @@ void camera_run(void)
             ALIGN(CAM_WIDTH/2, 64));
     
     DEBUG_POINT;
-    nxp_mlc_video_run(0);
+    //nxp_mlc_video_run(0);
 
     printf("nick - TIME_STAMP: %s %s \n", __DATE__, __TIME__);        
 
@@ -1055,6 +1055,8 @@ static int is_tw9900_video_in(int bus_num, int chip_addr)
 
 void camera_preview(void)
 {
+
+#ifndef CONFIG_TW9992
 #if 0
     int io = CAMERA_ACTIVE_DETECT;
     int val;
@@ -1086,7 +1088,14 @@ void camera_preview(void)
     }
 #endif
 
-#ifdef CONFIG_TW9992
+
+#else // CONFIG_TW9992
+
+	printf("run vip & mlc, module_id:%d \n", module_id);
+	nxp_vip_run(module_id);
+	nxp_mlc_video_run(0);
+
+#if 1
 	{
 		int i = 0;
 		for(i=0; i<256; i++)
@@ -1097,5 +1106,10 @@ void camera_preview(void)
 		}
 	}
 #endif
-    /*printf("%s exit\n", __func__);*/
+
+#endif // CONFIG_TW9992
+
+    printf("%s exit\n", __func__);
+	//while(!ctrlc());
+
 }

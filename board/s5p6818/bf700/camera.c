@@ -302,9 +302,9 @@ static struct nxp_vip_param tw9992_vip_param = {
     .external_sync  = true,
     .is_mipi        = true,
     .h_active       = TW9992_WIDTH,
-    .h_frontporch   = 4,
-    .h_syncwidth    = 4,
-    .h_backporch    = 4,
+    .h_frontporch   = 1,
+    .h_syncwidth    = 1,
+    .h_backporch    = 1,
     .v_active       = TW9992_HEIGHT,
     .v_frontporch   = 1,
     .v_syncwidth    = 1,
@@ -457,10 +457,14 @@ int tw9992_init_data_load(unsigned long addr)
 void initialize_tw9992( void )
 {
 	int ret = 0;
-    int camera_id = 0;
+	int camera_id = 0;
 	unsigned long ram_addr = 0x49000000;
 	int read_size, sort_size;
 	char *p;
+
+	u8 read_val = 0;
+
+	DEBUG_POINT;
 
 	read_size = tw9992_init_data_load(ram_addr);
 
@@ -480,57 +484,247 @@ void initialize_tw9992( void )
 	}
 
 	camera_id = camera_register_sensor(&tw9992_sensor_data);
-	DEBUG_POINT;
-    camera_sensor_run(camera_id);
+	camera_sensor_run(camera_id);
 
-	DEBUG_POINT;
-	{
-		u8 read_val = 0;
+	//mdelay(500);
 
-		mdelay(500);
+	printf("==============================================\n");
 
-		printf("==============================================\n");
+	i2c_read(tw9992_sensor_data.chip, 0x00, 1, &read_val, 1);
+	printf("===== Product ID code : 0x%x \n", read_val);
 
-		i2c_read(tw9992_sensor_data.chip, 0x00, 1, &read_val, 1);
-		printf("===== Product ID code : 0x%x \n", read_val);
+	i2c_read(tw9992_sensor_data.chip, 0x03, 1, &read_val, 1);
+	printf("===== Reg 0x03 : 0x%x.\n", read_val);
 
-		i2c_read(tw9992_sensor_data.chip, 0x03, 1, &read_val, 1);
-		printf("===== Reg 0x03 : 0x%x.\n", read_val);
+	if(read_val & 0x80)	printf("===== Video not present.\n");
+	else				printf("===== Video Detected.\n");
 
-		if(read_val & 0x80)	printf("===== Video not present.\n");
-		else				printf("===== Video Detected.\n");
+	if(read_val & 0x40)	printf("===== Horizontal sync PLL is locked to the incoming video source.\n");
+	else				printf("===== Horizontal sync PLL is not locked.\n");
 
-		if(read_val & 0x40)	printf("===== Horizontal sync PLL is locked to the incoming video source.\n");
-		else				printf("===== Horizontal sync PLL is not locked.\n");
+	if(read_val & 0x20)	printf("===== Sub-carrier PLL is locked to the incoming video source.\n");
+	else				printf("===== Sub-carrier PLL is not locked.\n");
 
-		if(read_val & 0x20)	printf("===== Sub-carrier PLL is locked to the incoming video source.\n");
-		else				printf("===== Sub-carrier PLL is not locked.\n");
+	if(read_val & 0x10)	printf("===== Odd field is being decoded.\n");
+	else				printf("===== Even field is being decoded.\n");
 
-		if(read_val & 0x10)	printf("===== Odd field is being decoded.\n");
-		else				printf("===== Even field is being decoded.\n");
+	if(read_val & 0x8)	printf("===== Vertical logic is locked to the incoming video source.\n");
+	else				printf("===== Vertical logic is not locked.\n");
 
-		if(read_val & 0x8)	printf("===== Vertical logic is locked to the incoming video source.\n");
-		else				printf("===== Vertical logic is not locked.\n");
+	if(read_val & 0x2)	printf("===== No color burst signal detected.\n");
+	else				printf("===== Color burst signal detected.\n");
 
-		if(read_val & 0x2)	printf("===== No color burst signal detected.\n");
-		else				printf("===== Color burst signal detected.\n");
+	if(read_val & 0x1)	printf("===== 50Hz source detected.\n");
+	else				printf("===== 60Hz source detected.\n");
 
-		if(read_val & 0x1)	printf("===== 50Hz source detected.\n");
-		else				printf("===== 60Hz source detected.\n");
-
-		i2c_read(tw9992_sensor_data.chip, 0x1c, 1, &read_val, 1);
+	i2c_read(tw9992_sensor_data.chip, 0x1c, 1, &read_val, 1);
 		printf("===== Reg 0x1C : 0x%x.\n", read_val);
-		if(read_val & 0x80)	printf("===== Detection in progress.\n");
-		else				printf("===== Idle.\n");
 
-		//i2c_read(tw9992_sensor_data.chip, 0x7F, 1, &read_val, 1);
-		//printf("===== Reg 0x7F : 0x%x.\n", read_val);
+	if(read_val & 0x80)	printf("===== Detection in progress.\n");
+	else				printf("===== Idle.\n");
 
-		printf("==============================================\n");
-	}
-	DEBUG_POINT;
+	//i2c_read(tw9992_sensor_data.chip, 0x7F, 1, &read_val, 1);
+	//printf("===== Reg 0x7F : 0x%x.\n", read_val);
+
+	printf("==============================================\n");
+
 }
 
+void nxp_vip_setting(int module, struct nxp_vip_param *param)
+{
+#if 1
+	nxp_vip_register_param(module, param);
+    nxp_vip_set_addr(module, CONFIG_VIP_LU_ADDR, CONFIG_VIP_CB_ADDR, CONFIG_VIP_CR_ADDR);
+#else
+    const U32 VIP_ModuleIndex = module;
+    const U32 VIP_WIDTH = param->h_active;
+    const U32 VIP_HEIGHT = param->v_active;
+    const U32 VIP_HFP = param->h_frontporch;
+    const U32 VIP_HSW = param->h_syncwidth; 
+    const U32 VIP_HBP = param->h_backporch;
+    const U32 VIP_VFP = param->v_frontporch;  
+    const U32 VIP_VSW = param->v_syncwidth;  
+    const U32 VIP_VBP = param->v_backporch;  
+    const U32 VIP_ClockIndex  = NX_VIP_GetClockNumber(module);
+    const U32 VIP_ResetIndex  = NX_VIP_GetResetNumber(module);
+
+    DEBUG_POINT;
+
+    NX_CLKGEN_SetBaseAddress       (VIP_ClockIndex, (U32)IO_ADDRESS(NX_CLKGEN_GetPhysicalAddress(VIP_ClockIndex)));
+    NX_CLKGEN_SetClockDivisorEnable(VIP_ClockIndex, CTRUE);
+    NX_CLKGEN_SetClockBClkMode     (VIP_ClockIndex, NX_BCLKMODE_DYNAMIC);
+
+    NX_VIP_Initialize();
+	NX_VIP_SetBaseAddress( VIP_ModuleIndex, IO_ADDRESS(NX_VIP_GetPhysicalAddress(VIP_ModuleIndex)) );
+	// NX_CLOCK_SetClockEnable( NX_VIP_GetClockNumber ( VIP_ModuleIndex ), CTRUE );
+#if defined(CONFIG_MACH_S5P4418)
+    NX_RSTCON_SetnRST(VIP_ResetIndex, RSTCON_nDISABLE);
+    NX_RSTCON_SetnRST(VIP_ResetIndex, RSTCON_nENABLE );
+#elif defined(CONFIG_MACH_S5P6818)
+    NX_RSTCON_SetRST(VIP_ResetIndex , RSTCON_ASSERT  );
+    NX_RSTCON_SetRST(VIP_ResetIndex , RSTCON_NEGATE  );
+#endif
+	NX_VIP_OpenModule( VIP_ModuleIndex );
+	//NX_VIP_SetInterruptEnable(VIP_ModuleIndex, NX_VIP_INT_VSYNC, CFALSE);
+	//NX_VIP_SetInterruptEnable(VIP_ModuleIndex, NX_VIP_INT_HSYNC, CFALSE);
+	//NX_VIP_SetInterruptEnable(VIP_ModuleIndex, NX_VIP_INT_VSYNC , CTRUE);
+	//NX_INT_RegisterHandler( NX_VIP_GetInterruptNumber(VIP_ModuleIndex), VIP_OnEvent, (void*)VIP_ModuleIndex );
+
+	//NX_CONSOLE_PutString("[NXLOG] VIP Config\n");
+
+	// (freq. of RX_BYTE_CLK_HS) X (number of data lane) X 8bits <= (freq. of Pixel clock) X (bitwidth of image format)
+	//	125Mhz * 2bytes = 250Mbytes/sec <= 147Mhz * 2bytes = 294
+	// NX_CLOCK_SetClockDivisor( NX_VIP_GetClockNumber(VIP_ModuleIndex),0,NX_CLK147P456MHZ,CNULL); // CSI output clock == VIP input clock
+	// NX_CLOCK_SetClockDivisorEnable( NX_VIP_GetClockNumber(VIP_ModuleIndex),CTRUE);
+    printf("%s: apply mipi csi clock!!!\n", __func__);
+    NX_CLKGEN_SetClockSource (VIP_ClockIndex, 0, 0); /* external PCLK */
+    NX_CLKGEN_SetClockDivisor(VIP_ClockIndex, 0, 8);
+    NX_CLKGEN_SetClockDivisorEnable(VIP_ClockIndex, CTRUE);
+
+	/********************************************************************
+	* Clipper Config
+	********************************************************************/
+	NX_VIP_SetInputPort(VIP_ModuleIndex, NX_VIP_INPUTPORT_B); // for MIPI
+	NX_VIP_SetDataMode(VIP_ModuleIndex, NX_VIP_DATAORDER_CBY0CRY1, 16); // Data Order: CRYCBY, 8Bit
+	NX_VIP_SetHVSyncForMIPI(VIP_ModuleIndex, VIP_WIDTH*2, VIP_HEIGHT, VIP_HSW, VIP_HFP, VIP_HBP, VIP_VSW, VIP_VFP, VIP_VBP );
+	NX_VIP_SetFieldMode(VIP_ModuleIndex, CFALSE, NX_VIP_FIELDSEL_BYPASS, CFALSE, CFALSE); // EXT Field Disable, EXT Field Bypass, Interlace TRUE, Inv Field FALSE
+	//NX_VIP_ResetFIFO(VIP_ModuleIndex); // FIFO Reset Disable
+	NX_VIP_SetFIFOResetMode(VIP_ModuleIndex, NX_VIP_FIFORESET_FRAMEEND); // FIFO Clr Frame End			
+	NX_VIP_SetFIFOResetMode(VIP_ModuleIndex, NX_VIP_FIFORESET_CPU); // FIFO Clr by CPU
+	//NX_VIP_ResetFIFO(VIP_ModuleIndex); // FIFO Reset Enable
+	
+	/********************************************************************
+	* Clipper Config * Preview
+	*********************************************************************/		
+	NX_VIP_SetClipRegion(VIP_ModuleIndex, 0, 0, VIP_WIDTH-(VIP_WIDTH%32), VIP_HEIGHT-(VIP_HEIGHT%32));
+	NX_VIP_SetClipperAddr(VIP_ModuleIndex, NX_VIP_FORMAT_420, VIP_WIDTH-(VIP_WIDTH%32), VIP_HEIGHT-(VIP_HEIGHT%32), 
+													CONFIG_VIP_LU_ADDR,
+													CONFIG_VIP_CB_ADDR,
+													CONFIG_VIP_CR_ADDR,
+													ALIGN((VIP_WIDTH-(VIP_WIDTH%32)), 64), ALIGN((VIP_WIDTH-(VIP_WIDTH%32))/2, 64) );
+
+#if defined(CONFIG_MACH_S5P4418)
+	NX_VIP_SetClipperFormat(VIP_ModuleIndex, NX_VIP_FORMAT_420, 0, 0, 0);
+#elif defined(CONFIG_MACH_S5P6818)
+	NX_VIP_SetClipperFormat(VIP_ModuleIndex, NX_VIP_FORMAT_420);
+#endif
+
+	//NX_VIP_SetVIPEnable(VIP_ModuleIndex, CTRUE, CTRUE, CTRUE, CFALSE);  // bVIPEnb, bSepEnb, bClipEnb, bDeciEnb  // modify @ junseo relocate this line
+    {
+        volatile NX_VIP_RegisterSet* pvip = (volatile NX_VIP_RegisterSet*)IO_ADDRESS(NX_VIP_GetPhysicalAddress(VIP_ModuleIndex));
+        pvip->VIP_SYNCCTRL &= 0xFFFFFDFF;
+    }		
+#endif
+}
+
+
+void nxp_mipi_csi_setting(struct nxp_vip_param *param)
+{
+	volatile NX_MIPI_RegisterSet* pmipi;
+	const U32 MIPI_ModuleIndex  = 0;
+	int number_of_modules;
+	int channel;
+
+	const U32 WIDTH = param->h_active;
+	const U32 HEIGHT = param->v_active;
+
+	DEBUG_POINT;
+
+	NX_MIPI_Initialize();
+
+	number_of_modules = NX_MIPI_GetNumberOfModule();
+	NX_ASSERT( number_of_modules==1 ); //for(MIPI_ModuleIndex=0; i< number_of_modules; MIPI_ModuleIndex++)		
+
+	NX_ASSERT( NX_MIPI_GetNumberOfPADMode ( 0 ) == 1 );
+
+	NX_TIEOFF_Set( TIEOFFINDEX_OF_MIPI0_NX_DPSRAM_1R1W_EMAA, 3 );
+	NX_TIEOFF_Set( TIEOFFINDEX_OF_MIPI0_NX_DPSRAM_1R1W_EMAB, 3 );
+
+	NX_MIPI_SetBaseAddress( MIPI_ModuleIndex, (U32)IO_ADDRESS(NX_MIPI_GetPhysicalAddress(MIPI_ModuleIndex)) );
+	NX_CLKGEN_SetClockBClkMode( NX_MIPI_GetClockNumber ( MIPI_ModuleIndex ), NX_BCLKMODE_DYNAMIC );
+
+#if defined(CONFIG_MACH_S5P4418)
+	NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST       ), RSTCON_nDISABLE);
+	NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_DSI_I ), RSTCON_nDISABLE);
+	NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_CSI_I ), RSTCON_nDISABLE);
+	NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_PHY_S ), RSTCON_nDISABLE);
+	NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_PHY_M ), RSTCON_nDISABLE);            
+	NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST       ), RSTCON_nENABLE );
+	NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_DSI_I ), RSTCON_nENABLE );
+	NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_CSI_I ), RSTCON_nENABLE );
+#elif defined(CONFIG_MACH_S5P6818)
+	NX_RSTCON_SetRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST       ), RSTCON_ASSERT);
+	NX_RSTCON_SetRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_DSI_I ), RSTCON_ASSERT);
+	NX_RSTCON_SetRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_CSI_I ), RSTCON_ASSERT);
+	NX_RSTCON_SetRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_PHY_S ), RSTCON_ASSERT);
+	NX_RSTCON_SetRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_PHY_M ), RSTCON_ASSERT);            
+	NX_RSTCON_SetRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST       ), RSTCON_NEGATE );
+	NX_RSTCON_SetRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_DSI_I ), RSTCON_NEGATE );
+	NX_RSTCON_SetRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_CSI_I ), RSTCON_NEGATE );
+#endif
+
+	NX_MIPI_OpenModule( MIPI_ModuleIndex );
+	pmipi = (volatile NX_MIPI_RegisterSet*)IO_ADDRESS(NX_MIPI_GetPhysicalAddress(MIPI_ModuleIndex));
+	pmipi->CSIS_DPHYCTRL= (5 <<24);
+
+	NX_MIPI_SetInterruptEnableAll( MIPI_ModuleIndex, 0 );
+	NX_MIPI_ClearInterruptPendingAll( MIPI_ModuleIndex );
+	//NX_MIPI_EnablePAD ( MIPI_ModuleIndex, MIPI_PADModeIndex );
+	//NX_INT_RegisterHandler( NX_MIPI_GetInterruptNumber(MIPI_ModuleIndex), MIPI_Handler, ((void*)MIPI_ModuleIndex) );
+	//-------------------------------------------------
+	//	CSI
+	//-------------------------------------------------
+	//NX_CLOCK_SetClockDivisor( NX_MIPI_GetClockNumber(MIPI_ModuleIndex),0,NX_CLK147P456MHZ,CNULL); // CSI output clock == VIP input clock
+	//NX_CLOCK_SetClockDivisorEnable( NX_MIPI_GetClockNumber(MIPI_ModuleIndex),CTRUE);
+	NX_CLKGEN_SetClockSource (NX_MIPI_GetClockNumber(MIPI_ModuleIndex), 0, 0); /* external PCLK */
+	NX_CLKGEN_SetClockDivisor(NX_MIPI_GetClockNumber(MIPI_ModuleIndex), 0, 8);
+	NX_CLKGEN_SetClockDivisorEnable(NX_MIPI_GetClockNumber(MIPI_ModuleIndex), CTRUE);
+
+	NX_MIPI_CSI_SetParallelDataAlignment32 ( MIPI_ModuleIndex, 1, CFALSE ); // It must be false for NX4330(VIP)
+	NX_MIPI_CSI_SetYUV422Layout ( MIPI_ModuleIndex, 1, NX_MIPI_CSI_YUV422LAYOUT_FULL ); // It must be full for NX4330(VIP)
+	NX_MIPI_CSI_SetFormat( MIPI_ModuleIndex, 1, NX_MIPI_CSI_FORMAT_YUV422_8 ); // It must be NX_MIPI_CSI_FORMAT_YUV422_8 for NX4330(VIP)
+	NX_MIPI_CSI_EnableDecompress ( MIPI_ModuleIndex, CFALSE );// It must be false for NX4330(VIP)
+	NX_MIPI_CSI_SetInterleaveMode( MIPI_ModuleIndex, NX_MIPI_CSI_INTERLEAVE_VC);// It must be NX_MIPI_CSI_INTERLEAVE_VC for NX4330(VIP)
+	NX_MIPI_CSI_SetTimingControl( MIPI_ModuleIndex, 1, 32,16,368 ); // int T1, int T2, int T5
+	NX_MIPI_CSI_SetInterleaveChannel( MIPI_ModuleIndex, 0, 1 );
+	NX_MIPI_CSI_SetInterleaveChannel( MIPI_ModuleIndex, 1, 0 );
+	NX_MIPI_CSI_SetSize  ( MIPI_ModuleIndex, 1, WIDTH, HEIGHT );
+	NX_MIPI_CSI_SetVCLK( MIPI_ModuleIndex, 1, NX_MIPI_CSI_VCLKSRC_EXTCLK );
+
+	NX_MIPI_CSI_SetPhy( MIPI_ModuleIndex
+						,0 // U32   NumberOfDataLanes              , // 0~3
+						,1 // CBOOL EnableClockLane                ,
+						,1 // CBOOL EnableDataLane0                ,
+						,0 // CBOOL EnableDataLane1                ,
+						,0 // CBOOL EnableDataLane2                ,
+						,0 // CBOOL EnableDataLane3                ,
+						,0 // CBOOL SwapClockLane                  ,
+						,0 // CBOOL SwapDataLane                   
+						);
+
+	NX_MIPI_CSI_SetEnable ( MIPI_ModuleIndex, CTRUE );
+
+	//-------------------------------------------------
+	//	DPHY
+	//-------------------------------------------------
+	//NX_RESET_LeaveReset( NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_PHY_S ) );			
+	//NX_RESET_LeaveReset( NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_PHY_M ) );			
+#if defined(CONFIG_MACH_S5P4418)
+	NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_PHY_S ), RSTCON_nENABLE );
+	//NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_PHY_M ), RSTCON_nENABLE );
+#elif defined(CONFIG_MACH_S5P6818)
+	NX_RSTCON_SetRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_PHY_S ), RSTCON_NEGATE );
+	//			//NX_RSTCON_SetRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_PHY_M ), RSTCON_NEGATE );
+#endif
+	NX_MIPI_DSI_SetPLL( MIPI_ModuleIndex 
+						,CTRUE	     // CBOOL Enable      ,  
+						,0xFFFFFFFF  // U32 PLLStableTimer,
+						,0x33E8	     // 19'h033E8: 1Ghz  19'h043E8: 750Mhz // Use LN28LPP_MipiDphyCore1p5Gbps_Supplement.
+						,0xF         // 4'hF: 1Ghz  4'hC: 750Mhz           // Use LN28LPP_MipiDphyCore1p5Gbps_Supplement.
+						,0	         // U32 M_PLLCTL      , // Refer to 10.2.2 M_PLLCTL of MIPI_D_PHY_USER_GUIDE.pdf  Default value is all "0". If you want to change register values, it need to confirm from IP Design Team
+						,0	         // U32 B_DPHYCTL       // Refer to 10.2.3 M_PLLCTL of MIPI_D_PHY_USER_GUIDE.pdf or NX_MIPI_PHY_B_DPHYCTL enum or LN28LPP_MipiDphyCore1p5Gbps_Supplement. default value is all "0". If you want to change register values, it need to confirm from IP Design Team						  
+						);
+}
 #endif
 
 
@@ -554,23 +748,26 @@ void camera_run(void)
             ALIGN(CAM_WIDTH/2, 64));
     /*printf("%s exit\n", __func__);*/
 #else
-	//initialize_tw9992();
 
-	module_id = 0;
-    nxp_vip_register_param(module_id, &tw9992_vip_param);
-
-    //nxp_vip_set_addr(module_id, CONFIG_VIP_LU_ADDR, CONFIG_VIP_CB_ADDR, CONFIG_VIP_CR_ADDR);
-    
-{    
-    const U32 VIP_ModuleIndex = module_id;
+    const U32 VIP_ModuleIndex = 0;
     const U32 MIPI_ModuleIndex  = 0;
 
-    printf("nick - TIME_STAMP: %s %s \n", __DATE__, __TIME__);            
-    printf("nick - CAM_WIDTH    : %d \n", CAM_WIDTH  );            
-    printf("nick - CAM_HEIGHT   : %d \n", CAM_HEIGHT );            
-    printf("nick - TW9992_WIDTH : %d \n", TW9992_WIDTH  );            
-    printf("nick - TW9992_HEIGHT: %d \n", TW9992_HEIGHT );            
+	module_id = 0;
+#if 1
+	initialize_tw9992();
 
+	nxp_vip_setting(module_id, &tw9992_vip_param);
+
+	nxp_mipi_csi_setting(&tw9992_vip_param);
+
+    nxp_mlc_video_set_param(0, &tw9992_mlc_param);
+    nxp_mlc_video_set_addr(0, CONFIG_VIP_LU_ADDR, CONFIG_VIP_CB_ADDR, CONFIG_VIP_CR_ADDR,
+            ALIGN(CAM_WIDTH, 64),
+            ALIGN(CAM_WIDTH/2, 64),
+            ALIGN(CAM_WIDTH/2, 64));
+
+	mdelay(100);
+#else
     DEBUG_POINT;
     {
         int x,y;        
@@ -604,8 +801,6 @@ void camera_run(void)
             }
         }
     }
-
-#if 0
     nxp_mlc_video_set_param(0, &tw9992_mlc_param);
     nxp_mlc_video_set_addr(0, CONFIG_VIP_LU_ADDR, CONFIG_VIP_CB_ADDR, CONFIG_VIP_CR_ADDR,
             ALIGN(TW9992_WIDTH, 64),
@@ -618,220 +813,9 @@ void camera_run(void)
     return;
 #endif    
 
-    DEBUG_POINT;
-    {
-        const U32 VIP_HFP = 8;
-        const U32 VIP_HSW = 8; 
-        const U32 VIP_HBP = 8;
-        const U32 VIP_VFP = 1;  
-        const U32 VIP_VSW = 1;  
-        const U32 VIP_VBP = 1;  
-        const U32 VIP_ClockIndex  = NX_VIP_GetClockNumber(module_id);
-        const U32 VIP_ResetIndex  = NX_VIP_GetResetNumber(module_id);
-
-        NX_CLKGEN_SetBaseAddress       (VIP_ClockIndex, (U32)IO_ADDRESS(NX_CLKGEN_GetPhysicalAddress(VIP_ClockIndex)));
-        NX_CLKGEN_SetClockDivisorEnable(VIP_ClockIndex, CTRUE);
-        NX_CLKGEN_SetClockBClkMode     (VIP_ClockIndex, NX_BCLKMODE_DYNAMIC);
-
-        NX_VIP_Initialize();
-		NX_VIP_SetBaseAddress( VIP_ModuleIndex, IO_ADDRESS(NX_VIP_GetPhysicalAddress(VIP_ModuleIndex)) );
-		// NX_CLOCK_SetClockEnable( NX_VIP_GetClockNumber ( VIP_ModuleIndex ), CTRUE );
-#if defined(CONFIG_MACH_S5P4418)
-        NX_RSTCON_SetnRST(VIP_ResetIndex, RSTCON_nDISABLE);
-        NX_RSTCON_SetnRST(VIP_ResetIndex, RSTCON_nENABLE );
-#elif defined(CONFIG_MACH_S5P6818)
-        NX_RSTCON_SetRST(VIP_ResetIndex , RSTCON_ASSERT  );
-        NX_RSTCON_SetRST(VIP_ResetIndex , RSTCON_NEGATE  );
-#endif
-		NX_VIP_OpenModule( VIP_ModuleIndex );
-		//NX_VIP_SetInterruptEnable(VIP_ModuleIndex, NX_VIP_INT_VSYNC, CFALSE);
-		//NX_VIP_SetInterruptEnable(VIP_ModuleIndex, NX_VIP_INT_HSYNC, CFALSE);
-		//NX_VIP_SetInterruptEnable(VIP_ModuleIndex, NX_VIP_INT_VSYNC , CTRUE);
-		//NX_INT_RegisterHandler( NX_VIP_GetInterruptNumber(VIP_ModuleIndex), VIP_OnEvent, (void*)VIP_ModuleIndex );
-
-		//NX_CONSOLE_PutString("[NXLOG] VIP Config\n");
-
-		// (freq. of RX_BYTE_CLK_HS) X (number of data lane) X 8bits <= (freq. of Pixel clock) X (bitwidth of image format)
-		//	125Mhz * 2bytes = 250Mbytes/sec <= 147Mhz * 2bytes = 294
-		// NX_CLOCK_SetClockDivisor( NX_VIP_GetClockNumber(VIP_ModuleIndex),0,NX_CLK147P456MHZ,CNULL); // CSI output clock == VIP input clock
-		// NX_CLOCK_SetClockDivisorEnable( NX_VIP_GetClockNumber(VIP_ModuleIndex),CTRUE);
-        printf("%s: apply mipi csi clock!!!\n", __func__);
-        NX_CLKGEN_SetClockSource (VIP_ClockIndex, 0, 0); /* external PCLK */
-        NX_CLKGEN_SetClockDivisor(VIP_ClockIndex, 0, 8);
-        NX_CLKGEN_SetClockDivisorEnable(VIP_ClockIndex, CTRUE);
-		/********************************************************************
-		* Clipper Config
-		********************************************************************/
-		NX_VIP_SetInputPort(VIP_ModuleIndex, NX_VIP_INPUTPORT_B); // for MIPI
-		NX_VIP_SetDataMode(VIP_ModuleIndex, NX_VIP_DATAORDER_CBY0CRY1, 16); // Data Order: CRYCBY, 8Bit
-		NX_VIP_SetHVSyncForMIPI(VIP_ModuleIndex, TW9992_WIDTH*2, TW9992_HEIGHT, VIP_HSW, VIP_HFP, VIP_HBP, VIP_VSW, VIP_VFP, VIP_VBP );
-
-		NX_VIP_SetFieldMode(VIP_ModuleIndex, CFALSE, NX_VIP_FIELDSEL_BYPASS, CFALSE, CFALSE); // EXT Field Disable, EXT Field Bypass, Interlace TRUE, Inv Field FALSE
-
-		//NX_VIP_ResetFIFO(VIP_ModuleIndex); // FIFO Reset Disable
-		NX_VIP_SetFIFOResetMode(VIP_ModuleIndex, NX_VIP_FIFORESET_FRAMEEND); // FIFO Clr Frame End			
-		NX_VIP_SetFIFOResetMode(VIP_ModuleIndex, NX_VIP_FIFORESET_CPU); // FIFO Clr by CPU
-		//NX_VIP_ResetFIFO(VIP_ModuleIndex); // FIFO Reset Enable
-		
-		/********************************************************************
-		* Clipper Config * Preview
-		*********************************************************************/		
-		NX_VIP_SetClipRegion(VIP_ModuleIndex, 0, 0, 0+CAM_WIDTH, 0+CAM_HEIGHT);
-		
-		NX_VIP_SetClipperAddr(VIP_ModuleIndex, NX_VIP_FORMAT_420, CAM_WIDTH, CAM_HEIGHT, 
-														CONFIG_VIP_LU_ADDR,
-														CONFIG_VIP_CB_ADDR,
-														CONFIG_VIP_CR_ADDR,
-														ALIGN(CAM_WIDTH, 64), ALIGN(CAM_WIDTH/2, 64) );
-
-#if defined(CONFIG_MACH_S5P4418)
-		NX_VIP_SetClipperFormat(VIP_ModuleIndex, NX_VIP_FORMAT_420, 0, 0, 0);
-#elif defined(CONFIG_MACH_S5P6818)
-		NX_VIP_SetClipperFormat(VIP_ModuleIndex, NX_VIP_FORMAT_420);
-#endif
-
-		//NX_VIP_SetVIPEnable(VIP_ModuleIndex, CTRUE, CTRUE, CTRUE, CFALSE);  // bVIPEnb, bSepEnb, bClipEnb, bDeciEnb  // modify @ junseo relocate this line
-        {
-            volatile NX_VIP_RegisterSet* pvip = (volatile NX_VIP_RegisterSet*)IO_ADDRESS(NX_VIP_GetPhysicalAddress(VIP_ModuleIndex));
-            pvip->VIP_SYNCCTRL &= 0xFFFFFDFF;
-        }		
-		
-		printf( "VIP_ModuleIndex : %d\n", VIP_ModuleIndex );
-	}
-    DEBUG_POINT;
-	//-------------------------------------------------
-	//	MIPI
-	//-------------------------------------------------
-	{
-		int number_of_modules;
-		int channel;
-		NX_MIPI_Initialize();
-		number_of_modules = NX_MIPI_GetNumberOfModule();
-		NX_ASSERT( number_of_modules==1 ); //for(MIPI_ModuleIndex=0; i< number_of_modules; MIPI_ModuleIndex++)		
-		NX_ASSERT( NX_MIPI_GetNumberOfPADMode ( 0 ) == 1 );
-		{
-			DEBUG_POINT;
-			NX_TIEOFF_Set( TIEOFFINDEX_OF_MIPI0_NX_DPSRAM_1R1W_EMAA, 3 );
-			NX_TIEOFF_Set( TIEOFFINDEX_OF_MIPI0_NX_DPSRAM_1R1W_EMAB, 3 );
-			DEBUG_POINT;
-			//-------------------------------------------------
-			//	
-			//-------------------------------------------------
-			NX_MIPI_SetBaseAddress( MIPI_ModuleIndex, (U32)IO_ADDRESS(NX_MIPI_GetPhysicalAddress(MIPI_ModuleIndex)) );
-			
-			DEBUG_POINT;
-			NX_CLKGEN_SetClockBClkMode( NX_MIPI_GetClockNumber ( MIPI_ModuleIndex ), NX_BCLKMODE_DYNAMIC );
-#if defined(CONFIG_MACH_S5P4418)
-            NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST       ), RSTCON_nDISABLE);
-            NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_DSI_I ), RSTCON_nDISABLE);
-            NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_CSI_I ), RSTCON_nDISABLE);
-            NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_PHY_S ), RSTCON_nDISABLE);
-            NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_PHY_M ), RSTCON_nDISABLE);            
-            NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST       ), RSTCON_nENABLE );
-            NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_DSI_I ), RSTCON_nENABLE );
-            NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_CSI_I ), RSTCON_nENABLE );
-#elif defined(CONFIG_MACH_S5P6818)
-            NX_RSTCON_SetRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST       ), RSTCON_ASSERT);
-            NX_RSTCON_SetRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_DSI_I ), RSTCON_ASSERT);
-            NX_RSTCON_SetRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_CSI_I ), RSTCON_ASSERT);
-            NX_RSTCON_SetRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_PHY_S ), RSTCON_ASSERT);
-            NX_RSTCON_SetRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_PHY_M ), RSTCON_ASSERT);            
-            NX_RSTCON_SetRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST       ), RSTCON_NEGATE );
-            NX_RSTCON_SetRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_DSI_I ), RSTCON_NEGATE );
-            NX_RSTCON_SetRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_CSI_I ), RSTCON_NEGATE );
-#endif
-			DEBUG_POINT;
-
-			NX_MIPI_OpenModule( MIPI_ModuleIndex );
-            {
-                volatile NX_MIPI_RegisterSet* pmipi = (volatile NX_MIPI_RegisterSet*)IO_ADDRESS(NX_MIPI_GetPhysicalAddress(MIPI_ModuleIndex));
-                pmipi->CSIS_DPHYCTRL= (5 <<24);
-            }
-			
-			NX_MIPI_SetInterruptEnableAll( MIPI_ModuleIndex, 0 );
-			NX_MIPI_ClearInterruptPendingAll( MIPI_ModuleIndex );
-			//NX_MIPI_EnablePAD ( MIPI_ModuleIndex, MIPI_PADModeIndex );
-			//NX_INT_RegisterHandler( NX_MIPI_GetInterruptNumber(MIPI_ModuleIndex), MIPI_Handler, ((void*)MIPI_ModuleIndex) );
-			//-------------------------------------------------
-			//	CSI
-			//-------------------------------------------------
-			//NX_CLOCK_SetClockDivisor( NX_MIPI_GetClockNumber(MIPI_ModuleIndex),0,NX_CLK147P456MHZ,CNULL); // CSI output clock == VIP input clock
-			//NX_CLOCK_SetClockDivisorEnable( NX_MIPI_GetClockNumber(MIPI_ModuleIndex),CTRUE);
-            NX_CLKGEN_SetClockSource (NX_MIPI_GetClockNumber(MIPI_ModuleIndex), 0, 0); /* external PCLK */
-            NX_CLKGEN_SetClockDivisor(NX_MIPI_GetClockNumber(MIPI_ModuleIndex), 0, 8);
-            NX_CLKGEN_SetClockDivisorEnable(NX_MIPI_GetClockNumber(MIPI_ModuleIndex), CTRUE);
-
-			NX_MIPI_CSI_SetParallelDataAlignment32 ( MIPI_ModuleIndex, 1, CFALSE ); // It must be false for NX4330(VIP)
-			NX_MIPI_CSI_SetYUV422Layout ( MIPI_ModuleIndex, 1, NX_MIPI_CSI_YUV422LAYOUT_FULL ); // It must be full for NX4330(VIP)
-			NX_MIPI_CSI_SetFormat( MIPI_ModuleIndex, 1, NX_MIPI_CSI_FORMAT_YUV422_8 ); // It must be NX_MIPI_CSI_FORMAT_YUV422_8 for NX4330(VIP)
-			NX_MIPI_CSI_EnableDecompress ( MIPI_ModuleIndex, CFALSE );// It must be false for NX4330(VIP)
-			NX_MIPI_CSI_SetInterleaveMode( MIPI_ModuleIndex, NX_MIPI_CSI_INTERLEAVE_VC);// It must be NX_MIPI_CSI_INTERLEAVE_VC for NX4330(VIP)
-			NX_MIPI_CSI_SetTimingControl( MIPI_ModuleIndex, 1, 32,16,368 ); // int T1, int T2, int T5
-			NX_MIPI_CSI_SetInterleaveChannel( MIPI_ModuleIndex, 0, 1 );
-			NX_MIPI_CSI_SetInterleaveChannel( MIPI_ModuleIndex, 1, 0 );
-			NX_MIPI_CSI_SetSize  ( MIPI_ModuleIndex, 1, TW9992_WIDTH, TW9992_HEIGHT );
-			NX_MIPI_CSI_SetVCLK( MIPI_ModuleIndex, 1, NX_MIPI_CSI_VCLKSRC_EXTCLK );
-			
-			NX_MIPI_CSI_SetPhy( MIPI_ModuleIndex
-						  ,0 // U32   NumberOfDataLanes              , // 0~3
-                          ,1 // CBOOL EnableClockLane                ,
-                          ,1 // CBOOL EnableDataLane0                ,
-                          ,0 // CBOOL EnableDataLane1                ,
-                          ,0 // CBOOL EnableDataLane2                ,
-                          ,0 // CBOOL EnableDataLane3                ,
-                          ,0 // CBOOL SwapClockLane                  ,
-                          ,0 // CBOOL SwapDataLane                   
-			);
-
-			NX_MIPI_CSI_SetEnable ( MIPI_ModuleIndex, CTRUE );
-
-			//-------------------------------------------------
-			//	DPHY
-			//-------------------------------------------------
-			//NX_RESET_LeaveReset( NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_PHY_S ) );			
-			//NX_RESET_LeaveReset( NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_PHY_M ) );			
-#if defined(CONFIG_MACH_S5P4418)
-			NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_PHY_S ), RSTCON_nENABLE );
-			//NX_RSTCON_SetnRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_PHY_M ), RSTCON_nENABLE );
-#elif defined(CONFIG_MACH_S5P6818)
-			NX_RSTCON_SetRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_PHY_S ), RSTCON_NEGATE );
-//			//NX_RSTCON_SetRST(NX_MIPI_GetResetNumber ( MIPI_ModuleIndex, NX_MIPI_RST_PHY_M ), RSTCON_NEGATE );
-#endif
-			DEBUG_POINT;
-
-			NX_MIPI_DSI_SetPLL( MIPI_ModuleIndex 
-			                    ,CTRUE	     // CBOOL Enable      ,  
-								,0xFFFFFFFF  // U32 PLLStableTimer,
-								,0x33E8	     // 19'h033E8: 1Ghz  19'h043E8: 750Mhz // Use LN28LPP_MipiDphyCore1p5Gbps_Supplement.
-								,0xF         // 4'hF: 1Ghz  4'hC: 750Mhz           // Use LN28LPP_MipiDphyCore1p5Gbps_Supplement.
-								,0	         // U32 M_PLLCTL      , // Refer to 10.2.2 M_PLLCTL of MIPI_D_PHY_USER_GUIDE.pdf  Default value is all "0". If you want to change register values, it need to confirm from IP Design Team
-								,0	         // U32 B_DPHYCTL       // Refer to 10.2.3 M_PLLCTL of MIPI_D_PHY_USER_GUIDE.pdf or NX_MIPI_PHY_B_DPHYCTL enum or LN28LPP_MipiDphyCore1p5Gbps_Supplement. default value is all "0". If you want to change register values, it need to confirm from IP Design Team						  
-								);
-
-		}
-	}
-    DEBUG_POINT;
-	//NX_VIP_SetVIPEnable(VIP_ModuleIndex, CTRUE, CTRUE, CTRUE, CFALSE);  // bVIPEnb, bSepEnb, bClipEnb, bDeciEnb  // modify @ junseo relocate this line
     
-    DEBUG_POINT;
-    nxp_mlc_video_set_param(0, &tw9992_mlc_param);
-    nxp_mlc_video_set_addr(0, CONFIG_VIP_LU_ADDR, CONFIG_VIP_CB_ADDR, CONFIG_VIP_CR_ADDR,
-            ALIGN(CAM_WIDTH, 64),
-            ALIGN(CAM_WIDTH/2, 64),
-            ALIGN(CAM_WIDTH/2, 64));
-    
-    DEBUG_POINT;
-    //nxp_mlc_video_run(0);
 
-    printf("nick - TIME_STAMP: %s %s \n", __DATE__, __TIME__);        
-
-    //while( 1 ) { DEBUG_POINT; }
-    
-    mdelay(500);
-    mdelay(500);
-    mdelay(500);
-    initialize_tw9992();
-
+#if 0 // debug
     printf("nick - TIME_STAMP: %s %s \n", __DATE__, __TIME__);        
     {
         unsigned intCount[36];
@@ -985,7 +969,9 @@ void camera_run(void)
 //            pmipi->CSIS_INTSRC = 0xFFFFFFFF;
 //        }
 //    }        
-}
+#endif
+
+
 
     /*printf("%s exit\n", __func__);*/    
 #endif
@@ -1095,7 +1081,7 @@ void camera_preview(void)
 	nxp_vip_run(module_id);
 	nxp_mlc_video_run(0);
 
-#if 1
+#if 0
 	{
 		int i = 0;
 		for(i=0; i<256; i++)
@@ -1109,7 +1095,7 @@ void camera_preview(void)
 
 #endif // CONFIG_TW9992
 
-    printf("%s exit\n", __func__);
+	//printf("%s exit - TIME_STAMP: %s %s \n", __func__, __DATE__, __TIME__);            
 	//while(!ctrlc());
 
 }

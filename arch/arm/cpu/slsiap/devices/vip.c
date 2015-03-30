@@ -15,6 +15,14 @@ static struct nxp_vip_param *_vip_param[MAX_VIP_NUM] = { NULL, };
 
 static void _hw_set_clock(int module, struct nxp_vip_param *param, bool on)
 {
+#if defined(CONFIG_MACH_S5P4418)
+	U32 ClkSrc = 2;
+	U32 Divisor = 2;
+#elif defined(CONFIG_MACH_S5P6818)
+	U32 ClkSrc = 0;
+	U32 Divisor = 8;
+#endif
+
     if (on) {
         volatile u32 *clkgen_base = (volatile u32 *)IO_ADDRESS(NX_CLKGEN_GetPhysicalAddress(NX_VIP_GetClockNumber(module)));
         NX_CLKGEN_SetBaseAddress(NX_VIP_GetClockNumber(module), (U32)clkgen_base);
@@ -29,8 +37,8 @@ static void _hw_set_clock(int module, struct nxp_vip_param *param, bool on)
 #endif
 
         if (param->is_mipi) {
-            NX_CLKGEN_SetClockSource(NX_VIP_GetClockNumber(module), 0, 2); /* external PCLK */
-            NX_CLKGEN_SetClockDivisor(NX_VIP_GetClockNumber(module), 0, 2);
+            NX_CLKGEN_SetClockSource(NX_VIP_GetClockNumber(module), 0, ClkSrc); /* external PCLK */
+            NX_CLKGEN_SetClockDivisor(NX_VIP_GetClockNumber(module), 0, Divisor);
             NX_CLKGEN_SetClockDivisorEnable(NX_VIP_GetClockNumber(module), CTRUE);
         } else {
             NX_CLKGEN_SetClockSource(NX_VIP_GetClockNumber(module), 0, 4 + param->port); /* external PCLK */
@@ -44,7 +52,11 @@ static void _hw_set_clock(int module, struct nxp_vip_param *param, bool on)
 
 static void _hw_set_sensor_param(int module, struct nxp_vip_param *param)
 {
-    if (param->is_mipi) {
+    if (param->is_mipi) 
+	{
+		U32	Width = param->h_active-(param->h_active%32);
+		U32	Height = param->v_active-(param->v_active%32);
+
         NX_VIP_SetInputPort(module, NX_VIP_INPUTPORT_B);
         NX_VIP_SetDataMode(module, NX_VIP_DATAORDER_CBY0CRY1, 16);
         NX_VIP_SetFieldMode(module, CFALSE, NX_VIP_FIELDSEL_BYPASS, CFALSE, CFALSE);
@@ -60,7 +72,14 @@ static void _hw_set_sensor_param(int module, struct nxp_vip_param *param)
                 param->v_syncwidth,
                 param->v_frontporch,
                 param->v_backporch);
-    } else {
+
+	    NX_VIP_SetClipRegion(module,
+	            0, 0,
+	            Width,
+	            param->interlace ? Height >> 1 : Height);
+    }
+	else 
+	{
         NX_VIP_SetDataMode(module, param->data_order, 8);
         NX_VIP_SetFieldMode(module,
                 CFALSE,
@@ -84,6 +103,11 @@ static void _hw_set_sensor_param(int module, struct nxp_vip_param *param)
                 param->v_syncwidth,
                 param->v_frontporch,
                 param->v_backporch);
+
+	    NX_VIP_SetClipRegion(module,
+	            0, 0,
+	            param->h_active,
+	            param->interlace ? param->v_active >> 1 : param->v_active);
     }
 
 #if defined(CONFIG_MACH_S5P4418)
@@ -91,19 +115,29 @@ static void _hw_set_sensor_param(int module, struct nxp_vip_param *param)
 #elif defined(CONFIG_MACH_S5P6818)
     NX_VIP_SetClipperFormat(module, NX_VIP_FORMAT_420);
 #endif
-    NX_VIP_SetClipRegion(module,
-            0,
-            0,
-            param->h_active,
-            param->interlace ? param->v_active >> 1 : param->v_active);
 }
 
 static void _hw_set_addr(int module, struct nxp_vip_param *param, u32 lu_addr, u32 cb_addr, u32 cr_addr)
 {
-    NX_VIP_SetClipperAddr(module, NX_VIP_FORMAT_420, param->h_active, param->v_active,
-            lu_addr, cb_addr, cr_addr,
-            param->interlace ? ALIGN(param->h_active, 64)   : param->h_active,
-            param->interlace ? ALIGN(param->h_active/2, 64) : param->h_active/2);
+    if (param->is_mipi)
+	{
+		U32	Width = param->h_active-(param->h_active%32);
+		U32	Height = param->v_active-(param->v_active%32);
+
+	    NX_VIP_SetClipperAddr(module, NX_VIP_FORMAT_420, 
+				Width, 
+				Height,
+	            lu_addr, cb_addr, cr_addr,
+	            param->interlace ? ALIGN(Width, 64): Width,
+	            param->interlace ? ALIGN(Width/2, 64) : Width/2);
+    }
+	else
+	{
+	    NX_VIP_SetClipperAddr(module, NX_VIP_FORMAT_420, param->h_active, param->v_active,
+	            lu_addr, cb_addr, cr_addr,
+	            param->interlace ? ALIGN(param->h_active, 64)   : param->h_active,
+	            param->interlace ? ALIGN(param->h_active/2, 64) : param->h_active/2);
+	}
 }
 
 static void _hw_run(int module)

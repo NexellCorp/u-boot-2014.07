@@ -892,13 +892,21 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 	chrg = p_muic->chrg->chrg_type(p_muic, 1);
 	p_fg->fg->fg_battery_check(p_fg, p_bat);
 
-	printf("## STATUS(0x%02x) : ", AXP22_STATUS);
+	pmic_reg_read(p_chrg, AXP22_DCDC_MODESET, &val);
+	printf("## DCDC_MODE(0x%02x): DCDC1[%s], DCDC2[%s], DCDC3[%s], DCDC4[%s], DCDC5[%s] \n",
+				AXP22_DCDC_MODESET,
+				(val&(1 << AXP_DCDC1_MODE_BIT)) == true ? "PWM":"PFM",
+				(val&(1 << AXP_DCDC2_MODE_BIT)) == true ? "PWM":"PFM",
+				(val&(1 << AXP_DCDC3_MODE_BIT)) == true ? "PWM":"PFM",
+				(val&(1 << AXP_DCDC4_MODE_BIT)) == true ? "PWM":"PFM",
+				(val&(1 << AXP_DCDC5_MODE_BIT)) == true ? "PWM":"PFM");
+	printf("## STATUS(0x%02x)   : ", AXP22_STATUS);
 	for(i=AXP22_STATUS; i<=AXP22_MODE_CHGSTATUS; i++)
 	{
 		pmic_reg_read(p_chrg, (u32)i, &val);	printf("0x%02x ", val);
 	}
 	printf("\n");
-	printf("## IRQ(0x%02x)    : ", AXP22_INTSTS1);
+	printf("## IRQ(0x%02x)      : ", AXP22_INTSTS1);
 	for(i=AXP22_INTSTS1; i<=AXP22_INTSTS5; i++)
 	{
 		if(i == AXP22_INTSTS1)
@@ -911,14 +919,14 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 		}
 	}
 	printf("\n");
-	printf("## CHG_TYPE     : %s\n", chrg == CHARGER_USB ? "USB" : (chrg == CHARGER_TA ? (((chg_state>>6) & 0x2) ? "ADP(USB)" : "ADP"): "NONE"));
+	printf("## CHG_TYPE       : %s\n", chrg == CHARGER_USB ? "USB" : (chrg == CHARGER_TA ? (((chg_state>>6) & 0x2) ? "ADP(USB)" : "ADP"): "NONE"));
 
 	pmic_reg_read(p_chrg, AXP22_VBATH_RES, &val);
 	tmp = (val<< 8);
 	pmic_reg_read(p_chrg, AXP22_VBATL_RES, &val);
 	tmp |= val;
-	printf("## BAT_VOL      : %dmV \n", axp22_vbat_to_mV(tmp));
-	printf("## BAT_CAP      : %d%%\n", pb->bat->capacity);
+	printf("## BAT_VOL        : %dmV \n", axp22_vbat_to_mV(tmp));
+	printf("## BAT_CAP        : %d%%\n", pb->bat->capacity);
 
 	if(pb->bat->capacity <= BATLOW_ANIMATION_CAP)
 	{

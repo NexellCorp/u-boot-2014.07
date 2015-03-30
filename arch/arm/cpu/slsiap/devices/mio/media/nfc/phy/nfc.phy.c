@@ -909,7 +909,8 @@ void NFC_PHY_Origin_time_regval(NF_TIME_REGS _t)
 
 void NFC_PHY_BoostOn(void)
 {
-	NFC_PHY_ForceSet_Nftime(BoostOn_BoostTime);
+	if (NFC_PHY_is_Boost_time_Init)
+		NFC_PHY_ForceSet_Nftime(BoostOn_BoostTime);
 }
 
 void NFC_PHY_BoostOff(void)
@@ -1569,10 +1570,6 @@ void NFC_PHY_SetFeatures(unsigned int _max_channel, unsigned int _max_way, void 
             tOCH = (tOCH + 15) & 0xF;
             tCAH = (tCAH + 15) & 0xF;
 
-            if (Exchange.debug.nfc.phy.info_feature)
-            {
-                Exchange.sys.fn.print(" tACS: %u, tCOS: %u, tACC: %u, tOCH: %u, tCAH: %u\n", tACS, tCOS, tACC, tOCH, tCAH);
-            }
 
             for (way = 0; way < max_way; way++)
             {
@@ -1610,6 +1607,11 @@ void NFC_PHY_SetFeatures(unsigned int _max_channel, unsigned int _max_way, void 
                         NFC_PHY_SetOnfiFeature(channel, way, Exchange.nfc.onfi_feature_address.timing_mode, phy_features.nand_config._f.onfi_timing_mode);
                     }
                 }
+            }
+
+            if (Exchange.debug.nfc.phy.info_feature)
+            {
+                Exchange.sys.fn.print(" tACS: %u, tCOS: %u, tACC: %u, tOCH: %u, tCAH: %u\n", tACS, tCOS, tACC, tOCH, tCAH);
             }
 
 			{

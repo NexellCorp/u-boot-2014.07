@@ -160,6 +160,8 @@ static struct nxp_mlc_video_param _mlc_param = {
 #include <i2c.h>
 
 
+static int file_init = 0;
+
 #define TW9992_WIDTH       720
 #define TW9992_HEIGHT      480
 
@@ -481,6 +483,12 @@ void initialize_tw9992( void )
 		ret = tw9992_init_data_get_string(p, sort_size, tw9992_sensor_init_data);
 		tw9992_sensor_init_data[ret].reg = 0xff;
 		tw9992_sensor_init_data[ret].val = 0xff;
+
+		file_init = 1;
+	}
+	else
+	{
+		file_init = 0;
 	}
 
 	camera_id = camera_register_sensor(&tw9992_sensor_data);
@@ -1081,7 +1089,7 @@ void camera_preview(void)
 	nxp_vip_run(module_id);
 	nxp_mlc_video_run(0);
 
-#if 0
+	if(file_init)
 	{
 		int i = 0;
 		for(i=0; i<256; i++)
@@ -1091,7 +1099,6 @@ void camera_preview(void)
 				break;
 		}
 	}
-#endif
 
 #endif // CONFIG_TW9992
 

@@ -50,6 +50,29 @@ DECLARE_GLOBAL_DATA_PTR;
 /*------------------------------------------------------------------------------
  * intialize nexell soc and board status.
  */
+static inline void fdone_lcd_power(void)
+{
+#if 1
+	/* Reset LCD_PWR_EN : default H */	
+//	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENB), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), CTRUE);	
+//	mdelay(10);
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENB), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), CFALSE);	
+	mdelay(50);
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENB), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), CTRUE);	
+	mdelay(10);
+#else
+    NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENB), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), CTRUE);        
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENV), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), CFALSE);
+	mdelay(100);
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENV), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), CTRUE);
+	mdelay(700);
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_GD_PWR_EN), PAD_GET_BITNO(CFG_IO_LCD_GD_PWR_EN), CTRUE);
+#endif
+
+	/* Set LCD_BL_EN : default L -> kernel */	
+//	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_BL_ENB), PAD_GET_BITNO(CFG_IO_LCD_BL_ENB), CTRUE);	
+}
+
 static void bd_gpio_init(void)
 {
 	int index, bit;
@@ -126,6 +149,9 @@ static void bd_gpio_init(void)
 			NX_GPIO_SetDriveStrength(index, bit, (NX_GPIO_DRVSTRENGTH)stren); /* pad strength */
 		}
 	}
+
+	/* Fine LCD Power control */
+	fdone_lcd_power();
 }
 
 static void bd_alive_init(void)

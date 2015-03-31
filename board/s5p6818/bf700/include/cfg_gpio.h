@@ -147,12 +147,12 @@
  *
  -----------------------------------------------------------------------------*/
 #define PAD_GPIOD0      (PAD_MODE_ALT  | PAD_FUNC_ALT1 | PAD_LEVEL_LOW  | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: SSP0_RXD            ,2: PWM3_OUT            ,3:_                    =
-#define PAD_GPIOD1      (PAD_MODE_OUT | PAD_FUNC_ALT0 | PAD_LEVEL_HIGH  | PAD_PULL_UP | PAD_STRENGTH_0)     // 0: GPIO          ,1: PWM0_OUT            ,2: MCUS_ADDR[25]       ,3:_                    =
+#define PAD_GPIOD1      (PAD_MODE_OUT | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_UP | PAD_STRENGTH_0)     // 0: GPIO          ,1: PWM0_OUT            ,2: MCUS_ADDR[25]       ,3:_                    =
 #define PAD_GPIOD2      (PAD_MODE_ALT  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_OFF | PAD_STRENGTH_1)     // 0: GPIO          ,1: I2C0_SCL            ,2: UART4_SMCAYEN       ,3:_                    =
 #define PAD_GPIOD3      (PAD_MODE_OUT  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_OFF | PAD_STRENGTH_1)     // 0: GPIO          ,1: I2C0_SDA            ,2: UART5_SMCAYEN       ,3:_                    =
 #define PAD_GPIOD4      (PAD_MODE_ALT | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: I2C1_SCL            ,2:_                    ,3:_                    =
 #define PAD_GPIOD5      (PAD_MODE_OUT | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: I2C1_SDA            ,2:_                    ,3:_                    =
-#define PAD_GPIOD6      (PAD_MODE_ALT | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: I2C2_SCL            ,2:_                    ,3:_                    =
+#define PAD_GPIOD6      (PAD_MODE_OUT | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: I2C2_SCL            ,2:_                    ,3:_                    =
 #define PAD_GPIOD7      (PAD_MODE_OUT | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: I2C2_SDA            ,2:_                    ,3:_                    =
 #define PAD_GPIOD8      (PAD_MODE_IN  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PPM_IN              ,2:_                    ,3:_                    =
 #define PAD_GPIOD9      (PAD_MODE_ALT | PAD_FUNC_ALT1 | PAD_LEVEL_LOW  | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: I2S0_SDO            ,2: AC97_ACSDATAOUT     ,3:_                    =
@@ -235,12 +235,9 @@
 /*------------------------------------------------------------------------------
  *	GPIO LCD (Backlight Enable/PWM)
  */
-//#define	CFG_IO_LCD_PWR_ENB					((PAD_GPIO_A + 27) | PAD_FUNC_ALT0)		/* GPIO */
-#define CFG_IO_LCD_GD_PWR_EN				((PAD_GPIO_A + 26) | PAD_FUNC_ALT0)
-#define	CFG_IO_LCD_PWR_ENB					((PAD_GPIO_A + 26) | PAD_FUNC_ALT0)
+#define	CFG_IO_LCD_PWR_ENB					((PAD_GPIO_A + 27) | PAD_FUNC_ALT0)
 #define CFG_IO_LCD_BL_ENB					((PAD_GPIO_A + 25 ) | PAD_FUNC_ALT0)
-#define CFG_IO_LCD_RESET					((PAD_GPIO_C + 28 )| PAD_FUNC_ALT0)
-#define CFG_IO_LCD_TEST						((PAD_GPIO_D + 1 ) | PAD_FUNC_ALT0)
+
 /*------------------------------------------------------------------------------
  *	GPIO EEPROM
  */

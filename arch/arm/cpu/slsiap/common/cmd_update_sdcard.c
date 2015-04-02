@@ -101,6 +101,30 @@ struct update_sdcard_part {
 static struct update_sdcard_part f_sdcard_part[UPDATE_SDCARD_DEV_PART_MAX];
 
 
+/* This is a trivial atoi implementation since we don't have one available */
+static int atoi(char *string)
+{
+	int length;
+	int retval = 0;
+	int i;
+	int sign = 1;
+	length = strlen(string);
+	for (i = 0; i < length; i++) {
+		if (0 == i && string[0] == '-') {
+			sign = -1;
+			continue;
+		}
+		if (string[i] > '9' || string[i] < '0') {
+			break;
+		}
+		retval *= 10;
+		retval += string[i] - '0';
+	}
+	retval *= sign;
+	return retval;
+}
+
+
 static int update_sdcard_mmc_check_part_table(block_dev_desc_t *desc, struct update_sdcard_part *fpart)
 {
 	uint64_t parts[UPDATE_SDCARD_DEV_PART_MAX][2] = { {0,0}, };
@@ -256,10 +280,11 @@ static int update_sdcard_part_lists_make(const char *ptable_str, int ptable_str_
 		}
 
 		p = update_sdcard_get_string(p, ',', str, sizeof(str));
-		fp->start = simple_strtoul(str, NULL, 16);
+		fp->start = simple_strtoull(str, NULL, 16);
+		
 
 		p = update_sdcard_get_string(p, ':', str, sizeof(str));
-		fp->length = simple_strtoul(str, NULL, 16);
+		fp->length = simple_strtoull(str, NULL, 16);
 
 		p = update_sdcard_get_string(p, ';', str, sizeof(str));
 		strcpy(fp->file_name, str);
@@ -289,6 +314,61 @@ static void update_sdcard_part_lists_print(void)
 					fp->file_name, fp->part_num);
 	}
 }
+
+int update_version_check(int argc, char * const argv[],int fstype, int cmdline_base)
+{
+	unsigned long addr;
+	char *p;
+	const char *addr_str;
+	unsigned long bytes=0;
+	unsigned long pos=0;
+	int len_read;
+	char buf[12];
+	char * version_str;
+	int ver1,ver2;
+
+	version_str = getenv("version");
+	ver1 = atoi(version_str);
+
+	if (fs_set_blk_dev(argv[1], (argc >= 3) ? argv[2] : NULL, fstype))
+		return -1;
+
+	if (argc >= 4) {
+		addr = simple_strtoul(argv[3], NULL, cmdline_base);
+	} else {
+		addr_str = getenv("loadaddr");
+		if (addr_str != NULL)
+			addr = simple_strtoul(addr_str, NULL, 16);
+		else
+			addr = CONFIG_SYS_LOAD_ADDR;
+	}
+
+
+	len_read = fs_read("version.txt", addr, pos, bytes);
+	if (len_read <= 0){
+		return -1;
+	}
+
+	memset(buf,0,sizeof(buf));
+	p = (char *) addr;
+	p[len_read] = '\0';
+
+	snprintf(buf,"%s",(char *)p, strlen(p));
+	ver2 = atoi(buf);
+	setenv("version", buf);
+
+	if(ver2!=ver1) {
+		printf("update version ver %d to %d \n", ver1, ver2);
+		return len_read;
+	} else {
+		return -1;
+	}
+
+	return len_read;
+
+	
+}
+
 
 int update_sd_do_load(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[],int fstype, int cmdline_base)
 {
@@ -377,7 +457,10 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 		goto ret_error;
 	}
 
-	memset(f_sdcard_part, 0x0, sizeof(f_sdcard_part)*UPDATE_SDCARD_DEV_PART_MAX);
+	if( update_version_check(argc, argv, FS_TYPE_FAT, 16) < 0)
+		return 1;
+
+	memset(f_sdcard_part, 0x0, sizeof(f_sdcard_part));
 
 	len_read = update_sd_do_load(cmdtp, flag, argc, argv, FS_TYPE_FAT, 16);
 
@@ -426,7 +509,7 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 				len_read = fs_read(fp->file_name, addr, 0, 0);
 				time = get_timer(time);
 
-				printf("%d bytes read in %lu ms", len_read, time);
+				printf("file : %s %d bytes read in %lu ms", fp->file_name, len_read, time);
 				if (time > 0) {
 					puts(" (");
 					print_size(len_read / time * 1000, "/s");
@@ -604,7 +687,7 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 	}
 
 	fboot_lcd_status("exit");
-
+/*
 	while (1) {
 		if (ctrlc()) 
 		{
@@ -612,9 +695,10 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 			break;
 		}
 	}
+*/
 
-	//fboot_lcd_stop();
-	//do_reset (NULL, 0, 0, NULL);
+	fboot_lcd_stop();
+	do_reset (NULL, 0, 0, NULL);
 
 	return res; 
 

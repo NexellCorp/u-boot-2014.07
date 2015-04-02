@@ -26,7 +26,6 @@
 #include <pwm.h>
 #include <asm/io.h>
 #include <asm/gpio.h>
-//#include <asm/sections.h>
 
 #include <platform.h>
 #include <mach-api.h>
@@ -52,14 +51,12 @@ DECLARE_GLOBAL_DATA_PTR;
  */
 static inline void fdone_lcd_power(void)
 {
+	/* must be set after gpio init */	
 #if 1
 	/* Reset LCD_PWR_EN : default H */	
-//	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENB), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), CTRUE);	
-//	mdelay(10);
 	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENB), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), CFALSE);	
-	mdelay(50);
+	mdelay(200);
 	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENB), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), CTRUE);	
-	mdelay(10);
 #else
     NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENB), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), CTRUE);        
 	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENV), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), CFALSE);
@@ -69,7 +66,11 @@ static inline void fdone_lcd_power(void)
 	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_GD_PWR_EN), PAD_GET_BITNO(CFG_IO_LCD_GD_PWR_EN), CTRUE);
 #endif
 
-	/* Set LCD_BL_EN : default L -> kernel */	
+	/* 
+	 * Set LCD_BL_EN : default L -> H 
+	 * move to kernel part 
+	 */	
+//	mdelay(10);
 //	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_BL_ENB), PAD_GET_BITNO(CFG_IO_LCD_BL_ENB), CTRUE);	
 }
 
@@ -259,6 +260,14 @@ int board_late_init(void)
 	char boot[16];
 	sprintf(boot, "mmc dev %d", CONFIG_SYS_MMC_BOOT_DEV);
 #endif
+
+// Add the update sd command 
+#if defined (CONFIG_CMD_UPDATE_SDCARD)
+	if (0 > run_command("update_sdcard mmc 0:1 0x48000000 partmap_burning.txt", 0)) {
+		printf("## [%s():%d] ret_error \n", __func__,__LINE__);
+	}
+#endif
+
 
 #ifndef CONFIG_USBBOOT_BURNING_MODE
 

@@ -813,7 +813,6 @@ int mio_force_origin_time_regval(ulong tacs, ulong tcos, ulong tacc, ulong tcoh,
 	return 0;
 }
 
-
 int mio_init_without_ftl(void)
 {
     int ret = 0;

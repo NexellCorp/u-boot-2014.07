@@ -751,12 +751,13 @@ typedef struct __ExDEBUG__
 
     struct
     {
+        unsigned int sum_roundup;
+
         unsigned long long sum[ELAPSE_T_MAX];
         unsigned long long avg[ELAPSE_T_MAX];
         unsigned long long min[ELAPSE_T_MAX];
         unsigned long long max[ELAPSE_T_MAX];
-
-        unsigned int  cnt[ELAPSE_T_MAX];
+        unsigned long long cnt[ELAPSE_T_MAX];
 
         struct
         {

@@ -211,8 +211,8 @@ static int axp228_param_setup(struct axp228_power *power)
 {
 	int ret=0, i=0;
 	int var,tmp;
-	u8 val2,val;
 	int Cur_CoulombCounter,rdc;
+	u8 val2,val, ocv_cmp=0;
 
 	PMIC_DBGOUT("%s\n", __func__);
 
@@ -425,7 +425,19 @@ static int axp228_param_setup(struct axp228_power *power)
 	/* OCV Table */
 	for(i=0; i<ARRAY_SIZE(axp228_ocv_table); i++)
 	{
-		ret = axp228_i2c_write(power, AXP22_OCV_TABLE+i, axp228_ocv_table[i]);
+		ret = axp228_i2c_read(power, AXP22_OCV_TABLE+i, &val);
+		if(val!= axp228_ocv_table[i])
+		{
+			ocv_cmp = 1;
+			break;
+		}
+	}
+	if(ocv_cmp)
+	{
+		for(i=0; i<ARRAY_SIZE(axp228_ocv_table); i++)
+		{
+			ret = axp228_i2c_write(power, AXP22_OCV_TABLE+i, axp228_ocv_table[i]);
+		}
 	}
 
 
@@ -570,7 +582,7 @@ static int axp228_param_setup(struct axp228_power *power)
 
 	/* RDC initial */
 	axp228_i2c_read(power, AXP22_RDC0,&val2);
-	if((BATRDC) && (!(val2 & 0x40)))
+	if(ocv_cmp || ((BATRDC) && (!(val2 & 0x40))))
 	{
 		rdc = (BATRDC * 10000 + 5371) / 10742;
 		axp228_i2c_write(power, AXP22_RDC0, ((rdc >> 8) & 0x1F)|0x80);
@@ -580,7 +592,7 @@ static int axp228_param_setup(struct axp228_power *power)
 
 	//probe RDC, OCV
 	axp228_i2c_read(power,AXP22_BATFULLCAPH_RES,&val2);
-	if((BATCAP) && (!(val2 & 0x80)))
+	if(ocv_cmp || ((BATCAP) && (!(val2 & 0x80))))
 	{
 		Cur_CoulombCounter = BATCAP * 1000 / 1456;
 		axp228_i2c_write(power, AXP22_BATFULLCAPH_RES, ((Cur_CoulombCounter >> 8) | 0x80));
@@ -895,11 +907,11 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 	pmic_reg_read(p_chrg, AXP22_DCDC_MODESET, &val);
 	printf("## DCDC_MODE(0x%02x): DCDC1[%s], DCDC2[%s], DCDC3[%s], DCDC4[%s], DCDC5[%s] \n",
 				AXP22_DCDC_MODESET,
-				(val&(1 << AXP_DCDC1_MODE_BIT)) == true ? "PWM":"PFM",
-				(val&(1 << AXP_DCDC2_MODE_BIT)) == true ? "PWM":"PFM",
-				(val&(1 << AXP_DCDC3_MODE_BIT)) == true ? "PWM":"PFM",
-				(val&(1 << AXP_DCDC4_MODE_BIT)) == true ? "PWM":"PFM",
-				(val&(1 << AXP_DCDC5_MODE_BIT)) == true ? "PWM":"PFM");
+				(val&(1 << AXP_DCDC1_MODE_BIT)) ? "PWM":"PFM",
+				(val&(1 << AXP_DCDC2_MODE_BIT)) ? "PWM":"PFM",
+				(val&(1 << AXP_DCDC3_MODE_BIT)) ? "PWM":"PFM",
+				(val&(1 << AXP_DCDC4_MODE_BIT)) ? "PWM":"PFM",
+				(val&(1 << AXP_DCDC5_MODE_BIT)) ? "PWM":"PFM");
 	printf("## STATUS(0x%02x)   : ", AXP22_STATUS);
 	for(i=AXP22_STATUS; i<=AXP22_MODE_CHGSTATUS; i++)
 	{

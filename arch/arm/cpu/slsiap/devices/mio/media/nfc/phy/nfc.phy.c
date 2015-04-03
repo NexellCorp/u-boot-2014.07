@@ -120,7 +120,7 @@ void NFC_PHY_tDelay(unsigned int _tDelay)
         while (tDelay)
         {
             dummy = nfcI->nftacs;
-            nfcI->nftacs = dummy;
+            //nfcI->nftacs = dummy;
             tDelay -= 1;
         }
     }

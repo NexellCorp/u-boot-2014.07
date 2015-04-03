@@ -261,7 +261,7 @@ NFC_PHY_EXT int NFC_PHY_ForceSet_Nftime(NF_TIME_REGS _t);
 #define IO_WIDTH_X8  (8)
 
 #define IOR_WIDTH    IO_WIDTH_X32
-#define IOW_WIDTH    IO_WIDTH_X32
+#define IOW_WIDTH    IO_WIDTH_X8
 
 /******************************************************************************
  *

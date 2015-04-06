@@ -184,6 +184,24 @@ void axp228_register_dump(struct axp228_power *power)
 }
 #endif
 
+
+static void axp228_set_charging_current(u32 current)
+{
+	struct axp228_power power_config = {
+		.i2c_addr = AXP228_I2C_ADDR,
+		.i2c_bus = CONFIG_PMIC_I2C_BUS,
+	};
+	u8 val =0;
+
+	val = (current -200001)/150000;
+	if(current >= 300000 && current <= 2550000)
+		axp228_i2c_update(&power_config, AXP22_CHARGE1, val,0x0F);
+	else if(AC_LIMIT_CURRENT < 300000)
+		axp228_i2c_clr_bits(&power_config, AXP22_CHARGE1,0x0F);
+	else
+		axp228_i2c_set_bits(&power_config, AXP22_CHARGE1,0x0F);
+}
+
 static u8 axp228_get_vol_step(int want_vol, int step, int min, int max)
 {
 	u32	vol_step = 0;
@@ -409,14 +427,7 @@ static int axp228_param_setup(struct axp228_power *power)
     else
         axp228_i2c_set_bits(power,AXP22_CHARGE1,0x80);
 
-	val = (AC_CHARGE_CURRENT -200001)/150000;
-	if(AC_CHARGE_CURRENT >= 300000 && AC_CHARGE_CURRENT <= 2550000)
-		axp228_i2c_update(power, AXP22_CHARGE1, val,0x0F);
-	else if(AC_LIMIT_CURRENT < 300000)
-		axp228_i2c_clr_bits(power, AXP22_CHARGE1,0x0F);
-	else
-		axp228_i2c_set_bits(power, AXP22_CHARGE1,0x0F);
-
+	axp228_set_charging_current(AC_CHARGE_CURRENT);
 
 	// set lowe power warning/shutdown level
 	axp228_i2c_write(power, AXP22_WARNING_LEVEL,((BATLOWLV1-5) << 4)+BATLOWLV2);
@@ -1356,6 +1367,8 @@ enter_shutdown:
 	printf("## Power Off\n");
 
 	mdelay(500);
+
+	axp228_set_charging_current(AC_POWEROFF_CHARGE_CURRENT);
 
 	pmic_reg_write(p_chrg, AXP22_BUFFERC, 0x00);
 	mdelay(20);

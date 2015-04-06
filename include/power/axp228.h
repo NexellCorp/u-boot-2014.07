@@ -308,7 +308,8 @@
 
 
 /* AC current charge */
-#define AC_CHARGE_CURRENT			1500*1000
+#define AC_CHARGE_CURRENT			1000*1000
+#define AC_POWEROFF_CHARGE_CURRENT	1500*1000
 
 /* AC current limit */
 #define AC_LIMIT_CURRENT			1500*1000

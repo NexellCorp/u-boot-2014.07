@@ -488,8 +488,8 @@
 
 	#define CONFIG_MMC2_CLOCK			50000000
 	#define CONFIG_MMC2_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(0)
-	#define CONFIG_MMC2_BUS_WIDTH       8 
-    #define CONFIG_MMC2_TRANS_MODE      0 //1 : DDR_MODE, 0: SDR_MODE 
+	#define CONFIG_MMC2_BUS_WIDTH       8
+    #define CONFIG_MMC2_TRANS_MODE      0 //1 : DDR_MODE, 0: SDR_MODE
 
 	#define CONFIG_DWMMC
 	#define CONFIG_NXP_DWMMC
@@ -618,7 +618,7 @@
  */
 #define	CONFIG_RECOVERY_BOOT
 #if defined (CONFIG_RECOVERY_BOOT)
-	#define CONFIG_CMD_RECOVERY_BOOT "ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
+	#define CONFIG_CMD_RECOVERY_BOOT "ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
 #endif
 
 /*-----------------------------------------------------------------------

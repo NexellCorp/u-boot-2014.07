@@ -460,6 +460,8 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 	if( update_version_check(argc, argv, FS_TYPE_FAT, 16) < 0)
 		return 1;
 
+	bd_display_run(0, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+
 	memset(f_sdcard_part, 0x0, sizeof(f_sdcard_part));
 
 	len_read = update_sd_do_load(cmdtp, flag, argc, argv, FS_TYPE_FAT, 16);

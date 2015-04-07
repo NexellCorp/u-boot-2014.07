@@ -289,10 +289,10 @@ int board_late_init(void)
 		run_command(cmd, 0);
 	}
 
-	boot_animation();
+	//boot_animation();
 	#else
 	#if defined(CONFIG_DISPLAY_OUT)
-	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+	//bd_display_run(0, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 	#endif
 	#endif
 

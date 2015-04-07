@@ -439,7 +439,7 @@
 /*-----------------------------------------------------------------------
  * Logo command
  */
-//#define CONFIG_DISPLAY_OUT
+#define CONFIG_DISPLAY_OUT
 
 #define CONFIG_LOGO_DEVICE_MMC
 

@@ -1828,6 +1828,8 @@ static int do_fastboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 	unsigned int tclk = TCLK_TICK_HZ;
 	int timeout = 0, f_connect = 0;
 	int err;
+	
+	bd_display_run(0, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 
 	p = getenv("fastboot");
 	if (NULL == p) {

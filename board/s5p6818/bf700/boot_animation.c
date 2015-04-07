@@ -136,7 +136,7 @@ static void do_draw_animation(int cpu)
 
 	pr_debug("splash %d * %d (%dEA)...\n", width, height, count);
 
-	bd_display();
+	//bd_display(); 
 
 	/* set FB and wait sync  */
 	disp_mlc_set_address(module, layer, address);
@@ -171,3 +171,4 @@ static void do_draw_animation(int cpu)
 }
 
 #endif
+

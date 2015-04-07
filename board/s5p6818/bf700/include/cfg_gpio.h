@@ -236,6 +236,7 @@
  *	GPIO LCD (Backlight Enable/PWM)
  */
 #define	CFG_IO_LCD_PWR_ENB					((PAD_GPIO_A + 27) | PAD_FUNC_ALT0)
+#define	CFG_IO_LCD_GD_PWR_EN					((PAD_GPIO_A + 26) | PAD_FUNC_ALT0)
 #define CFG_IO_LCD_BL_ENB					((PAD_GPIO_A + 25 ) | PAD_FUNC_ALT0)
 
 /*------------------------------------------------------------------------------

@@ -79,7 +79,7 @@
 #define CFG_DISP_PRI_RESOL_WIDTH          		1024	// X Resolution
 #define CFG_DISP_PRI_RESOL_HEIGHT				600	    // Y Resolution
 
-#if 1 // modified ischoi, BF500 setting
+#if 0 // modified ischoi, BF500 setting
 #define CFG_DISP_PRI_HSYNC_SYNC_WIDTH            43 
 #define CFG_DISP_PRI_HSYNC_BACK_PORCH           147
 #define CFG_DISP_PRI_HSYNC_FRONT_PORCH          78
@@ -88,7 +88,7 @@
 #define CFG_DISP_PRI_VSYNC_BACK_PORCH            3
 #define CFG_DISP_PRI_VSYNC_FRONT_PORCH           35
 #define CFG_DISP_PRI_VSYNC_ACTIVE_HIGH 	        CFALSE
-#else
+#else //
 #define CFG_DISP_PRI_HSYNC_SYNC_WIDTH           20
 #define CFG_DISP_PRI_HSYNC_BACK_PORCH           160
 #define CFG_DISP_PRI_HSYNC_FRONT_PORCH          160
@@ -101,7 +101,7 @@
 
 // PLL : [0] =  600000000, [1] = 1200000000, [2] =  800000000, [3] =  614394000
 #define CFG_DISP_PRI_CLKGEN0_SOURCE             DPC_VCLK_SRC_PLL0
-#define CFG_DISP_PRI_CLKGEN0_DIV                  12 //12(PLL0, 50MHz), 25(PLL1, 48MHz)
+#define CFG_DISP_PRI_CLKGEN0_DIV                  20 //12(PLL0, 50MHz), 25(PLL1, 48MHz)
 #define CFG_DISP_PRI_CLKGEN0_DELAY              0
 #define CFG_DISP_PRI_CLKGEN0_INVERT		0
 #define CFG_DISP_PRI_CLKGEN1_SOURCE             DPC_VCLK_SRC_VCLK2
@@ -141,7 +141,7 @@
  * 	TIMER/PWM
  */
 #define CFG_LCD_PRI_PWM_CH                      0
-#define CFG_LCD_PRI_PWM_FREQ                    10000
+#define CFG_LCD_PRI_PWM_FREQ                    30000
 #define CFG_LCD_PRI_PWM_DUTYCYCLE               50      /* (%) */
 
 //------------------------------------------------------------------------------

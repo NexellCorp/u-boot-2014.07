@@ -379,7 +379,7 @@
  * PMIC
  */
 
-#define CONFIG_PMIC
+//#define CONFIG_PMIC
 	#if defined(CONFIG_PMIC)
 		#define CONFIG_CMD_I2C
 		#define CONFIG_PMIC_I2C
@@ -415,7 +415,7 @@
 
 		//#define CONFIG_HAVE_BATTERY
 
-		//#define CONFIG_PMIC_REG_DUMP
+		#define CONFIG_PMIC_REG_DUMP
 	#endif
 
 
@@ -459,7 +459,7 @@
 	#define	CONFIG_SYS_I2C_SPEED		100000				/* default speed, 100 khz */
 
 	#define	CONFIG_I2C0_NEXELL								/* 0 = i2c 0 */
-	#define	CONFIG_I2C0_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
+	#define	CONFIG_I2C0_NO_STOP				1				/* when tx end, 0= generate stop signal , 1: skip stop signal */
 
 	#define	CONFIG_I2C1_NEXELL								/* 1 = i2c 1 */
 	#define	CONFIG_I2C1_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */

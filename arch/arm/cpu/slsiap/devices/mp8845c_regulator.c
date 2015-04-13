@@ -308,7 +308,7 @@ static int mp8845c_device_setup(struct mp8845c_power *power)
 }
 
 
-int bd_pmic_init(void)
+int bd_pmic_init_mp8845(void)
 {
 	struct mp8845c_power nxe_power_config = {
 		.i2c_addr = MP8845C_I2C_ADDR,

@@ -40,6 +40,10 @@
 #include <nxe2000-private.h>
 #endif
 
+#if defined(CONFIG_REGULATOR_MP8845C)
+#include <mp8845c_regulator.h>
+#endif
+
 DECLARE_GLOBAL_DATA_PTR;
 
 #include "eth.c"
@@ -184,9 +188,15 @@ int board_early_init_f(void)
 {
 	bd_gpio_init();
 	bd_alive_init();
+
+#if defined(CONFIG_REGULATOR_MP8845C) && !defined(CONFIG_PMIC_REG_DUMP)
+	bd_pmic_init_mp8845();
+#endif
+
 #if (defined(CONFIG_PMIC_NXE2000)||defined(CONFIG_PMIC_AXP228))&& !defined(CONFIG_PMIC_REG_DUMP)
 	bd_pmic_init();
 #endif
+
 #if defined(CONFIG_NXP_RTC_USE)
 	nxp_rtc_init();
 #endif
@@ -204,6 +214,9 @@ int power_init_board(void)
 {
 	int ret = 0;
 #if defined(CONFIG_PMIC_REG_DUMP)
+#if defined(CONFIG_REGULATOR_MP8845C)
+	bd_pmic_init_mp8845();
+#endif
 	bd_pmic_init();
 #endif
 	ret = power_pmic_function_init();

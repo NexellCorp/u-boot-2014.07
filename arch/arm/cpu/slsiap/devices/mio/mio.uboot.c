@@ -92,10 +92,7 @@ int mio_format(int _format_type)
     int resp = -1;
     int capacity = -1;
 
-    if (is_mio_init)
-    {
-        mio_deinit();
-    }
+    mio_deinit();
 
     /**************************************************************************
      * MIO Debug Options
@@ -164,7 +161,7 @@ int mio_format(int _format_type)
      * FTL Format
      **************************************************************************/
     if (Exchange.debug.misc.uboot_format) { Exchange.sys.fn.print("MIO.FORMAT: Exchange.ftl.fnFormat()\n"); }
-    if ((resp = Exchange.ftl.fnFormat((unsigned char *)"NXP4330", 0xC0067000, (unsigned char)_format_type)) < 0)
+    if ((resp = Exchange.ftl.fnFormat((unsigned char *)CHIP_NAME, CHIP_ID_PHY_BASE, (unsigned char)_format_type)) < 0)
     {
         Exchange.sys.fn.print("MIO.FORMAT: Exchange.ftl.fnFormat() Fail\n");
     }
@@ -196,10 +193,7 @@ int mio_init(void)
     int resp = -1;
     int capacity = -1;
 
-    if (is_mio_init)
-    {
-        mio_deinit();
-    }
+    mio_deinit();
 
     /**************************************************************************
      * MIO Debug Options
@@ -268,7 +262,7 @@ int mio_init(void)
     do 
     {
         if (Exchange.debug.misc.uboot_init) { Exchange.sys.fn.print("MIO.INIT: Exchange.ftl.fnOpen()\n"); }
-        if ((resp = Exchange.ftl.fnOpen((unsigned char *)"NXP4330", 0xC0067000, 0)) < 0)
+        if ((resp = Exchange.ftl.fnOpen((unsigned char *)CHIP_NAME, CHIP_ID_PHY_BASE, 0)) < 0)
         {
             Exchange.sys.fn.print("MIO.INIT: Exchange.ftl.fnOpen() Fail\n");
             break;
@@ -319,12 +313,14 @@ int mio_init(void)
 int mio_deinit(void)
 {
 #if defined (__MEDIA_ON_NAND__)
+    if (Exchange.ftl.fnClose)
+    {
+        Exchange.ftl.fnClose();
+    }
+
     if (is_mio_init)
     {
         struct nand_ftl *nx_nand;
-
-        Exchange.ftl.fnClose();
-        free(Exchange.buffer.mpool);
 
         is_mio_init = 0;
 
@@ -338,6 +334,13 @@ int mio_deinit(void)
 #if defined (MEDIA_READ_WRITE_TEST)
         mio_deinit_rwtest_buffer();
 #endif
+    }
+
+    if (Exchange.buffer.mpool)
+    {
+        free(Exchange.buffer.mpool);
+        Exchange.buffer.mpool = (unsigned char *)0;
+        Exchange.buffer.mpool_size = 0;
     }
 #endif
 
@@ -791,6 +794,25 @@ int mio_powerdown(void)
 /*******************************************************************************
  * low level api.
  *******************************************************************************/
+int mio_boost_time_regval(ulong tacs, ulong tcos, ulong tacc, ulong tcoh, ulong tcah)
+{
+	NF_TIME_REGS _t = { tacs, tcos, tacc, tcoh, tcah };
+
+	NFC_PHY_Boost_time_regval(_t);
+
+	return 0;
+}
+
+int mio_force_origin_time_regval(ulong tacs, ulong tcos, ulong tacc, ulong tcoh, ulong tcah)
+{
+	NF_TIME_REGS _t = { tacs, tcos, tacc, tcoh, tcah };
+
+	NFC_PHY_Origin_time_regval(_t);
+	NFC_PHY_ForceSet_Nftime(_t);
+
+	return 0;
+}
+
 int mio_init_without_ftl(void)
 {
     int ret = 0;
@@ -920,6 +942,27 @@ int mio_nand_raw_write(loff_t ofs, size_t *len, u_char *buf)
     return ret;
 }
 
+#if 0
+int mio_nand_raw_read(loff_t ofs, size_t *len, u_char *buf)
+{
+    int ret = 0;
+    MIO_NAND_RAW_INFO info;
+
+	info.channel = 0;
+	info.phyway = 0;
+	info.pages_per_block = 256;
+	info.bytes_per_page = 8192;
+	info.blocks_per_lun = 2048;
+
+    /*******************************************************************************
+     * NFC_PHY_LOWAPI_nand_raw_read() function has no prerequisite including 
+     * the NFC_PHY_LOWAPI_init() function.
+     *******************************************************************************/
+    ret = NFC_PHY_LOWAPI_nand_raw_read(&info, ofs, len, buf);
+
+    return ret;
+}
+#else
 int mio_nand_raw_read(loff_t ofs, size_t *len, u_char *buf)
 {
     int ret = 0;
@@ -935,6 +978,7 @@ int mio_nand_raw_read(loff_t ofs, size_t *len, u_char *buf)
 
     return ret;
 }
+#endif
 
 int mio_nand_raw_erase(loff_t ofs, size_t size)
 {

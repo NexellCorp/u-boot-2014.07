@@ -141,7 +141,11 @@ int __memcmp(const void * _p1, const void * _p2, unsigned int _n)
 
 unsigned long long __div64(unsigned long long _dividend, unsigned long long _divisor)
 {
+#if defined (__BUILD_MODE_ARM_LINUX_DEVICE_DRIVER__)
+    return div64_u64(_dividend, _divisor);
+#elif defined (__BUILD_MODE_ARM_UBOOT_DEVICE_DRIVER__)
     return div_u64(_dividend, _divisor);
+#endif
 }
 
 void __ratio(unsigned char * _sz, unsigned long long _v1, unsigned long long _v2)
@@ -301,7 +305,7 @@ void EXCHANGE_init(void)
     Exchange.sys.fn.usleep = usleep_range;
     Exchange.sys.fn.msleep = msleep;
     Exchange.sys.fn.print = printk;
-    Exchange.sys.fn.sprintf = sprintf;
+    Exchange.sys.fn.sprint = sprintf;
     Exchange.sys.fn.strlen = strlen;
     Exchange.sys.fn._memset = __memset;
     Exchange.sys.fn._memcpy = __memcpy;
@@ -329,7 +333,7 @@ void EXCHANGE_init(void)
     Exchange.nfc.fnRandomize_DeInit = NFC_PHY_RAND_DeInit;
 
     Exchange.sys.fn.print = printf;
-    Exchange.sys.fn.sprintf = sprintf;
+    Exchange.sys.fn.sprint = sprintf;
     Exchange.sys.fn.strlen = strlen;
     Exchange.sys.fn._memset = __memset;
     Exchange.sys.fn._memcpy = __memcpy;

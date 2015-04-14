@@ -149,6 +149,8 @@ void NFC_PHY_MICRON_READRETRY_SetParameter(unsigned int _channel, unsigned int _
     micron_readretry->curr_readretry_cnt[way][channel]++;
     retry_opt = (unsigned int)(micron_readretry->curr_readretry_cnt[way][channel] & 0x07);
 
+    if (Exchange.debug.nfc.phy.info_readretry) { Exchange.sys.fn.print(" ReadRetrySetParam(%d)\n", retry_opt); }
+
     if (retry_opt == 0x3) { retry_opt = 0x04; }
 
     NFC_PHY_SetOnfiFeature(channel, phyway, 0x89, retry_opt);

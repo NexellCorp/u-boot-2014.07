@@ -52,6 +52,9 @@ MIO_UBOOT_EXT int mio_powerdown(void);
 /******************************************************************************
  * low level interface
  ******************************************************************************/
+MIO_UBOOT_EXT int mio_boost_time_regval(ulong tacs, ulong tcos, ulong tacc, ulong tcoh, ulong tcah);
+MIO_UBOOT_EXT int mio_force_origin_time_regval(ulong tacs, ulong tcos, ulong tacc, ulong tcoh, ulong tcah);
+
 MIO_UBOOT_EXT int mio_init_without_ftl(void);
 MIO_UBOOT_EXT int mio_deinit_without_ftl(void);
  
@@ -65,11 +68,6 @@ MIO_UBOOT_EXT int mio_nand_erase(loff_t ofs, size_t size);
 MIO_UBOOT_EXT int mio_nand_raw_write(loff_t ofs, size_t *len, u_char *buf);
 MIO_UBOOT_EXT int mio_nand_raw_read(loff_t ofs, size_t *len, u_char *buf);
 MIO_UBOOT_EXT int mio_nand_raw_erase(loff_t ofs, size_t size);
-
-/******************************************************************************
- * etc
- ******************************************************************************/
-//int get_nand_info(total/block/page/oob size...); ==> phy_features.nand_config
 
 /******************************************************************************
  * for test

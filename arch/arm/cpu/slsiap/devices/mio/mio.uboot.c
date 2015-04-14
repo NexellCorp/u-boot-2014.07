@@ -26,6 +26,7 @@
 
 #include "media/nfc/phy/nfc.phy.lowapi.h"
 #include "media/nfc/phy/nfc.phy.h"
+#include "media/nfc/phy/nfc.phy.scan.h"
 #include "media/nfc/phy/nfc.phy.readretry.h"
 #include <nand_ftl.h>
 
@@ -114,6 +115,7 @@ int mio_format(int _format_type)
     Exchange.debug.ftl.memory_usage = 1;
     Exchange.debug.ftl.boot = 1;
     Exchange.debug.ftl.block_summary = 1;
+    Exchange.debug.ftl.license_detail = 0;
     Exchange.debug.ftl.warn = 1;
     Exchange.debug.ftl.error = 1;
 
@@ -215,6 +217,7 @@ int mio_init(void)
     Exchange.debug.ftl.memory_usage = 1;
     Exchange.debug.ftl.boot = 1;
     Exchange.debug.ftl.block_summary = 1;
+    Exchange.debug.ftl.license_detail = 0;
     Exchange.debug.ftl.warn = 1;
     Exchange.debug.ftl.error = 1;
 
@@ -1019,21 +1022,6 @@ static S32 mio_cmd_to_ftl(U16 usCommand, U8 ucFeature, U32 uiAddress, U32 uiLeng
             if (siResp >= 0)
             {
                 ucIsNeedRetry = 0;
-
-                if (usCommand == IO_CMD_READ)
-                {
-                    Exchange.statistics.ios.cur.read += (uiLength << 9);
-                    Exchange.statistics.ios.cur.read_seccnt += uiLength;
-                    Exchange.statistics.ios.accumulate.read += (uiLength << 9);
-                    Exchange.statistics.ios.accumulate.read_seccnt += uiLength;
-                }
-                else if (usCommand == IO_CMD_WRITE)
-                {
-                    Exchange.statistics.ios.cur.write += (uiLength << 9);
-                    Exchange.statistics.ios.cur.write_seccnt += uiLength;
-                    Exchange.statistics.ios.accumulate.write += (uiLength << 9);
-                    Exchange.statistics.ios.accumulate.write_seccnt += uiLength;
-                }
             }
         }
 

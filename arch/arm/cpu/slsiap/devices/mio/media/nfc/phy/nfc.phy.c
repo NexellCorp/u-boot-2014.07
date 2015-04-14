@@ -3706,6 +3706,11 @@ int NFC_PHY_1stWriteLog(unsigned int _channel,
     char * parity = __NULL;
     unsigned int write_loop = 0;
 
+#if defined (__COMPILE_MODE_READONLY__)
+    Exchange.sys.fn.print("EWS.NFC: WriteSkip: Log\n");
+    return 0;
+#endif
+
     /**************************************************************************
      *
      **************************************************************************/
@@ -4203,6 +4208,11 @@ int NFC_PHY_1stWriteRoot(unsigned int _channel,
     char * parity = __NULL;
     unsigned int write_loop = 0;
 
+#if defined (__COMPILE_MODE_READONLY__)
+    Exchange.sys.fn.print("EWS.NFC: WriteSkip: Root\n");
+    return 0;
+#endif
+
     /**************************************************************************
      *
      **************************************************************************/
@@ -4394,6 +4404,11 @@ int NFC_PHY_1stWriteData(unsigned int _channel,
     unsigned int write_loop = 0;
     char * cur_write = __NULL;
 
+#if defined (__COMPILE_MODE_READONLY__)
+    Exchange.sys.fn.print("EWS.NFC: WriteSkip: Data\n");
+    return 0;
+#endif
+ 
     /**************************************************************************
      *
      **************************************************************************/
@@ -5093,6 +5108,11 @@ int NFC_PHY_1stWriteDataNoEcc(unsigned int _channel,
 
     unsigned int write_loop = 0;
 
+#if defined (__COMPILE_MODE_READONLY__)
+    Exchange.sys.fn.print("EWS.NFC: WriteSkip: DataNoEcc\n");
+    return 0;
+#endif
+
     /**************************************************************************
      *
      **************************************************************************/
@@ -5231,6 +5251,11 @@ int NFC_PHY_1stErase(unsigned int _channel,
     unsigned int block1 = __NROOT(_row1&0x000F0000,8) + __NROOT(_row1&0x0000FF00,8);
 
     unsigned int multi_plane_erase_cmd = _multi_plane_erase_cmd;
+
+#if defined (__COMPILE_MODE_READONLY__)
+    Exchange.sys.fn.print("EWS.NFC: EraseSkip\n");
+    return 0;
+#endif
 
     /**************************************************************************
      *

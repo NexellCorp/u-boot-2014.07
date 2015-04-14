@@ -82,6 +82,7 @@
     #define __COMPILE_MODE_HALT_ERROR__
   //#define __COMPILE_MODE_BEST_DEBUGGING__
     #define __COMPILE_MODE_ELAPSE_T__
+  //#define __COMPILE_MODE_READONLY__
 
 #elif defined (__SUPPORT_MIO_UBOOT__)
 
@@ -95,6 +96,7 @@
   //#define __COMPILE_MODE_BEST_DEBUGGING__
   //#define __COMPILE_MODE_ELAPSE_T__
   //#define __COMPILE_MODE_RW_TEST__
+  //#define __COMPILE_MODE_READONLY__
 
 #endif
 

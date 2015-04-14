@@ -70,11 +70,6 @@ MIO_UBOOT_EXT int mio_nand_raw_read(loff_t ofs, size_t *len, u_char *buf);
 MIO_UBOOT_EXT int mio_nand_raw_erase(loff_t ofs, size_t size);
 
 /******************************************************************************
- * etc
- ******************************************************************************/
-//int get_nand_info(total/block/page/oob size...); ==> phy_features.nand_config
-
-/******************************************************************************
  * for test
  ******************************************************************************/
 MIO_UBOOT_EXT int mio_rwtest(ulong ulTestSectors, ulong ulCapacity, unsigned char ucWriteRatio, unsigned char ucSequentRatio);

@@ -495,7 +495,7 @@ static int nand_part_ftl(uint64_t start, uint64_t length, void *buf, int command
 
 	switch (command) {
 	case MIO_NAND_ERASE:
-		p += sprintf(args+p, "nanderase ");
+		p += sprintf(args+p, "nandrawerase ");
 		break;
 	case MIO_NAND_RAWWRITE:
 		p += sprintf(args+p, "nandrawwrite 0x%x ", (unsigned int)buf);
@@ -554,6 +554,8 @@ static int nand_part_write(struct fastboot_part *fpart, void *buf, uint64_t leng
 
 		/* erase */
 		nand_part_ftl(start, length, buf, MIO_NAND_ERASE);
+
+		start = fpart->start;
 
 		/* write */
 		for (i = 0; i < repeat; i++, start += offset) {

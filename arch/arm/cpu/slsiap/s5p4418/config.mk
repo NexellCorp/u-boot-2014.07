@@ -67,6 +67,21 @@ endif
 #   EWS FTL Build Option
 # =========================================================================
 ARCH_CFLAGS += -D__SUPPORT_MIO_UBOOT__
+ifeq ($(CONFIG_MACH_S5P4418),y)
+    ifeq ($(CONFIG_SYS_BOARD),"lepus")
+        ARCH_CFLAGS += -D__SUPPORT_MIO_UBOOT_CHIP_NXP4330__
+    else
+        ARCH_CFLAGS += -D__SUPPORT_MIO_UBOOT_CHIP_S5P4418__
+    endif
+else
+    ifeq ($(CONFIG_MACH_S5P6818),y)
+        ARCH_CFLAGS += -D__SUPPORT_MIO_UBOOT_CHIP_S5P6818__
+    else
+        ARCH_CFLAGS += -D__SUPPORT_MIO_UBOOT_CHIP_NXP4330__
+    endif
+endif
+
+
 
 # =========================================================================
 #	Build options for HOSTCC

@@ -307,11 +307,12 @@
 #define USBCURLIMEN					1
 
 
-/* AC current charge */
-#define AC_CHARGE_CURRENT			1500*1000
+/* charge current */
+#define CHARGE_CURRENT				1050*1000
+#define POWEROFF_CHARGE_CURRENT		1500*1000
 
-/* AC current limit */
-#define AC_LIMIT_CURRENT			1500*1000
+/* limit charge current */
+#define LIMIT_CHARGE_CURRENT		1500*1000
 
 
 /* set lowe power warning level */

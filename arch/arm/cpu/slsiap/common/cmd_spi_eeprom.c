@@ -147,8 +147,7 @@ int do_update_eeprom(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 		unsigned int CRC = 0;
 		int i, ret = 0;
 
-		buf = (unsigned int*)malloc(CFG_2STBOOT_SIZE);
-		p   = (unsigned char*)buf;
+		p   = (unsigned char*)mem;
 
 		spi_init_f();
 
@@ -161,19 +160,10 @@ int do_update_eeprom(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 			size = simple_strtoul(argv[3], NULL, 16);
 		}
 
-		memset(p, 0xff, CFG_2STBOOT_SIZE);
-		memcpy(p, (uchar*)mem, size);
-
-		for (i = 0; (CFG_2STBOOT_SIZE-16) > i; i++ )
-			CRC = get_fcs(CRC, p[i]);
-
-		/* ADD CRC at Last 16K end */
-		buf[(CONFIG_2STBOOT_SIZE-16)/4] = CRC;
 
 		offs[0] = (addr >> 16);
 		offs[1] = (addr >>  8);
 		offs[2] = (addr & 0xFF);
-		size = CFG_2STBOOT_SIZE;
 
 		printf("update_eeprom 2ndboot 0x%p to 0x%08x, size 0x%x\n", p, addr, size);
 

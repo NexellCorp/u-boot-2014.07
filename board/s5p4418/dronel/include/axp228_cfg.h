@@ -126,6 +126,40 @@
 
 
 /* OCV Table */
+#if 1 // 20150330 
+#define OCVREG0		0
+#define OCVREG1		0
+#define OCVREG2		0
+#define OCVREG3		0
+#define OCVREG4		0
+#define OCVREG5		0
+#define OCVREG6		0
+#define OCVREG7		0
+#define OCVREG8		0
+#define OCVREG9		0
+#define OCVREGA		1
+#define OCVREGB		5
+#define OCVREGC		7
+#define OCVREGD		13
+#define OCVREGE		19
+#define OCVREGF		32
+#define OCVREG10	40
+#define OCVREG11	47
+#define OCVREG12	51
+#define OCVREG13	55
+#define OCVREG14	60
+#define OCVREG15	64
+#define OCVREG16	70
+#define OCVREG17	77
+#define OCVREG18	83
+#define OCVREG19	88
+#define OCVREG1A	90
+#define OCVREG1B	93
+#define OCVREG1C	94
+#define OCVREG1D	96
+#define OCVREG1E	98
+#define OCVREG1F	100
+#else
 #define OCVREG0								0		//3.13V
 #define OCVREG1								0		//3.27V
 #define OCVREG2								0		//3.34V
@@ -158,11 +192,12 @@
 #define OCVREG1D							93		//4.12V
 #define OCVREG1E							96		//4.14V
 #define OCVREG1F							100		//4.15V
+#endif
 
-#define BATRDC								137 //100 
+#define BATRDC								221 // 137 //100 
 
 /* Battery capacity */
-#define BATCAP								3000
+#define BATCAP								2974
 
 
 #endif	/* __AXP228_POWER_H_ */

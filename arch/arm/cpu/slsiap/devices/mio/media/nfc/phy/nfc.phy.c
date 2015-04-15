@@ -989,8 +989,8 @@ unsigned int NFC_PHY_Init(unsigned int _scan_format)
     Exchange.nfc.fn2ndErase = NFC_PHY_2ndErase;
     Exchange.nfc.fn3rdErase = NFC_PHY_3rdErase;
     Exchange.sys.fnSpor = NFC_PHY_Spor;
-    Exchange.nfc.fnBoostOn = NFC_PHY_BoostOn;
-    Exchange.nfc.fnBoostOff = NFC_PHY_BoostOff;
+    //Exchange.nfc.fnBoostOn = NFC_PHY_BoostOn;
+    //Exchange.nfc.fnBoostOff = NFC_PHY_BoostOff;
 
     /**************************************************************************
      * Set Default Delay Timing

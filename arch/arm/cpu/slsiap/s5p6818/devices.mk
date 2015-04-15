@@ -21,6 +21,7 @@ obj-$(CONFIG_POWER_PMIC_AXP228)			+= ../devices/axp228_pmic.o
 obj-$(CONFIG_POWER_BATTERY_AXP228)	+= ../devices/axp228_bat.o
 obj-$(CONFIG_POWER_MUIC_AXP228)		+= ../devices/axp228_muic.o
 obj-$(CONFIG_POWER_FG_AXP228)		+= ../devices/axp228_fg.o
+obj-$(CONFIG_REGULATOR_MP8845C)		+= ../devices/mp8845c_regulator.o
 obj-$(CONFIG_NXP_DWMMC)				+= ../devices/dw_mmc.o
 obj-$(CONFIG_DISPLAY_OUT)			+= ../devices/display_dev.o
 obj-$(CONFIG_DISPLAY_OUT_LVDS)		+= ../devices/display_lvds.o

@@ -184,6 +184,24 @@ void axp228_register_dump(struct axp228_power *power)
 }
 #endif
 
+
+static void axp228_set_charging_current(u32 current)
+{
+	struct axp228_power power_config = {
+		.i2c_addr = AXP228_I2C_ADDR,
+		.i2c_bus = CONFIG_PMIC_I2C_BUS,
+	};
+	u8 val =0;
+
+	val = (current -200001)/150000;
+	if(current >= 300000 && current <= 2550000)
+		axp228_i2c_update(&power_config, AXP22_CHARGE1, val,0x0F);
+	else if(LIMIT_CHARGE_CURRENT < 300000)
+		axp228_i2c_clr_bits(&power_config, AXP22_CHARGE1,0x0F);
+	else
+		axp228_i2c_set_bits(&power_config, AXP22_CHARGE1,0x0F);
+}
+
 static u8 axp228_get_vol_step(int want_vol, int step, int min, int max)
 {
 	u32	vol_step = 0;
@@ -211,8 +229,8 @@ static int axp228_param_setup(struct axp228_power *power)
 {
 	int ret=0, i=0;
 	int var,tmp;
-	u8 val2,val;
 	int Cur_CoulombCounter,rdc;
+	u8 val2,val, ocv_cmp=0;
 
 	PMIC_DBGOUT("%s\n", __func__);
 
@@ -393,29 +411,22 @@ static int axp228_param_setup(struct axp228_power *power)
 	}
 
 
-	/* AC current limit */
-	val = (AC_LIMIT_CURRENT -200001)/150000;
-	if(AC_LIMIT_CURRENT >= 300000 && AC_LIMIT_CURRENT <= 2550000)
+	/* limit charge current */
+	val = (LIMIT_CHARGE_CURRENT -200001)/150000;
+	if(LIMIT_CHARGE_CURRENT >= 300000 && LIMIT_CHARGE_CURRENT <= 2550000)
 		axp228_i2c_update(power, AXP22_CHARGE3, val,0x0F);
-	else if(AC_LIMIT_CURRENT < 300000)
+	else if(LIMIT_CHARGE_CURRENT < 300000)
 		axp228_i2c_clr_bits(power, AXP22_CHARGE3,0x0F);
 	else
 		axp228_i2c_set_bits(power, AXP22_CHARGE3,0x0F);
 
-
-	/* AC current charge */
-    if(AC_CHARGE_CURRENT == 0)
+	/* charge current */
+    if(CHARGE_CURRENT == 0)
         axp228_i2c_clr_bits(power,AXP22_CHARGE1,0x80);
     else
         axp228_i2c_set_bits(power,AXP22_CHARGE1,0x80);
 
-	val = (AC_CHARGE_CURRENT -200001)/150000;
-	if(AC_CHARGE_CURRENT >= 300000 && AC_CHARGE_CURRENT <= 2550000)
-		axp228_i2c_update(power, AXP22_CHARGE1, val,0x0F);
-	else if(AC_LIMIT_CURRENT < 300000)
-		axp228_i2c_clr_bits(power, AXP22_CHARGE1,0x0F);
-	else
-		axp228_i2c_set_bits(power, AXP22_CHARGE1,0x0F);
+	axp228_set_charging_current(CHARGE_CURRENT);
 
 
 	// set lowe power warning/shutdown level
@@ -425,7 +436,19 @@ static int axp228_param_setup(struct axp228_power *power)
 	/* OCV Table */
 	for(i=0; i<ARRAY_SIZE(axp228_ocv_table); i++)
 	{
-		ret = axp228_i2c_write(power, AXP22_OCV_TABLE+i, axp228_ocv_table[i]);
+		ret = axp228_i2c_read(power, AXP22_OCV_TABLE+i, &val);
+		if(val!= axp228_ocv_table[i])
+		{
+			ocv_cmp = 1;
+			break;
+		}
+	}
+	if(ocv_cmp)
+	{
+		for(i=0; i<ARRAY_SIZE(axp228_ocv_table); i++)
+		{
+			ret = axp228_i2c_write(power, AXP22_OCV_TABLE+i, axp228_ocv_table[i]);
+		}
 	}
 
 
@@ -570,7 +593,7 @@ static int axp228_param_setup(struct axp228_power *power)
 
 	/* RDC initial */
 	axp228_i2c_read(power, AXP22_RDC0,&val2);
-	if((BATRDC) && (!(val2 & 0x40)))
+	if(ocv_cmp || ((BATRDC) && (!(val2 & 0x40))))
 	{
 		rdc = (BATRDC * 10000 + 5371) / 10742;
 		axp228_i2c_write(power, AXP22_RDC0, ((rdc >> 8) & 0x1F)|0x80);
@@ -580,7 +603,7 @@ static int axp228_param_setup(struct axp228_power *power)
 
 	//probe RDC, OCV
 	axp228_i2c_read(power,AXP22_BATFULLCAPH_RES,&val2);
-	if((BATCAP) && (!(val2 & 0x80)))
+	if(ocv_cmp || ((BATCAP) && (!(val2 & 0x80))))
 	{
 		Cur_CoulombCounter = BATCAP * 1000 / 1456;
 		axp228_i2c_write(power, AXP22_BATFULLCAPH_RES, ((Cur_CoulombCounter >> 8) | 0x80));
@@ -895,11 +918,11 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 	pmic_reg_read(p_chrg, AXP22_DCDC_MODESET, &val);
 	printf("## DCDC_MODE(0x%02x): DCDC1[%s], DCDC2[%s], DCDC3[%s], DCDC4[%s], DCDC5[%s] \n",
 				AXP22_DCDC_MODESET,
-				(val&(1 << AXP_DCDC1_MODE_BIT)) == true ? "PWM":"PFM",
-				(val&(1 << AXP_DCDC2_MODE_BIT)) == true ? "PWM":"PFM",
-				(val&(1 << AXP_DCDC3_MODE_BIT)) == true ? "PWM":"PFM",
-				(val&(1 << AXP_DCDC4_MODE_BIT)) == true ? "PWM":"PFM",
-				(val&(1 << AXP_DCDC5_MODE_BIT)) == true ? "PWM":"PFM");
+				(val&(1 << AXP_DCDC1_MODE_BIT)) ? "PWM":"PFM",
+				(val&(1 << AXP_DCDC2_MODE_BIT)) ? "PWM":"PFM",
+				(val&(1 << AXP_DCDC3_MODE_BIT)) ? "PWM":"PFM",
+				(val&(1 << AXP_DCDC4_MODE_BIT)) ? "PWM":"PFM",
+				(val&(1 << AXP_DCDC5_MODE_BIT)) ? "PWM":"PFM");
 	printf("## STATUS(0x%02x)   : ", AXP22_STATUS);
 	for(i=AXP22_STATUS; i<=AXP22_MODE_CHGSTATUS; i++)
 	{
@@ -1344,6 +1367,8 @@ enter_shutdown:
 	printf("## Power Off\n");
 
 	mdelay(500);
+
+	axp228_set_charging_current(POWEROFF_CHARGE_CURRENT);
 
 	pmic_reg_write(p_chrg, AXP22_BUFFERC, 0x00);
 	mdelay(20);

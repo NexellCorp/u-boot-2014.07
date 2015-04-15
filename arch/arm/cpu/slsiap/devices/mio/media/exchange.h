@@ -295,9 +295,6 @@ typedef struct __WARN__
 
 #endif
 
-//temporary: 4418 lepus config for 4330 drone
-//#define __SUPPORT_MIO_CHIP_NXP4330__
-
 #if   defined (__SUPPORT_MIO_CHIP_NXP4330__)
 #define CHIP_NAME           "NXP4330"
 #define CHIP_ID_BASE        0xF0067000

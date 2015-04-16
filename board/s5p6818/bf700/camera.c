@@ -193,7 +193,7 @@ static struct reg_val tw9992_sensor_init_data[256] =
 	0x19, 0x06,
 	0x1A, 0x10,
 	0x1B, 0x00,
-	0x1C, 0x0F,//0x08,
+	0x1C, 0x08,//0x08,
 	0x1D, 0x7F,
 	0x1F, 0x00,
 	0x20, 0x50,
@@ -254,6 +254,7 @@ static struct reg_val tw9992_sensor_init_data[256] =
 	0xC1, 0x20,
 
 	0x71, 0xA5,
+	0x72, 0xA0,
 	0xA2, 0x30,
 	0x70, 0x01, //start with MIPI Normal operation
 
@@ -262,6 +263,7 @@ static struct reg_val tw9992_sensor_init_data[256] =
 	0x09, 0xf0,
 	0x0a, 0x14,
 	0x0b, 0xd0,
+	0x06, 0x80,
 
 	END_MARKER
 };
@@ -733,6 +735,45 @@ void nxp_mipi_csi_setting(struct nxp_vip_param *param)
 						,0	         // U32 B_DPHYCTL       // Refer to 10.2.3 M_PLLCTL of MIPI_D_PHY_USER_GUIDE.pdf or NX_MIPI_PHY_B_DPHYCTL enum or LN28LPP_MipiDphyCore1p5Gbps_Supplement. default value is all "0". If you want to change register values, it need to confirm from IP Design Team						  
 						);
 }
+
+static void dump_register(int module)
+{
+#define DBGOUT(args...)  printf(args)
+    NX_MIPI_RegisterSet *pREG =
+        (NX_MIPI_RegisterSet*)IO_ADDRESS(NX_MIPI_GetPhysicalAddress(0));
+
+    DBGOUT("BASE ADDRESS: %p\n", pREG);
+    DBGOUT(" CSIS_CONTROL       = 0x%04x\r\n", pREG->CSIS_CONTROL);
+    DBGOUT(" CSIS_DPHYCTRL      = 0x%04x\r\n", pREG->CSIS_DPHYCTRL);
+    DBGOUT(" CSIS_DPHYSTS       = 0x%04x\r\n", pREG->CSIS_DPHYSTS);
+    DBGOUT(" CSIS_INTMSK        = 0x%04x\r\n", pREG->CSIS_INTMSK);
+    DBGOUT(" CSIS_INTSRC        = 0x%04x\r\n", pREG->CSIS_INTSRC);
+    DBGOUT(" CSIS_CTRL2         = 0x%04x\r\n", pREG->CSIS_CTRL2);
+    DBGOUT(" CSIS_VERSION       = 0x%04x\r\n", pREG->CSIS_VERSION);
+    DBGOUT(" CSIS_DPHYCTRL_0    = 0x%04x\r\n", pREG->CSIS_DPHYCTRL_0);
+    DBGOUT(" CSIS_DPHYCTRL_1    = 0x%04x\r\n", pREG->CSIS_DPHYCTRL_1);
+
+    DBGOUT(" CSIS_CONFIG_CH0    = 0x%04x\r\n", pREG->CSIS_CONFIG_CH0);
+    DBGOUT(" CSIS_RESOL_CH0     = 0x%04x\r\n", pREG->CSIS_RESOL_CH0);
+    DBGOUT(" SDW_CONFIG_CH0     = 0x%04x\r\n", pREG->SDW_CONFIG_CH0);
+    DBGOUT(" SDW_RESOL_CH0      = 0x%04x\r\n", pREG->SDW_RESOL_CH0);
+
+    DBGOUT(" CSIS_CONFIG_CH1    = 0x%04x\r\n", pREG->CSIS_CONFIG_CH1);
+    DBGOUT(" CSIS_RESOL_CH1     = 0x%04x\r\n", pREG->CSIS_RESOL_CH1);
+    DBGOUT(" SDW_CONFIG_CH1     = 0x%04x\r\n", pREG->SDW_CONFIG_CH1);
+    DBGOUT(" SDW_RESOL_CH1      = 0x%04x\r\n", pREG->SDW_RESOL_CH1);
+
+    DBGOUT(" CSIS_CONFIG_CH2    = 0x%04x\r\n", pREG->CSIS_CONFIG_CH2);
+    DBGOUT(" CSIS_RESOL_CH2     = 0x%04x\r\n", pREG->CSIS_RESOL_CH2);
+    DBGOUT(" SDW_CONFIG_CH2     = 0x%04x\r\n", pREG->SDW_CONFIG_CH2);
+    DBGOUT(" SDW_RESOL_CH2      = 0x%04x\r\n", pREG->SDW_RESOL_CH2);
+
+    DBGOUT(" CSIS_CONFIG_CH3    = 0x%04x\r\n", pREG->CSIS_CONFIG_CH3);
+    DBGOUT(" CSIS_RESOL_CH3     = 0x%04x\r\n", pREG->CSIS_RESOL_CH3);
+    DBGOUT(" SDW_CONFIG_CH3     = 0x%04x\r\n", pREG->SDW_CONFIG_CH3);
+    DBGOUT(" SDW_RESOL_3        = 0x%04x\r\n", pREG->SDW_RESOL_3);
+}
+
 #endif
 
 
@@ -761,12 +802,11 @@ void camera_run(void)
     const U32 MIPI_ModuleIndex  = 0;
 
 	module_id = 0;
-#if 1
-	initialize_tw9992();
-
 	nxp_vip_setting(module_id, &tw9992_vip_param);
 
 	nxp_mipi_csi_setting(&tw9992_vip_param);
+
+	initialize_tw9992();
 
     nxp_mlc_video_set_param(0, &tw9992_mlc_param);
     nxp_mlc_video_set_addr(0, CONFIG_VIP_LU_ADDR, CONFIG_VIP_CB_ADDR, CONFIG_VIP_CR_ADDR,
@@ -775,7 +815,8 @@ void camera_run(void)
             ALIGN(CAM_WIDTH/2, 64));
 
 	mdelay(100);
-#else
+
+#if 0
     DEBUG_POINT;
     {
         int x,y;        
@@ -809,21 +850,11 @@ void camera_run(void)
             }
         }
     }
-    nxp_mlc_video_set_param(0, &tw9992_mlc_param);
-    nxp_mlc_video_set_addr(0, CONFIG_VIP_LU_ADDR, CONFIG_VIP_CB_ADDR, CONFIG_VIP_CR_ADDR,
-            ALIGN(TW9992_WIDTH, 64),
-            ALIGN(TW9992_WIDTH/2, 64),
-            ALIGN(TW9992_WIDTH/2, 64));
-    
-    DEBUG_POINT;
+
     nxp_mlc_video_run(0);
-    
-    return;
-#endif    
 
+	nxp_vip_run(module_id);
     
-
-#if 0 // debug
     printf("nick - TIME_STAMP: %s %s \n", __DATE__, __TIME__);        
     {
         unsigned intCount[36];
@@ -843,7 +874,7 @@ void camera_run(void)
         
         DEBUG_POINT;
         //while( 1 )
-		//while(!ctrlc())
+		while(!ctrlc())
         {
             //printf("nick - pmipi->CSIS_CONTROL: %08x\n", pmipi->CSIS_CONTROL );                    
             //printf("nick - pmipi->CSIS_INTSRC : %08x\n", pmipi->CSIS_INTSRC );                    
@@ -979,8 +1010,6 @@ void camera_run(void)
 //    }        
 #endif
 
-
-
     /*printf("%s exit\n", __func__);*/    
 #endif
 
@@ -1092,9 +1121,13 @@ void camera_preview(void)
 	if(file_init)
 	{
 		int i = 0;
+		u8 val;
+
 		for(i=0; i<256; i++)
 		{
-	        printf("tw9992_init_data reg[0x%02x]:[0x%02x]\n", tw9992_sensor_init_data[i].reg, tw9992_sensor_init_data[i].val);
+	        //printf("tw9992_init_data reg[0x%02x]:[0x%02x]\n", tw9992_sensor_init_data[i].reg, tw9992_sensor_init_data[i].val);
+			i2c_read(tw9992_sensor_data.chip, tw9992_sensor_init_data[i].reg, 1, &val, 1);
+			printf("tw9992_init_data reg[0x%02x]:[0x%02x]\n", tw9992_sensor_init_data[i].reg, val);
 			if(tw9992_sensor_init_data[i].reg == 0xff)
 				break;
 		}

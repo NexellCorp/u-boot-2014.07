@@ -292,6 +292,8 @@ void NFC_PHY_SetEccMode(unsigned int _mode)
     regval |= __POW(mode,NFECCCTRL_DECMODE_W);
 
     nfcI->nfeccctrl = regval;
+
+	dmb();
 }
 
 void NFC_PHY_RunEcc(void)
@@ -303,6 +305,8 @@ void NFC_PHY_RunEcc(void)
     regval |= __POW(0x1,NFECCCTRL_RUNECC_W);
 
     nfcI->nfeccctrl = regval;
+
+	dmb();
 }
 
 /******************************************************************************
@@ -323,6 +327,8 @@ void NFC_PHY_EccEncoderSetup(unsigned int _bytes_per_ecc, unsigned int _ecc_bits
     NFC_PHY_SetBytesPerEcc(k);
     NFC_PHY_SetBytesPerParity(r);
     NFC_PHY_SetElpNum(t);
+
+	dmb();
 }
 
 void NFC_PHY_EccEncoderEnable(void)
@@ -417,6 +423,8 @@ void NFC_PHY_EccDecoderEnable(unsigned int _bytes_per_ecc, unsigned int _ecc_bit
                       __POW(t & 0x7F,NFECCCTRL_ELPNUM) |
                       __POW(r & 0xFF,NFECCCTRL_PDATACNT) |
                       __POW((k-1) & 0x3FF,NFECCCTRL_DATACNT);
+
+	dmb();
 }
 
 void NFC_PHY_EccDecoderWaitDone(void)

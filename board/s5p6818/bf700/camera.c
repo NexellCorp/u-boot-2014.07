@@ -816,7 +816,7 @@ void camera_run(void)
 
 	mdelay(100);
 
-#if 0
+#if 1
     DEBUG_POINT;
     {
         int x,y;        
@@ -857,6 +857,9 @@ void camera_run(void)
     
     printf("nick - TIME_STAMP: %s %s \n", __DATE__, __TIME__);        
     {
+		unsigned cnt=0;
+		int mode=0;
+		u8 val = 0;
         unsigned intCount[36];
         volatile NX_MIPI_RegisterSet* pmipi = (volatile NX_MIPI_RegisterSet*)IO_ADDRESS(NX_MIPI_GetPhysicalAddress(MIPI_ModuleIndex));
         volatile NX_VIP_RegisterSet*  pvip  = (volatile NX_VIP_RegisterSet* )IO_ADDRESS(NX_VIP_GetPhysicalAddress (VIP_ModuleIndex ));
@@ -876,6 +879,69 @@ void camera_run(void)
         //while( 1 )
 		while(!ctrlc())
         {
+#if 1
+			cnt++;
+			if(cnt > 10000000)
+			{
+				cnt = 0;
+
+				printf( "\n\n\n==========================\n");
+
+				if(mode == 0)
+				{
+					mode = 1;
+					val = 0x44;
+					i2c_write(tw9992_sensor_data.chip, 0x02, 1, &val, 1);				
+					//val = 0x80;
+					//i2c_write(tw9992_sensor_data.chip, 0x06, 1, &val, 1);				
+
+					printf( "Channel Sel : YIN4\n");
+					val = 0x30;
+					i2c_write(tw9992_sensor_data.chip, 0x3b, 1, &val, 1);
+
+
+					mdelay(500);
+
+					i2c_read(tw9992_sensor_data.chip, 0x03, 1, &val, 1);
+					if(val & 0x80)	printf("YIN4 Video not present.\n");
+					else			printf("YIN4 Video Detected.\n");
+
+					val = 0x03;
+					i2c_write(tw9992_sensor_data.chip, 0x52, 1, &val, 1);
+					i2c_read(tw9992_sensor_data.chip, 0x52, 1, &val, 1);
+					if(val != 0x03)	printf("YIN6 Video not present.\n");
+					else			printf("YIN6 Video Detected.\n");
+
+				}
+				else 
+				{
+					mode = 0;
+					val = 0x46;
+					i2c_write(tw9992_sensor_data.chip, 0x02, 1, &val, 1);				
+					//val = 0x80;
+					//i2c_write(tw9992_sensor_data.chip, 0x06, 1, &val, 1);				
+
+					printf( "Channel Sel : YIN6\n");
+
+					val = 0x0C;
+					i2c_write(tw9992_sensor_data.chip, 0x3b, 1, &val, 1);
+
+					mdelay(500);
+
+					val = 0x03;
+					i2c_write(tw9992_sensor_data.chip, 0x52, 1, &val, 1);
+					i2c_read(tw9992_sensor_data.chip, 0x52, 1, &val, 1);
+					if(val != 0x03)	printf("YIN4 Video not present.\n");
+					else			printf("YIN4 Video Detected.\n");
+
+					i2c_read(tw9992_sensor_data.chip, 0x03, 1, &val, 1);
+					if(val & 0x80)	printf("YIN6 Video not present.\n");
+					else			printf("YIN6 Video Detected.\n");
+				}
+			}
+#endif
+
+#if 0
             //printf("nick - pmipi->CSIS_CONTROL: %08x\n", pmipi->CSIS_CONTROL );                    
             //printf("nick - pmipi->CSIS_INTSRC : %08x\n", pmipi->CSIS_INTSRC );                    
             CSIS_INTSRC = pmipi->CSIS_INTSRC ;
@@ -991,6 +1057,7 @@ void camera_run(void)
              
                 memset( intCount, 0, sizeof(intCount) );   
             }
+#endif
         }
         
     }

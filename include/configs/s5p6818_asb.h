@@ -413,8 +413,11 @@
 	#endif
 
 	#if defined(CONFIG_REGULATOR_MP8845C)
-		#define CONFIG_PMIC_I2C_BUSA				I2C_0
+		#define CONFIG_PMIC_I2C_BUSA				I2C_1
 		#define CONFIG_PMIC_I2C_BUSB				I2C_2
+
+		#define	CFG_IO_I2C1_SCL						((PAD_GPIO_D + 2) | PAD_FUNC_ALT0)
+		#define	CFG_IO_I2C1_SDA						((PAD_GPIO_D + 3) | PAD_FUNC_ALT0)
 	#endif
 
 
@@ -453,8 +456,8 @@
 	#define	CONFIG_I2C1_NEXELL								/* 1 = i2c 1 */
 	#define	CONFIG_I2C1_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
 
-	#define	CONFIG_I2C2_NEXELL								/* 1 = i2c 1 */
-	#define	CONFIG_I2C2_NO_STOP				1				/* when tx end, 0= generate stop signal , 1: skip stop signal */
+	#define	CONFIG_I2C2_NEXELL								/* 2 = i2c 2 */
+	#define	CONFIG_I2C2_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
 
 #endif
 

@@ -39,7 +39,7 @@
 
 #include "mp8845c_regulator.h"
 
-#if 0 
+#if 1
 static const int vout_uV_list[] = {
 	6000,    // 0
 	6067,    
@@ -176,9 +176,10 @@ static u8 mp8845c_get_voltage_list(int vol)
 	int i=0;
 	for(i=0; i<ARRAY_SIZE(vout_uV_list); i++)
 	{
-		if(vol <= ri->voltages[i])
+		if(vol <= (vout_uV_list[i]*100))
 			break;
 	}
+
 	return (u8)i;
 }
 #endif
@@ -188,7 +189,14 @@ static int mp8845c_i2c_read(struct mp8845c_power *power, u8 reg, u8 *value)
 	uchar chip = power->i2c_addr;
 	u32   addr = (u32)reg & 0xFF;
 	int   alen = 1;
-	return i2c_read(chip, addr, alen, value, 1);
+	int ret = 0;
+
+	ret = i2c_read(chip, addr, alen, value, 1);
+
+	if(ret < 0)
+		printf("%s() \e[31mfail, reg:0x%x\e[0m \n", __func__, reg);
+
+	return ret;
 }
 
 static int mp8845c_i2c_write(struct mp8845c_power *power, u8 reg, u8 value)
@@ -196,7 +204,14 @@ static int mp8845c_i2c_write(struct mp8845c_power *power, u8 reg, u8 value)
 	uchar chip = power->i2c_addr;
 	u32   addr = (u32)reg & 0xFF;
 	int   alen = 1;
-	return i2c_write(chip, addr, alen, &value, 1);
+	int ret = 0;
+
+	ret = i2c_write(chip, addr, alen, &value, 1);
+
+	if(ret < 0)
+		printf("%s() \e[31mfail, reg:0x%x\e[0m \n", __func__, reg);
+
+	return ret;
 }
 
 static int mp8845c_i2c_set_bits(struct mp8845c_power *power, int reg, uint8_t bit_mask)
@@ -266,6 +281,7 @@ static int mp8845c_i2c_clr_bits(struct mp8845c_power *power, int reg, uint8_t bi
 	}
 	return ret;
 }
+#endif
 
 static int mp8845c_i2c_update(struct mp8845c_power *power, int reg, uint8_t val, uint8_t mask)
 {
@@ -282,7 +298,6 @@ static int mp8845c_i2c_update(struct mp8845c_power *power, int reg, uint8_t val,
 	}
 	return ret;
 }
-#endif
 
 static int mp8845c_device_setup(struct mp8845c_power *power)
 {
@@ -297,8 +312,10 @@ static int mp8845c_device_setup(struct mp8845c_power *power)
 
 	mp8845c_i2c_set_bits(power, MP8845C_REG_SYSCNTL1, (1 << MP8845C_POS_MODE));
 
-	reg_val = 0xCB; // 1.1018 V
-	mp8845c_i2c_set_bits(power, MP8845C_REG_VSEL, reg_val);
+	mp8845c_i2c_set_bits(power, MP8845C_REG_SYSCNTL2, (1 << MP8845C_POS_GO));
+	reg_val = mp8845c_get_voltage_list(power->init_voltage);
+
+	mp8845c_i2c_update(power, MP8845C_REG_VSEL, reg_val, MP8845C_POS_OUT_VOL_MASK);
 
 #if defined(CONFIG_PMIC_REG_DUMP)
 	mp8845c_register_dump(power);
@@ -308,18 +325,18 @@ static int mp8845c_device_setup(struct mp8845c_power *power)
 }
 
 
-int bd_pmic_init_mp8845(void)
+int bd_pmic_init_mp8845(int i2c_bus, int uVol)
 {
 	struct mp8845c_power nxe_power_config = {
 		.i2c_addr = MP8845C_I2C_ADDR,
 	};
-	PMIC_DBGOUT("%s\n", __func__);
 
-	nxe_power_config.i2c_bus = CONFIG_PMIC_I2C_BUSA;
+	PMIC_DBGOUT("%s(), bus:%d, Vol:%d\n", __func__, i2c_bus, uVol);
+
+	nxe_power_config.i2c_bus = i2c_bus;
+	nxe_power_config.init_voltage = uVol;
 	mp8845c_device_setup(&nxe_power_config);
 
-	nxe_power_config.i2c_bus = CONFIG_PMIC_I2C_BUSB;
-	mp8845c_device_setup(&nxe_power_config);
 	return 0;
 }
 

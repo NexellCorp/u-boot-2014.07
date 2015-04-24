@@ -81,6 +81,7 @@ struct mp8845c_power {
 	int		i2c_addr;
 	int		support_policy;
 	int		warm_reset;
+	int		init_voltage;
 };
 
 struct mp8845c_ocv_val {

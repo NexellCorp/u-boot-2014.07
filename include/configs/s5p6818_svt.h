@@ -397,6 +397,8 @@
 		#define CONFIG_POWER_MUIC
 
 		#define CONFIG_PMIC_NXE2000
+		#define CONFIG_REGULATOR_MP8845C
+		//#define CONFIG_PMIC_REG_DUMP
 	#endif
 
 	#if defined(CONFIG_PMIC_NXE2000)
@@ -405,27 +407,14 @@
 		#define CONFIG_POWER_MUIC_NXE2000
 		#define CONFIG_POWER_FG_NXE2000
 
-
 		#define CONFIG_PMIC_CHARGING_PATH           CONFIG_PMIC_CHARGING_PATH_ADP
 
-		#define	CFG_IO_I2C2_SCL	((PAD_GPIO_D + 6) | PAD_FUNC_ALT0)
-		#define	CFG_IO_I2C2_SDA	((PAD_GPIO_D + 7) | PAD_FUNC_ALT0)
-
 		#define CONFIG_SW_UBC_DETECT							/* need with CONFIG_FASTBOOT. */
-
-		//#define CONFIG_HAVE_BATTERY
-
-		//#define CONFIG_PMIC_REG_DUMP
 	#endif
 
-
-	#if defined(CONFIG_HAVE_BATTERY)
-		//#define CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE
-		//#define CONFIG_POWER_BATTERY_SMALL
-			#ifndef CONFIG_POWER_BATTERY_SMALL
-			#define CONFIG_BAT_CHECK
-			#define CONFIG_NXP_RTC_USE
-			#endif
+	#if defined(CONFIG_REGULATOR_MP8845C)
+		#define CONFIG_PMIC_I2C_BUSA				I2C_0
+		#define CONFIG_PMIC_I2C_BUSB				I2C_2
 	#endif
 
 
@@ -459,7 +448,7 @@
 	#define	CONFIG_SYS_I2C_SPEED		100000				/* default speed, 100 khz */
 
 	#define	CONFIG_I2C0_NEXELL								/* 0 = i2c 0 */
-	#define	CONFIG_I2C0_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
+	#define	CONFIG_I2C0_NO_STOP				1				/* when tx end, 0= generate stop signal , 1: skip stop signal */
 
 	#define	CONFIG_I2C1_NEXELL								/* 1 = i2c 1 */
 	#define	CONFIG_I2C1_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */

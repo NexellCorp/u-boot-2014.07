@@ -190,7 +190,8 @@ int board_early_init_f(void)
 	bd_alive_init();
 
 #if defined(CONFIG_REGULATOR_MP8845C) && !defined(CONFIG_PMIC_REG_DUMP)
-	bd_pmic_init_mp8845();
+	bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSA, 1200000);
+	bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSB, 1100000);
 #endif
 
 #if (defined(CONFIG_PMIC_NXE2000)||defined(CONFIG_PMIC_AXP228))&& !defined(CONFIG_PMIC_REG_DUMP)
@@ -209,13 +210,14 @@ int board_init(void)
 	return 0;
 }
 
-#if defined(CONFIG_PMIC_NXE2000)||defined(CONFIG_PMIC_AXP228)
+#if defined(CONFIG_PMIC_NXE2000)||defined(CONFIG_PMIC_AXP228)||defined(CONFIG_REGULATOR_MP8845C)
 int power_init_board(void)
 {
 	int ret = 0;
 #if defined(CONFIG_PMIC_REG_DUMP)
 #if defined(CONFIG_REGULATOR_MP8845C)
-	bd_pmic_init_mp8845();
+	bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSA, 1200000);
+	bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSB, 1100000);
 #endif
 	bd_pmic_init();
 #endif

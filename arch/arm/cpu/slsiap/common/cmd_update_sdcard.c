@@ -56,7 +56,8 @@
 #define	UPDATE_SDCARD_FS_UBIFS		(1<<7)	/*  name "ubifs" */
 #define	UPDATE_SDCARD_FS_RAW_PART	(1<<8)	/*  name "emmc" */
 
-#define	UPDATE_SDCARD_FS_MASK		(UPDATE_SDCARD_FS_RAW | UPDATE_SDCARD_FS_FAT | UPDATE_SDCARD_FS_EXT4 | UPDATE_SDCARD_FS_UBI | UPDATE_SDCARD_FS_UBIFS | UPDATE_SDCARD_FS_RAW_PART)
+//#define	UPDATE_SDCARD_FS_MASK		(UPDATE_SDCARD_FS_RAW | UPDATE_SDCARD_FS_FAT | UPDATE_SDCARD_FS_EXT4 | UPDATE_SDCARD_FS_UBI | UPDATE_SDCARD_FS_UBIFS | UPDATE_SDCARD_FS_RAW_PART)
+#define UPDATE_SDCARD_FS_MASK        (UPDATE_SDCARD_FS_EXT4 | UPDATE_SDCARD_FS_FAT | UPDATE_SDCARD_FS_UBI | UPDATE_SDCARD_FS_UBIFS | UPDATE_SDCARD_FS_RAW_PART)
 
 #define	TCLK_TICK_HZ				(1000000)
 
@@ -285,6 +286,17 @@ static int update_sdcard_part_lists_make(const char *ptable_str, int ptable_str_
 
 		p = update_sdcard_get_string(p, ':', str, sizeof(str));
 		fp->length = simple_strtoull(str, NULL, 16);
+		
+		if( !strcmp(fp->partition_name,"recovery") ) {
+			i--;
+			continue;
+		}
+
+		if( !strcmp(fp->partition_name,"hidden") ) {
+			i--;
+			continue;
+		}
+
 
 		p = update_sdcard_get_string(p, ';', str, sizeof(str));
 		strcpy(fp->file_name, str);
@@ -437,6 +449,45 @@ int update_sd_do_load(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[],
 	return len_read;
 }
 
+static int update_sd_fdisk(int dev, struct update_sdcard_part *fp)
+{
+    struct update_sdcard_part *fp_1 = fp;
+    int i=0,p=0,j=0,l=0, cnt=0;
+    uint64_t part_start[UPDATE_SDCARD_DEV_PART_MAX];
+    uint64_t part_length[UPDATE_SDCARD_DEV_PART_MAX];
+    char args[128];
+
+    printf("Warn  : make new partitions ....\n");
+
+    for (j=i; j<UPDATE_SDCARD_DEV_PART_MAX; j++, fp_1++) {
+        if(!strcmp(fp_1->device, ""))   break;
+        if(!strcmp(fp_1->partition_name, "2ndboot"))   continue;
+        if(!strcmp(fp_1->partition_name, "bootloader"))   continue;
+        if(!strcmp(fp_1->partition_name, "recovery"))   continue;
+        if(!strcmp(fp_1->partition_name, "hidden"))   continue;
+        part_start[cnt] = fp_1->start;
+        part_length[cnt] = fp_1->length;
+        cnt++;
+    }
+
+    l = sprintf(args, "fdisk %d %d:", dev, cnt);
+    p = l;
+
+    for (j= 0; j < cnt; j++) {
+        l = sprintf(&args[p], " 0x%llx:0x%llx", part_start[j], part_length[j]);
+        p += l;
+    }
+    args[p] = 0;
+    printf("%s\n", args);
+    if(0 > run_command(args, 0))
+        printf("fdisk : %s\n", "FAIL");
+    else
+        printf("fdisk : %s\n", "DONE");
+
+
+}
+
+
 static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	//struct update_sdcard_device *fd = f_devices;
@@ -456,9 +507,10 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 		printf("## [%s():%d] ret_error \n", __func__,__LINE__);
 		goto ret_error;
 	}
-
-	if( update_version_check(argc, argv, FS_TYPE_FAT, 16) < 0)
-		return 1;
+	//if(flag == 2) {
+		if( update_version_check(argc, argv, FS_TYPE_FAT, 16) < 0)
+			return 1;
+	//}
 
 	bd_display_run(0, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 
@@ -488,10 +540,21 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 
 			update_sdcard_part_lists_print();
 			printf("\n");
+			update_sd_fdisk(fp->dev_no, fp);
 
 			for(i=0; i<UPDATE_SDCARD_DEV_PART_MAX; i++, fp++)
 			{
 				if(!strcmp(fp->device, ""))	break;
+				
+				if(!strcmp(fp->file_name, ""))	continue;
+				if(!strcmp(fp->partition_name, "recovery"))	continue;
+				if(!strcmp(fp->partition_name, "hidden"))	continue;
+				if(flag == 2 ) {
+					if(!strcmp(fp->partition_name, "userdata"))	{
+						printf("Release update skip the userdata \n");
+						continue;
+					}
+				}
 
 				if (!strcmp(fp->file_name, "dummy"))
 					continue;
@@ -507,11 +570,13 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 
 				fboot_lcd_flash((char*)fp->file_name, "reading            ");
 
+				printf("Read file : %s \n",fp->file_name);
+
 				time = get_timer(0);
 				len_read = fs_read(fp->file_name, addr, 0, 0);
 				time = get_timer(time);
 
-				printf("file : %s %d bytes read in %lu ms", fp->file_name, len_read, time);
+				printf("%d bytes read in %lu ms", len_read, time);
 				if (time > 0) {
 					puts(" (");
 					print_size(len_read / time * 1000, "/s");
@@ -527,7 +592,6 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 
 				if( 0 >= len_read)
 					continue;
-
 				fboot_lcd_flash((char*)fp->file_name, "flashing           ");
 
 				{
@@ -542,8 +606,6 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 					int dev = fp->dev_no;
 					unsigned int fs_type = fp->fs_type;
 					int part_num = fp->part_num;
-					//lbaint_t blk, cnt;
-					//int blk_size = 512;
 
 					length=len_read;
 
@@ -621,44 +683,6 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 						}
 						else if (fs_type & UPDATE_SDCARD_FS_MASK) 
 						{
-							if (update_sdcard_mmc_check_part_table(desc, fp) > 0) {
-								struct update_sdcard_part *fp_1 = fp;
-								int j, cnt=0;
-								uint64_t part_start[UPDATE_SDCARD_DEV_PART_MAX];
-								uint64_t part_length[UPDATE_SDCARD_DEV_PART_MAX];
-								char args[128];
-
-								printf("Warn  : [%s] make new partitions ....\n", partition_name);
-
-								for (j=i; j<UPDATE_SDCARD_DEV_PART_MAX; j++, fp_1++) {
-									if(!strcmp(fp_1->device, ""))	break;
-									part_start[cnt] = fp_1->start;
-									part_length[cnt] = fp_1->length;
-									cnt++;
-								}
-
-								l = sprintf(args, "fdisk %d %d:", dev, cnt);
-								p = l;
-
-								for (j= 0; j < cnt; j++) {
-									l = sprintf(&args[p], " 0x%llx:0x%llx", part_start[j], part_length[j]);
-									p += l;
-								}
-								args[p] = 0;
-								printf("%s\n", args);
-
-								if(0 > run_command(args, 0))
-									printf("fdisk : %s\n", "FAIL");
-								else
-									printf("fdisk : %s\n", "DONE");
-
-
-							}
-
-							//blk = fp->start/blk_size ;
-							//cnt = (length/blk_size) + ((length & (blk_size-1)) ? 1 : 0);
-							//p = sprintf(cmd, "mmc write %x %x %x", addr, blk, cnt);
-
 							p = sprintf(cmd, "update_mmc %d part %x %d %x", dev, (unsigned int)addr, part_num, (unsigned int)length);
 						}
 
@@ -671,7 +695,6 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 					}
 
 				}
-
 								
 			}
 			printf("=============================================================\n");
@@ -689,15 +712,6 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 	}
 
 	fboot_lcd_status("exit");
-/*
-	while (1) {
-		if (ctrlc()) 
-		{
-			printf("update_sdcard end\n\n");
-			break;
-		}
-	}
-*/
 
 	fboot_lcd_stop();
 	do_reset (NULL, 0, 0, NULL);

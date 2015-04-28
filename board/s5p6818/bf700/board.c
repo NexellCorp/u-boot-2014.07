@@ -256,6 +256,9 @@ extern void boot_animation(void);
 
 int board_late_init(void)
 {
+	int power_key_val = 0;
+	int mcu_fr_high_count = 0;
+	char * version_str;
 #if defined(CONFIG_SYS_MMC_BOOT_DEV)
 	char boot[16];
 	sprintf(boot, "mmc dev %d", CONFIG_SYS_MMC_BOOT_DEV);
@@ -263,9 +266,38 @@ int board_late_init(void)
 
 // Add the update sd command 
 #if defined (CONFIG_CMD_UPDATE_SDCARD)
+	#if 0
 	if (0 > run_command("update_sdcard mmc 0:1 0x48000000 partmap_burning.txt", 0)) {
 		printf("## [%s():%d] ret_error \n", __func__,__LINE__);
 	}
+	#endif
+    power_key_val = NX_GPIO_GetInputValue(PAD_GET_GROUP(CFG_IO_MCU_FR), 
+                                          PAD_GET_BITNO(CFG_IO_MCU_FR));
+       while(0 != power_key_val) {
+
+               power_key_val = NX_GPIO_GetInputValue(PAD_GET_GROUP(CFG_IO_MCU_FR), 
+                                               PAD_GET_BITNO(CFG_IO_MCU_FR));
+               mcu_fr_high_count++;
+               if(mcu_fr_high_count > 10) {
+					if (0 > run_command("update_sdcard mmc 0:1 0x48000000 partmap_burning.txt", 1)) {
+					printf("## [%s():%d] ret_error \n", __func__,__LINE__);
+	}
+               }
+               mdelay(300); //500ms
+       }
+    //For MANUFACTURE_UPDATE
+    version_str = getenv("version");
+   	if(version_str == NULL || !strcmp(version_str,"0")) {
+		printf("MANUFACTURE_UPDATE \n");
+	    if (0 > run_command("update_sdcard mmc 0:1 0x48000000 partmap_burning.txt", 0)) {
+    	      printf("## [%s():%d] ret_error \n", __func__,__LINE__);
+		}
+    }
+
+    if (0 > run_command("update_sdcard mmc 0:1 0x48000000 partmap_burning.txt", 0)) {
+   	      printf("## [%s():%d] ret_error \n", __func__,__LINE__);
+	}
+
 #endif
 
 
@@ -276,8 +308,12 @@ int board_late_init(void)
         writel((-1UL), SCR_RESET_SIG_RESET); /* clear */
 
         printf("RECOVERY BOOT\n");
-        bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
-        run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
+        if (0 > run_command("update_sdcard mmc 0:1 0x48000000 partmap_burning.txt", 2)) {
+
+                printf("## [%s():%d] ret_error \n", __func__,__LINE__);
+        }
+        //bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+        //run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
     }
     writel((-1UL), SCR_RESET_SIG_RESET);
 	#endif /* CONFIG_RECOVERY_BOOT */

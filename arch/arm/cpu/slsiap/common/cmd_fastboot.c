@@ -179,7 +179,7 @@ extern int mmc_get_part_table(block_dev_desc_t *desc, uint64_t (*parts)[2], int 
 
 static int mmc_make_parts(int dev, uint64_t (*parts)[2], int count)
 {
-	char cmd[128];
+	char cmd[256] = {0, };
 	int i = 0, l = 0, p = 0;
 
 	l = sprintf(cmd, "fdisk %d %d:", dev, count);
@@ -1828,7 +1828,7 @@ static int do_fastboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 	unsigned int tclk = TCLK_TICK_HZ;
 	int timeout = 0, f_connect = 0;
 	int err;
-	
+
 	bd_display_run(0, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 
 	p = getenv("fastboot");

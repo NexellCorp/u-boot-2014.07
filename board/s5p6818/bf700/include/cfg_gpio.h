@@ -250,6 +250,8 @@
 #define CFG_IO_OTG_PWREN					((PAD_GPIO_A + 19) | PAD_FUNC_ALT0 )
 #define CFG_IO_OTG_ITDID_CTRL				((PAD_GPIO_B + 27) | PAD_FUNC_ALT1 )
 
+#define CFG_IO_MCU_FR                                  ((PAD_GPIO_B + 26) | PAD_FUNC_ALT1)             /* GPIO */
+
 
 #endif	/* __CFG_GPIO_H__ */
 

@@ -118,6 +118,9 @@ const uchar default_environment[] = {
 	"soc="		CONFIG_SYS_SOC			"\0"
 #endif
 #endif
+#ifdef CONFIG_CMD_UPDATE_SDCARD
+       "version="              CONFIG_DEFAULT_VERSION                  "\0"
+#endif
 #ifdef	CONFIG_EXTRA_ENV_SETTINGS
 	CONFIG_EXTRA_ENV_SETTINGS
 #endif

@@ -683,6 +683,43 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 						}
 						else if (fs_type & UPDATE_SDCARD_FS_MASK) 
 						{
+								if (update_sdcard_mmc_check_part_table(desc, fp) > 0) {
+                                struct update_sdcard_part *fp_1 = f_sdcard_part;
+                                int j, cnt=0;
+                                uint64_t part_start[UPDATE_SDCARD_DEV_PART_MAX];
+                                uint64_t part_length[UPDATE_SDCARD_DEV_PART_MAX];
+                                char args[128];
+
+                                printf("Warn  : [%s] make new partitions ....\n", partition_name);
+
+                                for (j=i; j<UPDATE_SDCARD_DEV_PART_MAX; j++, fp_1++) {
+                                    if(!strcmp(fp_1->device, ""))   break;
+									 if(!strcmp(fp_1->partition_name, "2ndboot"))   continue;
+							        if(!strcmp(fp_1->partition_name, "bootloader"))   continue;
+							        if(!strcmp(fp_1->partition_name, "recovery"))   continue;
+							        if(!strcmp(fp_1->partition_name, "hidden"))   continue;
+                                    part_start[cnt] = fp_1->start;
+                                    part_length[cnt] = fp_1->length;
+                                    cnt++;
+                                }
+
+                                l = sprintf(args, "fdisk %d %d:", dev, cnt);
+                                p = l;
+
+                                for (j= 0; j < cnt; j++) {
+                                    l = sprintf(&args[p], " 0x%llx:0x%llx", part_start[j], part_length[j]);
+                                    p += l;
+                                }
+                                args[p] = 0;
+                                printf("%s\n", args);
+
+                                if(0 > run_command(args, 0))
+                                    printf("fdisk : %s\n", "FAIL");
+                                else
+                                    printf("fdisk : %s\n", "DONE");
+
+
+                            }
 							p = sprintf(cmd, "update_mmc %d part %x %d %x", dev, (unsigned int)addr, part_num, (unsigned int)length);
 						}
 

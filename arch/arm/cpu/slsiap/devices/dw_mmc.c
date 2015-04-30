@@ -87,9 +87,9 @@ static void dw_mci_reset(int ch )
 	NX_RSTCON_SetRST(rst_id, 0);
 	NX_RSTCON_SetRST(rst_id, 1);
 }
+struct dwmci_host *host = NULL;
 static int dw_mci_init(u32 regbase, int bus_width, int index, int max_clock, int ddr)
 {
-	struct dwmci_host *host = NULL;
 	int  fifo_size = 0x20;
 
 	host = malloc(sizeof(struct dwmci_host));
@@ -97,6 +97,7 @@ static int dw_mci_init(u32 regbase, int bus_width, int index, int max_clock, int
 		printf("dwmci_host malloc fail!\n");
 		return 1;
 	}
+	memset(host, 0x00, sizeof(*host));
 
 	dw_mci_set_clk(index, max_clock * 4);
 

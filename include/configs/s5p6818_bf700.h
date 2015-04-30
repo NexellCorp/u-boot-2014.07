@@ -352,7 +352,7 @@
 	#define CONFIG_CMD_MMC_UPDATE
 	#define CONFIG_CMD_UPDATE_SDCARD
 	 #define CONFIG_DEFAULT_VERSION          "0"
-	
+
 	#define CONFIG_SYS_MMC_BOOT_DEV  	(2)		/* BOOT MMC DEVICE NUM */
 
 	#if defined(CONFIG_ENV_IS_IN_MMC)
@@ -479,7 +479,7 @@
  */
 #define	CONFIG_RECOVERY_BOOT
 #if defined (CONFIG_RECOVERY_BOOT)
-	#define CONFIG_CMD_RECOVERY_BOOT "ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
+	#define CONFIG_CMD_RECOVERY_BOOT "setenv bootargs initrd=0x49000000,0x300000 console=ttySAC0,115200n8 androidboot.hardware=bf700 androidboot.console=ttySAC0 androidboot.serialno=0123456789abcdef init=/init;ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
 #endif
 
 /*-----------------------------------------------------------------------

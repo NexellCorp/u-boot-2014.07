@@ -30,12 +30,14 @@
 #include <mmc.h>
 #include <decompress_ext4.h>
 #include <asm/sections.h>
+#include <linux/ctype.h>
 
 #if defined (CONFIG_MACH_S5P4418)
 #include <asm/arch/s5p4418_boot.h>
 #elif defined (CONFIG_MACH_S5P6818)
 #include <asm/arch/s5p6818_boot.h>
 #endif
+#include <dev_dna_info.h>
 
 #define MMC_BLOCK_SIZE		(512)
 
@@ -174,6 +176,87 @@ usage:
 	return 1;
 }
 
+#ifndef HEXDUMP_COLS
+#define HEXDUMP_COLS 16
+#endif
+
+void hexdump(void *mem, unsigned int len)
+{
+    unsigned int i, j;
+
+    for(i = 0; i < len + ((len % HEXDUMP_COLS) ? (HEXDUMP_COLS - len % HEXDUMP_COLS) : 0); i++) {
+    /* print offset */
+        if(i % HEXDUMP_COLS == 0)       {
+            printf("0x%06x: ", i);
+        }
+
+        /* print hex data */
+        if(i < len)     {
+            printf("%02x ", 0xFF & ((char*)mem)[i]);
+        }
+        else { /* end of block, just aligning for ASCII dump */
+            printf("   ");
+        }
+
+        /* print ASCII dump */
+        if(i % HEXDUMP_COLS == (HEXDUMP_COLS - 1)) {
+            for(j = i - (HEXDUMP_COLS - 1); j <= i; j++) {
+                if(j >= len) { /* end of block, not really printing */
+                    putc(' ');
+                }
+                else if(isprint(((char*)mem)[j])) { /* printable char */
+                    putc(0xFF & ((char*)mem)[j]);
+                }
+                else { /* other char */
+                    putc('.');
+                }
+            }
+            putc('\n');
+        }
+    }
+}
+
+int do_dna_mode(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
+{
+	char cmd[128];
+	int dev;
+	unsigned long long addr;
+	unsigned int dwmode;
+	//flag = 1;
+
+	if (argc < 2)
+        return CMD_RET_USAGE;
+    if (argc > 4)
+        return CMD_RET_USAGE;
+	
+	dev = simple_strtoul(argv[1],NULL,16);
+	addr = simple_strtoull(argv[2],NULL,16);
+	dwmode = simple_strtoull(argv[3],NULL,16);
+	
+	
+	memset(cmd, 0x0, sizeof(cmd));
+
+
+	sprintf(cmd,"mmc dev %d",dev);
+	run_command(cmd, 0);
+
+	
+	sprintf(cmd,"mmc read %x %llx 1",CONFIG_MEM_LOAD_ADDR, (addr/NAND_PAGE_SIZE)+(FINE_MODE_ADDR/NAND_PAGE_SIZE));
+	run_command(cmd, 0);
+
+	memcpy((char*) (CONFIG_MEM_LOAD_ADDR),&dwmode,sizeof(dwmode));	
+	
+	sprintf(cmd,"mmc write %x %llx 1",CONFIG_MEM_LOAD_ADDR, (addr/NAND_PAGE_SIZE)+(FINE_MODE_ADDR/NAND_PAGE_SIZE));
+	run_command(cmd, 0);
+
+	printf("Verify the dna \n");	
+	sprintf(cmd,"mmc read %x %llx 1",CONFIG_MEM_LOAD_ADDR+0x1000000, (addr/NAND_PAGE_SIZE)+(FINE_MODE_ADDR/NAND_PAGE_SIZE));
+	run_command(cmd, 0);
+	hexdump((char*) (CONFIG_MEM_LOAD_ADDR+0x1000000), sizeof(unsigned int));
+	
+	return 1;
+}
+
 U_BOOT_CMD(
 	update_mmc, CONFIG_SYS_MAXARGS, 1,	do_update_mmc,
 	"update mmc data\n",
@@ -189,5 +272,12 @@ U_BOOT_CMD(
 	"    - update partition image 'length' on 'mem' to mmc 'part no'.\n\n"
 	"Note.\n"
 	"    - All numeric parameters are assumed to be hex.\n"
+);
+
+
+U_BOOT_CMD(
+	dna_mode, 4, 1,	do_dna_mode,
+	"write dwMode to dna partition \n",
+	"dna_mode dev dna_address(start_address) val(dwMode_val)\n"
 );
 

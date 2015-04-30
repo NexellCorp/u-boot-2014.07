@@ -274,11 +274,10 @@ int board_late_init(void)
 		mcu_fr_high_count++;
 		if(mcu_fr_high_count > 10) {
 			printf("Emergency update \n");
-			if (0 > run_command("update_sdcard mmc 0:1 0x48000000 partmap_burning.txt", 0)) {
-			printf("## [%s():%d] ret_error \n", __func__,__LINE__);
-			}
+			run_command("dna_mode 2 11000000 1",0); //Emergency update
+        	run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
 		}
-               mdelay(500); //500ms
+        mdelay(500); //500ms
 	}
 	if (0 > run_command("update_sdcard mmc 0:1 0x48000000 partmap_burning.txt", 2)) {
 		printf("## [%s():%d] ret_error \n", __func__,__LINE__);
@@ -295,6 +294,7 @@ int board_late_init(void)
 
         printf("RECOVERY BOOT\n");
         //bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+		run_command("dna_mode 2 11000000 3",0); //Release update
         run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
     }
     writel((-1UL), SCR_RESET_SIG_RESET);

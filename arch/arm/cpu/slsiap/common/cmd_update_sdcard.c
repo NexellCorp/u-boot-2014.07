@@ -507,10 +507,10 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 		printf("## [%s():%d] ret_error \n", __func__,__LINE__);
 		goto ret_error;
 	}
-	//if(flag == 2) {
+	if(flag == 2) {
 		if( update_version_check(argc, argv, FS_TYPE_FAT, 16) < 0)
 			return 1;
-	//}
+	}
 
 	bd_display_run(0, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 
@@ -549,12 +549,12 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 				if(!strcmp(fp->file_name, ""))	continue;
 				if(!strcmp(fp->partition_name, "recovery"))	continue;
 				if(!strcmp(fp->partition_name, "hidden"))	continue;
-				if(flag == 2 ) {
-					if(!strcmp(fp->partition_name, "userdata"))	{
-						printf("Release update skip the userdata \n");
-						continue;
-					}
-				}
+				//if(flag == 2 ) {
+				//	if(!strcmp(fp->partition_name, "userdata"))	{
+				//		printf("Release update skip the userdata \n");
+				//		continue;
+				//	}
+				//}
 
 				if (!strcmp(fp->file_name, "dummy"))
 					continue;

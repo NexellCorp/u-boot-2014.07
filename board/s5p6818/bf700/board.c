@@ -54,6 +54,7 @@ static inline void fdone_lcd_power(void)
 	/* must be set after gpio init */	
 #if 1
 	/* Reset LCD_PWR_EN : default H */	
+	mdelay(100);
 	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENB), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), CFALSE);	
 	mdelay(200);
 	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENB), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), CTRUE);	

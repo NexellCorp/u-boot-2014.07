@@ -337,6 +337,8 @@ void NFC_PHY_EccEncoderEnable(void)
 
     NFC_PHY_SetEccMode(0);
     NFC_PHY_RunEcc();
+
+	dmb();
 }
 
 void NFC_PHY_EccEncoderReadParity(unsigned int * _parity, unsigned int _ecc_bits)
@@ -856,8 +858,12 @@ void NFC_PHY_ChipSelect(unsigned int _channel, unsigned int _way, unsigned int _
     if (__TRUE == select) { if (Exchange.sys.fn.elapse_t_io_measure_start) { Exchange.sys.fn.elapse_t_io_measure_start(ELAPSE_T_IO_NFC_RW, ELAPSE_T_IO_NFC_R, ELAPSE_T_IO_NFC_W); } }
 #endif
 
+	dmb();
+
     NFC_PHY_SetNFBank(way);
     NFC_PHY_SetNFCSEnable(select);
+
+	dmb();
 
 #if defined (__COMPILE_MODE_ELAPSE_T__)
     if (__FALSE == select) { if (Exchange.sys.fn.elapse_t_io_measure_end) { Exchange.sys.fn.elapse_t_io_measure_end(ELAPSE_T_IO_NFC_RW, ELAPSE_T_IO_NFC_R, ELAPSE_T_IO_NFC_W); } }

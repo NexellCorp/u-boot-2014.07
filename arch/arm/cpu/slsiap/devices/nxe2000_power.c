@@ -640,6 +640,7 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 		.dbg_win_height	= 780,
 		.alphablend		= 0,
 	};
+#endif
 
 #if defined(CONFIG_PMIC_REG_DUMP)
 	struct nxe2000_power nxe_power_config = {
@@ -795,6 +796,7 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 	if(skip)
 		power_key_depth = 2;
 
+#if defined(CONFIG_DISPLAY_OUT)
 	/*===========================================================*/
     if (power_key_depth > 1)
     {

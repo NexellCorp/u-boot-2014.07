@@ -541,7 +541,7 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 								int j, cnt=0;
 								uint64_t part_start[UPDATE_SDCARD_DEV_PART_MAX];
 								uint64_t part_length[UPDATE_SDCARD_DEV_PART_MAX];
-								char args[128];
+								char args[1024];
 
 								printf("Warn  : [%s] make new partitions ....\n", partition_name);
 
@@ -559,6 +559,13 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 									l = sprintf(&args[p], " 0x%llx:0x%llx", part_start[j], part_length[j]);
 									p += l;
 								}
+
+								if (p >= sizeof(args)) {
+							        printf("** %s: cmd stack overflow : stack %d, cmd %d **\n",
+					    		        __func__, sizeof(args), p);
+			        				while(1);
+							    }    
+
 								args[p] = 0;
 								printf("%s\n", args);
 

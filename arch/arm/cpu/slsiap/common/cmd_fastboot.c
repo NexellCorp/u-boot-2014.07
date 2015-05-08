@@ -179,7 +179,7 @@ extern int mmc_get_part_table(block_dev_desc_t *desc, uint64_t (*parts)[2], int 
 
 static int mmc_make_parts(int dev, uint64_t (*parts)[2], int count)
 {
-	char cmd[128];
+	char cmd[1024];
 	int i = 0, l = 0, p = 0;
 
 	l = sprintf(cmd, "fdisk %d %d:", dev, count);
@@ -188,6 +188,13 @@ static int mmc_make_parts(int dev, uint64_t (*parts)[2], int count)
 		l = sprintf(&cmd[p], " 0x%llx:0x%llx", parts[i][0], parts[i][1]);
 		p += l;
 	}
+	
+	if (p >= sizeof(cmd)) {
+		printf("** %s: cmd stack overflow : stack %d, cmd %d **\n",
+			__func__, sizeof(cmd), p);
+		while(1);
+	}	
+
 	cmd[p] = 0;
 	printf("%s\n", cmd);
 

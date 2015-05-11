@@ -132,7 +132,8 @@
 #define CONFIG_GATEWAYIP				192.168.1.254
 #define CONFIG_BOOTFILE					"uImage"  		/* File to load	*/
 
-#define CONFIG_BOOTCOMMAND "run boot0"
+//#define CONFIG_BOOTCOMMAND "run boot0"
+#define CONFIG_BOOTCOMMAND "ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 root.img.gz;bootm 0x48000000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -264,9 +265,9 @@
  * EEPROM
  */
 
-#define CONFIG_CMD_EEPROM
-#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
-#define CONFIG_ENV_IS_IN_EEPROM
+//#define CONFIG_CMD_EEPROM
+//#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
+//#define CONFIG_ENV_IS_IN_EEPROM
 
 #if defined(CONFIG_CMD_EEPROM)
 
@@ -475,7 +476,7 @@
  *
  */
 #define	CONFIG_CMD_MMC
-//#define CONFIG_ENV_IS_IN_MMC
+#define CONFIG_ENV_IS_IN_MMC
 
 #if defined(CONFIG_CMD_MMC)
 
@@ -613,9 +614,13 @@
     #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
 	#else
 	/* From SDFS */
-    #define CONFIG_CMD_LOGO_WALLPAPERS 	"fatload mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_BATTERY 	"fatload mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_UPDATE 		"fatload mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
+    //#define CONFIG_CMD_LOGO_WALLPAPERS 	"fatload mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
+    //#define CONFIG_CMD_LOGO_BATTERY 	"fatload mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
+    //#define CONFIG_CMD_LOGO_UPDATE 		"fatload mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
+
+    #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
 	#endif
 #endif
 
@@ -637,7 +642,23 @@
  * Debug message
  */
 //#define DEBUG							/* u-boot debug macro, nand, ethernet,... */
-//#define CONFIG_PROTOTYPE_DEBUG		/* prototype debug mode */
+
+#define CONFIG_VIP
+#define CONFIG_MLC_VIDEO
+
+#if defined(CONFIG_VIP)
+// start address must be checked by kernel booting
+// each address must be aligned 4K
+#if 0
+#define CONFIG_VIP_LU_ADDR          0x7FEF2000
+#define CONFIG_VIP_CB_ADDR          0x7FF62800
+#define CONFIG_VIP_CR_ADDR          0x7FF79000
+#else
+#define CONFIG_VIP_LU_ADDR          0x7FD28000
+#define CONFIG_VIP_CB_ADDR          0x7FD98800
+#define CONFIG_VIP_CR_ADDR          0x7FDAF000
+#endif
+#endif
 
 #endif /* __CONFIG_H__ */
 

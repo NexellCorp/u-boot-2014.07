@@ -116,7 +116,7 @@ int do_update_eeprom(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 			size = simple_strtoul(argv[3], NULL, 16);
 		}
 
-		p = (unsigned char*)mem;
+		p = (unsigned char*)((ulong)mem);
 		for (i = 0; size > i; i++ )
 			CRC = get_fcs(CRC, p[i]);
 
@@ -146,7 +146,7 @@ int do_update_eeprom(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 		int ret = 0;
 
 		mem = simple_strtoul(argv[2], NULL, 16);
-		p   = (unsigned char*)mem;
+		p   = (unsigned char*)((ulong)mem);
 
 		spi_init_f();
 
@@ -181,7 +181,7 @@ int do_update_eeprom(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 		addr = simple_strtoul(argv[3], NULL, 16);
 		size = simple_strtoul(argv[4], NULL, 16);
 
-		p = (unsigned char*)mem;
+		p = (unsigned char*)((ulong)mem);
 		offs[0] = (addr >>  16);
 		offs[1] = (addr >>   8);
 		offs[2] = (addr & 0xFF);

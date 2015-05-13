@@ -63,7 +63,9 @@ int cleanup_before_linux(void)
 	 * dcache_disable() in turn flushes the d-cache and disables MMU
 	 */
 	dcache_disable();
+#ifndef CONFIG_ARM64
 	v7_outer_cache_disable();
+#endif
 
 	/*
 	 * After D-cache is flushed and before it is disabled there may
@@ -82,6 +84,8 @@ int cleanup_before_linux(void)
 	 */
 	cpu_cache_initialization();
 
+	nxp_before_linux();
+
 	return 0;
 }
 
@@ -97,13 +101,13 @@ void enable_caches(void)
 #endif
 
 struct stack {
-	u32 irq[3];
-	u32 abt[3];
+	u32 irq[6];
+	u32 abt[6];
 } ____cacheline_aligned;
 
 static struct stack stacks;
-extern ulong _IRQ_STACK_START_IN_;
 #ifdef CONFIG_USE_IRQ
+extern ulong _IRQ_STACK_START_IN_;
 extern ulong _IRQ_STACK_START_;
 extern ulong _FIQ_STACK_START_;
 #endif
@@ -119,10 +123,11 @@ int arch_cpu_init (void)
 	 */
 	gd->mon_len = (ulong)&__bss_end - CONFIG_SYS_TEXT_BASE;
 	gd->irq_sp = (unsigned long)stack->abt;	/* Abort stack */
+	gd->start_addr_sp = CONFIG_SYS_INIT_SP_ADDR;
 
-	_IRQ_STACK_START_IN_ = gd->irq_sp + 8;
 #ifdef CONFIG_USE_IRQ
-	_IRQ_STACK_START_ = gd->irq_sp - 4;
+	_IRQ_STACK_START_IN_ = gd->irq_sp + 16;
+	_IRQ_STACK_START_ = gd->irq_sp - 8;
 	_FIQ_STACK_START_ = _IRQ_STACK_START_ - CONFIG_STACKSIZE_IRQ;
 #endif
 	flush_dcache_all();
@@ -130,12 +135,12 @@ int arch_cpu_init (void)
 	/*
 	 * cpu initialize
 	 */
-	nxp_cpu_arch_init();
-	nxp_cpu_clock_init();
-	nxp_cpu_periph_init();
+	nxp_cpu_init();
+	nxp_clk_init();
+	nxp_periph_init();
 
 #if defined (CONFIG_SMP)
-	gic_init(0, 16, (void __iomem *)0xC0009000, (void __iomem *)0xC000A000);
+	gic_dev_init(0, 16, (void __iomem *)0xC0009000, (void __iomem *)0xC000A000);
 	smp_cpu_init_f();
 	flush_dcache_all();
 #endif
@@ -147,7 +152,7 @@ int arch_cpu_init (void)
 #if defined(CONFIG_DISPLAY_CPUINFO)
 int print_cpuinfo(void)
 {
-	nxp_print_cpu_info();
+	nxp_print_cpuinfo();
 	return 0;
 }
 #endif
@@ -177,7 +182,7 @@ gd_t *global_descriptor = NULL;
 void gdt_reset(gd_t *gd, ulong text, ulong sp)
 {
 	ulong text_start, text_end, heap_end;
-	ulong bd;
+	ulong bd, pc;
 
 	/* for smp cores */
 	global_descriptor = gd;
@@ -188,7 +193,7 @@ void gdt_reset(gd_t *gd, ulong text, ulong sp)
 	gd->reloc_off = 0;
 
 	/* copy bd info  */
-	bd = (unsigned int)gd - sizeof(bd_t);
+	bd = (ulong)gd - sizeof(bd_t);
 	memcpy((void *)bd, (void *)gd->bd, sizeof(bd_t));
 
 	/* reset gd->bd */
@@ -198,8 +203,8 @@ void gdt_reset(gd_t *gd, ulong text, ulong sp)
 	gd->env_addr = (ulong)default_environment;
 
 	/* get cpu info */
-	text_start = (unsigned int)(gd->relocaddr);
-	text_end = (unsigned int)(gd->relocaddr + _bss_end_ofs);
+	text_start = (ulong)(gd->relocaddr);
+	text_end = (ulong)(gd->relocaddr + _bss_end_ofs);
 	heap_end = CONFIG_SYS_MALLOC_END;
 
 #if defined(CONFIG_SYS_GENERIC_BOARD)
@@ -209,8 +214,6 @@ void gdt_reset(gd_t *gd, ulong text, ulong sp)
 	flush_dcache_all();
 
 #if defined(CONFIG_DISPLAY_CPUINFO)
-	ulong pc;
-
 	asm("mov %0, pc":"=r" (pc));
 	asm("mov %0, sp":"=r" (sp));
 
@@ -219,8 +222,9 @@ void gdt_reset(gd_t *gd, ulong text, ulong sp)
 	printf("GLD  = 0x%08lx\n", (ulong)gd);
 	printf("GLBD = 0x%08lx\n", (ulong)gd->bd);
 	printf("SP   = 0x%08lx,0x%08lx(CURR)\n", gd->start_addr_sp, sp);
+#ifndef CONFIG_ARM64
 	printf("PC   = 0x%08lx\n", pc);
-
+#endif
 	printf("TAGS = 0x%08lx \n", gd->bd->bi_boot_params);
 	#ifdef CONFIG_MMU_ENABLE
 	ulong page_tlb =  (text_end & 0xffff0000) + 0x10000;
@@ -254,6 +258,21 @@ int arch_misc_init(void)
 void arch_preboot_os(void)
 {
 #ifdef CONFOG_BOARD_PREBOOT_OS
-	nxp_board_preboot_os();
+	nxp_preboot_os();
 #endif
 }
+
+#ifdef CONFIG_ARM64
+unsigned long do_go_exec(ulong (*entry)(int, char * const []), int argc,
+				 char * const argv[])
+{
+	dcache_disable();
+	invalidate_dcache_all();
+
+	icache_disable();
+	invalidate_icache_all();
+	icache_enable();
+
+	return entry (argc, argv);
+}
+#endif

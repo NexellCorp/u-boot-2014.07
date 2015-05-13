@@ -27,10 +27,11 @@
 #include <config.h>
 #include "clk.h"
 
-extern void	nxp_cpu_arch_init(void);
-extern void nxp_cpu_periph_init(void);
-extern void nxp_print_cpu_info(void);
-extern void nxp_board_preboot_os(void);
+extern void	nxp_cpu_init(void);
+extern void nxp_periph_init(void);
+extern void nxp_print_cpuinfo(void);
+extern void nxp_preboot_os(void);
+extern void nxp_before_linux(void);
 
 extern unsigned int logo_get_logo_bmp_addr(void);
 extern void 		lcd_set_logo_bmp_addr(unsigned int bmp_base);
@@ -53,9 +54,8 @@ enum {
 	NXP_CLOCK_PCLK,
 };
 
-extern unsigned int nxp_cpu_clock_hz(int type);
-extern void nxp_cpu_clock_init(void);
-extern void nxp_cpu_clock_print(void);
+extern void nxp_clk_init(void);
+extern void nxp_clk_print(void);
 extern struct clk *clk_get(struct device *dev, const char *id);
 extern void clk_put(struct clk *clk);
 extern unsigned long clk_get_rate(struct clk *clk);
@@ -64,7 +64,7 @@ extern int clk_set_rate(struct clk *clk, unsigned long rate);
 extern int clk_enable(struct clk *clk);
 extern void clk_disable(struct clk *clk);
 
-extern unsigned int nxp_cpu_version(void);
+extern int nxp_cpu_version(void);
 
 #endif	/* __ARCH_API_H__ */
 

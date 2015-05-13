@@ -29,9 +29,9 @@
 
 /* degug print */
 #if	(0)
-#define DBGOUT(msg...)		do { printf("timer: " msg); } while (0)
+#define pr_debug(msg...)		printf(msg)
 #else
-#define DBGOUT(msg...)		do {} while (0)
+#define pr_debug(msg...)		do {} while (0)
 #endif
 
 #if (CFG_TIMER_SYS_TICK_CH > 3)
@@ -39,8 +39,8 @@
 #endif
 
 /* global variables to save timer count */
-static ulong timestamp;
-static ulong lastdec;
+static unsigned long timestamp;
+static unsigned long lastdec;
 /* set .data section, before u-boot is relocated */
 static int	 timerinit __attribute__ ((section(".data"))) = 0;
 static DEFINE_SPINLOCK(time_lock);
@@ -48,100 +48,74 @@ static DEFINE_SPINLOCK(time_lock);
 /* macro to hw timer tick config */
 static long	TIMER_FREQ  = 1000000;
 static long	TIMER_HZ    = 1000000 / CONFIG_SYS_HZ;
-static long	TIMER_COUNT = -1UL;
+static long	TIMER_COUNT = 0xFFFFFFFF;
 
-#define	TIMER_CFG0		(0x00)
-#define	TIMER_CFG1		(0x04)
-#define	TIMER_TCON		(0x08)
-#define	TIMER_CNTB		(0x0C)
-#define	TIMER_CMPB		(0x10)
-#define	TIMER_CNTO		(0x14)
-#define	TIMER_STAT		(0x44)
+#define	REG_TCFG0				(0x00)
+#define	REG_TCFG1				(0x04)
+#define	REG_TCON				(0x08)
+#define	REG_TCNTB0				(0x0C)
+#define	REG_TCMPB0				(0x10)
+#define	REG_TCNT0				(0x14)
+#define	REG_CSTAT				(0x44)
 
-#define	TCON_AUTO		(1<<3)
-#define	TCON_INVT		(1<<2)
-#define	TCON_UP			(1<<1)
-#define	TCON_RUN		(1<<0)
-#define CFG0_CH(ch)		(ch == 0 || ch == 1 ? 0 : 8)
-#define CFG1_CH(ch)		(ch * 4)
-#define TCON_CH(ch)		(ch ? ch * 4  + 4 : 0)
-#define TINT_CH(ch)		(ch)
-#define TINT_CS_CH(ch)	(ch + 5)
-#define	TINT_CS_MASK	(0x1F)
-#define TIMER_CH_OFFS	(0xC)
+#define	TCON_BIT_AUTO			(1<<3)
+#define	TCON_BIT_INVT			(1<<2)
+#define	TCON_BIT_UP				(1<<1)
+#define	TCON_BIT_RUN			(1<<0)
+#define TCFG0_BIT_CH(ch)		(ch == 0 || ch == 1 ? 0 : 8)
+#define TCFG1_BIT_CH(ch)		(ch * 4)
+#define TCON_BIT_CH(ch)			(ch ? ch * 4  + 4 : 0)
+#define TINT_CH(ch)				(ch)
+#define TINT_CSTAT_BIT_CH(ch)	(ch + 5)
+#define	TINT_CSTAT_MASK	(0x1F)
+#define TIMER_TCNT_OFFS	(0xC)
 
 /*
  * Timer HW
  */
-#define	TIMER_BASE		IO_ADDRESS(PHY_BASEADDR_TIMER)
-#define	TIMER_READ(ch)	(TIMER_COUNT - readl(TIMER_BASE + TIMER_CNTO + (TIMER_CH_OFFS * ch)))
-
-static inline void timer_clock(int ch, int mux, int scl)
+static inline void timer_clock(void __iomem *base, int ch, int mux, int scl)
 {
-	volatile U32 val;
+	u32 val= readl(base + REG_TCFG0) & ~(0xFF   << TCFG0_BIT_CH(ch));
 
-	val  = readl(TIMER_BASE + TIMER_CFG0);
-	val &= ~(0xFF   << CFG0_CH(ch));
-	val |=  ((scl-1)<< CFG0_CH(ch));
-	writel(val, TIMER_BASE + TIMER_CFG0);
-
-	val  = readl(TIMER_BASE + TIMER_CFG1);
-	val &= ~(0xF << CFG1_CH(ch));
-	val |=  (mux << CFG1_CH(ch));
-	writel(val, TIMER_BASE + TIMER_CFG1);
+	writel(val | ((scl-1)<< TCFG0_BIT_CH(ch)), base + REG_TCFG0);
+	val = readl(base + REG_TCFG1) & ~(0xF << TCFG1_BIT_CH(ch));
+	writel(val | (mux << TCFG1_BIT_CH(ch)), base + REG_TCFG1);
 }
 
-static inline void timer_count(int ch, unsigned int cnt)
+static inline void timer_count(void __iomem *base, int ch, unsigned int cnt)
 {
-	writel((cnt-1), TIMER_BASE + TIMER_CNTB + (TIMER_CH_OFFS * ch));
-	writel((cnt-1), TIMER_BASE + TIMER_CMPB + (TIMER_CH_OFFS * ch));
+	writel((cnt-1), base + REG_TCNTB0 + (TIMER_TCNT_OFFS * ch));
+	writel((cnt-1), base + REG_TCMPB0 + (TIMER_TCNT_OFFS * ch));
 }
 
-static inline void timer_irq_clear(int ch)
+static inline void timer_start(void __iomem *base, int ch)
 {
-	volatile U32 val;
-	val  = readl(TIMER_BASE + TIMER_STAT);
-	val &= ~(TINT_CS_MASK<<5);
-	val |= (0x1 << TINT_CS_CH(ch));
-	writel(val, TIMER_BASE + TIMER_STAT);
-}
-
-/*------------------------------------------------------------------------------
- * u-boot timer interface
- */
-void timer_start(int ch)
-{
-	volatile U32 val;
 	int on = 0;
+	u32 val = readl(base + REG_CSTAT) & ~(TINT_CSTAT_MASK<<5 | 0x1 << ch);
 
-	val  = readl(TIMER_BASE + TIMER_STAT);
-	val &= ~(TINT_CS_MASK<<5 | 0x1 << TINT_CH(ch));
-	val |=  (0x1 << TINT_CS_CH(ch) | on << TINT_CH(ch));
-	writel(val, TIMER_BASE + TIMER_STAT);
+	writel(val| (0x1 << TINT_CSTAT_BIT_CH(ch) | on << ch), base + REG_CSTAT);
+	val = readl(base + REG_TCON) & ~(0xE << TCON_BIT_CH(ch));
+	writel(val | (TCON_BIT_UP << TCON_BIT_CH(ch)), base + REG_TCON);
 
-	val = readl(TIMER_BASE + TIMER_TCON);
-	val &= ~(0xE << TCON_CH(ch));
-	val |=  (TCON_UP << TCON_CH(ch));
-	writel(val, TIMER_BASE + TIMER_TCON);
-
-	val &= ~(TCON_UP << TCON_CH(ch));
-	val |=  ((TCON_AUTO | TCON_RUN)  << TCON_CH(ch));
-	writel(val, TIMER_BASE + TIMER_TCON);
+	val &= ~(TCON_BIT_UP << TCON_BIT_CH(ch));
+	val |= ((TCON_BIT_AUTO | TCON_BIT_RUN)  << TCON_BIT_CH(ch));
+	writel(val, base + REG_TCON);
+	dmb();
 }
 
-void timer_stop(int ch)
+static inline void timer_stop(void __iomem *base, int ch)
 {
-	volatile U32 val;
 	int on = 0;
+	u32 val = readl(base + REG_CSTAT) & ~(TINT_CSTAT_MASK<<5 | 0x1 << ch);
 
-	val  = readl(TIMER_BASE + TIMER_STAT);
-	val &= ~(TINT_CS_MASK<<5 | 0x1 << TINT_CH(ch));
-	val |=  (0x1 << TINT_CS_CH(ch) | on << TINT_CH(ch));
-	writel(val, TIMER_BASE + TIMER_STAT);
+	writel(val | (0x1 << TINT_CSTAT_BIT_CH(ch) | on << ch), base + REG_CSTAT);
+	val = readl(base + REG_TCON) & ~(TCON_BIT_RUN << TCON_BIT_CH(ch));
+	writel(val, base + REG_TCON);
+}
 
-	val  = readl(TIMER_BASE + TIMER_TCON);
-	val &= ~(TCON_RUN << TCON_CH(ch));
-	writel(val, TIMER_BASE + TIMER_TCON);
+static inline unsigned long timer_read(void __iomem *base, int ch)
+{
+	return (TIMER_COUNT - readl(base + REG_TCNT0 + (TIMER_TCNT_OFFS * ch)));
 }
 
 int timer_init(void)
@@ -154,6 +128,7 @@ int timer_init(void)
 	int tcnt, tscl = 0, tmux = 0;
 	int mux = 0, scl = 0;
 	int version = nxp_cpu_version();
+	void __iomem *base = (void __iomem *)IO_ADDRESS(PHY_BASEADDR_TIMER);
 
 	if (timerinit)
 		return 0;
@@ -189,16 +164,16 @@ int timer_init(void)
 
    	TIMER_FREQ = tcnt;	/* Timer Count := 1 Mhz counting */
    	TIMER_HZ = TIMER_FREQ / CONFIG_SYS_HZ;
-	tcnt = TIMER_COUNT == -1UL ? TIMER_COUNT+1 : tcnt;
+	tcnt = TIMER_COUNT == 0xFFFFFFFF ? TIMER_COUNT + 1 : tcnt;
 
 	/* reset control: Low active ___|---   */
 	NX_RSTCON_SetRST(RESETINDEX_OF_TIMER_MODULE_PRESETn, RSTCON_ASSERT);
 	NX_RSTCON_SetRST(RESETINDEX_OF_TIMER_MODULE_PRESETn, RSTCON_NEGATE);
 
-	timer_stop (ch);
-	timer_clock(ch, tmux, tscl);
-	timer_count(ch, tcnt);
-	timer_start(ch);
+	timer_stop(base, ch);
+	timer_clock(base, ch, tmux, tscl);
+	timer_count(base, ch, tcnt);
+	timer_start(base, ch);
 
 	reset_timer_masked();
 	timerinit = 1;
@@ -211,33 +186,36 @@ void reset_timer(void)
 	reset_timer_masked();
 }
 
-ulong get_timer(ulong base)
+unsigned long get_timer(unsigned long base)
 {
-	ulong time = get_timer_masked();
-	ulong hz = TIMER_HZ;
+	unsigned long time = get_timer_masked();
+	unsigned long hz = TIMER_HZ;
 	return (time/hz - base);
 }
 
-void set_timer(ulong t)
+void set_timer(unsigned long t)
 {
-	timestamp = (ulong)t;
+	timestamp = (unsigned long)t;
 }
 
 void reset_timer_masked(void)
 {
+	void __iomem *base = (void __iomem *)IO_ADDRESS(PHY_BASEADDR_TIMER);
 	int ch = CFG_TIMER_SYS_TICK_CH;
 
 	spin_lock(&time_lock);
 	/* reset time */
-	lastdec = TIMER_READ(ch);  	/* capure current decrementer value time */
+	lastdec = timer_read(base, ch);  	/* capure current decrementer value time */
 	timestamp = 0;	       		/* start "advancing" time stamp from 0 */
 	spin_unlock(&time_lock);
 }
 
-ulong get_timer_masked(void)
+unsigned long get_timer_masked(void)
 {
+	void __iomem *base = (void __iomem *)IO_ADDRESS(PHY_BASEADDR_TIMER);
 	int ch = CFG_TIMER_SYS_TICK_CH;
-	ulong now = TIMER_READ(ch);		/* current tick value */
+
+	unsigned long now = timer_read(base, ch);		/* current tick value */
 
 	if (now >= lastdec) {			/* normal mode (non roll) */
 		timestamp += now - lastdec; /* move stamp fordward with absoulte diff ticks */
@@ -252,16 +230,16 @@ ulong get_timer_masked(void)
 	/* save last */
 	lastdec = now;
 
-	DBGOUT("now=%ld, last=%ld, timestamp=%ld\n", now, lastdec, timestamp);
-	return (ulong)timestamp;
+	pr_debug("now=%lu, last=%lu, timestamp=%lu\n", now, lastdec, timestamp);
+	return (unsigned long)timestamp;
 }
 
 void __udelay(unsigned long usec)
 {
-	ulong tmo, tmp;
-	DBGOUT("+udelay=%ld\n", usec);
+	unsigned long tmo, tmp;
+	pr_debug("+udelay=%ld\n", usec);
 
-	if (! timerinit)
+	if (!timerinit)
 		timer_init();
 
 	if (usec >= 1000) {			// if "big" number, spread normalization to seconds //
@@ -274,27 +252,27 @@ void __udelay(unsigned long usec)
 	}
 
 	tmp = get_timer_masked ();			// get current timestamp //
-	DBGOUT("A. tmo=%ld, tmp=%ld\n", tmo, tmp);
+	pr_debug("A. tmo=%ld, tmp=%ld\n", tmo, tmp);
 
 	if ( tmp > (tmo + tmp + 1) )	// if setting this fordward will roll time stamp //
 		reset_timer_masked();		// reset "advancing" timestamp to 0, set lastdec value //
 	else
 		tmo += tmp;					// else, set advancing stamp wake up time //
 
-	DBGOUT("B. tmo=%ld, tmp=%ld\n", tmo, tmp);
+	pr_debug("B. tmo=%ld, tmp=%ld\n", tmo, tmp);
 
 	while (tmo > get_timer_masked ())// loop till event //
 	{
 		//*NOP*/;
 	}
 
-	DBGOUT("-udelay=%ld\n", usec);
+	pr_debug("-udelay=%ld\n", usec);
 	return;
 }
 
 void udelay_masked(unsigned long usec)
 {
-	ulong tmo, endtime;
+	unsigned long tmo, endtime;
 	signed long diff;
 
 	if (usec >= 1000) {		/* if "big" number, spread normalization to seconds */
@@ -309,7 +287,7 @@ void udelay_masked(unsigned long usec)
 	endtime = get_timer_masked() + tmo;
 
 	do {
-		ulong now = get_timer_masked();
+		unsigned long now = get_timer_masked();
 		diff = endtime - now;
 	} while (diff >= 0);
 }
@@ -319,8 +297,8 @@ unsigned long long get_ticks(void)
 	return get_timer_masked();
 }
 
-ulong get_tbclk(void)
+unsigned long get_tbclk(void)
 {
-	ulong  tbclk = TIMER_FREQ;
+	unsigned long  tbclk = TIMER_FREQ;
 	return tbclk;
 }

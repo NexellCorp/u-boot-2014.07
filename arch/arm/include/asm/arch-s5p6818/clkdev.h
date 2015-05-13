@@ -2,7 +2,7 @@
 #define __ASM_MACH_CLKDEV_H
 
 struct clk {
-	unsigned int rate;
+	unsigned long rate;
 };
 
 

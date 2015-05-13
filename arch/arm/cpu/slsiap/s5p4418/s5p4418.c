@@ -273,7 +273,7 @@ static void cpu_bus_init(void)
 /*------------------------------------------------------------------------------
  *	CPU initialize
  */
-void nxp_cpu_periph_init(void)
+void nxp_periph_init(void)
 {
 	#if		(CFG_UART_DEBUG_CH == 0)
 	int id = RESET_ID_UART0;
@@ -307,7 +307,7 @@ void nxp_cpu_periph_init(void)
 	clk_enable(clk);
 }
 
-void nxp_cpu_arch_init(void)
+void nxp_cpu_init(void)
 {
 	cpu_base_init();
 	cpu_bus_init();
@@ -328,8 +328,8 @@ unsigned int nxp_cpu_version(void)
 	return version;
 }
 
-void nxp_print_cpu_info(void)
+void nxp_print_cpuinfo(void)
 {
-	nxp_cpu_clock_print();
+	nxp_clk_print();
 }
 

@@ -23,8 +23,8 @@
  * MA 02111-1307 USA
  */
 
-#include <asm/io.h>
 #include <common.h>
+#include <asm/io.h>
 
 #include <platform.h>
 #include <clk.h>
@@ -57,7 +57,7 @@ void otg_clk_disable(void)
 
 void otg_phy_init(void)
 {
-    u32 addr;
+    ulong addr;
 
     // 1. Release otg common reset
     addr = (SOC_VA_RSTCON + 0x04);
@@ -97,7 +97,7 @@ void otg_phy_init(void)
 
 void otg_phy_off(void)
 {
-    u32 addr;
+    ulong addr;
 
     addr = (SOC_VA_TIEOFF + 0x34);
 

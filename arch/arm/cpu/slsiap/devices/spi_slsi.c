@@ -161,7 +161,7 @@ static void  dump_reg(int ch)
 	printf("Configure    : %08x \n", *reg);
 	printf("control      : %08x \n", *(reg+1));
 	printf("control      : %08x \n", *(reg+2));
-#if 1 
+#if 1
 	printf("CS           : %08x \n", *(reg+3));
 	printf("int EN       : %08x \n", *(reg+4));
 	printf("status       : %08x \n", *(reg+5));
@@ -217,15 +217,16 @@ static u32 spi_rate(u32 rate, u16 cpsdvsr, u16 scr)
 
 void spi_init_f (void)
 {
-	int ModuleIndex =0;
-
 	struct clk *clk = NULL;
 	char name[10]= {0, };
 	unsigned long hz  = 30* 1000 * 1000;
-	unsigned long rate = 0;
+	int ModuleIndex =0;
+
 	DBGOUT("%s \n ",__func__);
+
 	flush_dcache_all();
 	NX_SSP_Initialize();
+
 	for(ModuleIndex = 0 ; ModuleIndex < NX_SSP_GetNumberOfModule();ModuleIndex++ )
 	{
 		if(_spi_param[ModuleIndex].clkgenEnable == 1 )
@@ -241,11 +242,11 @@ void spi_init_f (void)
 
 		    /* RSTCON Control */
 
-			NX_SSP_SetBaseAddress( ModuleIndex, (U32)NX_SSP_GetPhysicalAddress(ModuleIndex) );
+			NX_SSP_SetBaseAddress(ModuleIndex, (void*)IO_ADDRESS(NX_SSP_GetPhysicalAddress(ModuleIndex)));
 			sprintf(name,"nxp-spi%d",ModuleIndex);
 			clk= clk_get(NULL, name);
-			rate = clk_set_rate(clk,hz);
-			rate = clk_get_rate(clk);
+			clk_set_rate(clk, hz);
+			clk_get_rate(clk);
 			clk_enable(clk);;
 
 		    NX_RSTCON_SetRST(NX_SSP_GetResetNumber( ModuleIndex, 0 ), RSTCON_ASSERT);
@@ -254,18 +255,18 @@ void spi_init_f (void)
 			NX_SSP_SetEnable( ModuleIndex, CFALSE ); 			// SSP operation disable
 			NX_SSP_SetHIGHSPEEDMode( ModuleIndex, 1);
 			NX_SSP_SetSPIFormat( ModuleIndex, 0);
-			
+
 			NX_SSP_SetBitWidth( ModuleIndex, 8 ); 				// 8 bit
 			NX_SSP_SetSlaveMode( ModuleIndex, CFALSE ); 		// master mode
 
 			NX_SSP_SetNSSOUT(ModuleIndex, 1);
 			NX_SSP_SetCSMode(ModuleIndex, 1);
-			
+
 			NX_SSP_SetTXRDYLVL( ModuleIndex, 1 );			// Transmit FIFO TriggerLevel
 			NX_SSP_SetRXRDYLVL( ModuleIndex, 1 );
 
-			NX_SSP_SetDMAReceiveMode( ModuleIndex, CFALSE );				// Receive DMA Mode 
-			NX_SSP_SetDMATransmitMode( ModuleIndex, CFALSE );		
+			NX_SSP_SetDMAReceiveMode( ModuleIndex, CFALSE );				// Receive DMA Mode
+			NX_SSP_SetDMATransmitMode( ModuleIndex, CFALSE );
 			NX_SSP_SetInterruptEnableAll( ModuleIndex, CFALSE );
 
 		}
@@ -285,14 +286,18 @@ ssize_t spi_read  (uchar *addr, int alen, uchar *buffer, int len)
 	U32 dummycount=0;
 	U32 index = 0,i=0;
 	volatile U8 tmp;
+
 	DBGOUT(" %s moudele = %d\n", __func__, device);
+
 	spi_init_f();
-	if(alen > MAX_ADDR_LEN)
-	{
+
+	if(alen > MAX_ADDR_LEN)	{
 		SPIMSG("fail : addrlen small than %d \n",MAX_ADDR_LEN);
 		return -1;
 	}
+
 	dummycount = alen;
+
 	//udelay(10);
 	/* cmd and addr send */
 	if( _spi_param[device].spi_type == SPI_TYPE_EEPROM )	//if EEPROM send CMD_SPI_READ
@@ -301,25 +306,19 @@ ssize_t spi_read  (uchar *addr, int alen, uchar *buffer, int len)
 		dummycount += 1;
 	}
 
+	//send addr data
 	for(i = 0 ; i < alen; i++)
-	{
-		NX_SSP_PutByte(device,addr[i]);	//send addr data
-	}
+		NX_SSP_PutByte(device,addr[i]);
 
 	CS_ON();
 	NX_SSP_SetEnable( device, CTRUE );
 
-	//len = lencnt;
-int cnt = 0;
+	while (len + dummycount) {
 
-	while( len + dummycount)
-	{
-		
 		if(!(NX_SSP_IsTxFIFOFull(device)))	// check receive buffer is not empty
 		{
-			NX_SSP_PutByte(device, 0); //send dummy data for read			// send dummy data for receive read data.
-			while(NX_SSP_IsRxFIFOEmpty(device)) {
-			}
+			NX_SSP_PutByte(device, 0); //send dummy data for read, send dummy data for receive read data.
+			while(NX_SSP_IsRxFIFOEmpty(device)) { }
 
 			if(dummycount != 0)
 			{
@@ -333,10 +332,8 @@ int cnt = 0;
 			}
 		}
 	}
- cnt = 0;
-	while(!(NX_SSP_IsTxFIFOEmpty(device)))
-	{
-	}// wait until tx buffer
+
+	while(!(NX_SSP_IsTxFIFOEmpty(device))) { }// wait until tx buffer
 
 	//while(!(NX_SSP_IsTxFIFOEmpty(device)));		// wait until tx buffer
 
@@ -421,19 +418,17 @@ static U8 flash_page_program(U32 dwFlashAddr, int alen, uchar * databuffer, U32 
 	volatile U8 temp ,i,j=alen;
 	U32 index = 0;
 	u8 addr[4] ={0 , };
-	
-	for(i = 0 ; i < alen; i++)
-	{
+
+	for(i = 0 ; i < alen; i++) {
 		addr[i] = dwFlashAddr >> (( j - 1)*8 ) & 0xff;
 		j--;
 	}
 
-	if(alen > CONFIG_EEPROM_WRITE_PAGE_SIZE)
-	{
+	if (alen > CONFIG_EEPROM_WRITE_PAGE_SIZE) {
 		SPIMSG("fail : alen small  %d \n",CONFIG_EEPROM_WRITE_PAGE_SIZE);
 		return -1;
 	}
-	if(_spi_param[device].spi_type != SPI_TYPE_EEPROM )	//if EEPROM send CMD_SPI_READ
+	if(_spi_param[device].spi_type != SPI_TYPE_EEPROM)	//if EEPROM send CMD_SPI_READ
 	{
 		SPIMSG("fail : device type not EEPROM \n");
 		return -1;

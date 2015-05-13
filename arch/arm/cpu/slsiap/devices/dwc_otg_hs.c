@@ -546,12 +546,12 @@ static void s3c_usb_verify_checksum(void)
 	printf("Checksum is being calculated.");
 
 	/* checksum calculation */
-	cs_start = (u8*)otg.dn_addr;
-	cs_end = (u8*)(otg.dn_addr+otg.dn_filesize-10);
+	cs_start = (u8*)(ulong)(otg.dn_addr);
+	cs_end = (u8*)((ulong)(otg.dn_addr+otg.dn_filesize-10));
 	checkSum = 0;
 	while(cs_start < cs_end) {
 		checkSum += *cs_start++;
-		if(((u32)cs_start&0xfffff)==0) printf(".");
+		if((((u32)(ulong)(cs_start))&0xfffff)==0) printf(".");
 	}
 
 // ghcstop fix
@@ -1260,7 +1260,7 @@ static void s3c_usb_int_bulkin(void)
 	DBG_BULK0("Bulk In Function\n");
 
 	bulkin_buf = (u8*)otg.up_ptr;
-	remain_cnt = otg.up_size- ((u32)otg.up_ptr - otg.up_addr);
+	remain_cnt = otg.up_size- ((u32)((ulong)otg.up_ptr) - otg.up_addr);
 	DBG_BULK1("bulkin_buf = 0x%x,remain_cnt = 0x%x \n", bulkin_buf, remain_cnt);
 
 	if (remain_cnt > otg.bulkin_max_pktsize) {
@@ -1313,7 +1313,7 @@ static void s3c_usb_upload_start(void)
 			(*((u8 *)(tmp_buf+6))<<16)+
 			(*((u8 *)(tmp_buf+7))<<24);
 
-		otg.up_ptr=(u8 *)otg.up_addr;
+		otg.up_ptr=(u8 *)(ulong)otg.up_addr;
 		DBG_BULK1("UploadAddress : 0x%x, UploadSize: %d\n",
 			otg.up_addr, otg.up_size);
 
@@ -1339,7 +1339,7 @@ static void s3c_usb_upload_start(void)
 			writel(INT_RESUME|INT_OUT_EP|INT_IN_EP| INT_ENUMDONE|
 				INT_RESET|INT_SUSPEND, S5P_OTG_GINTMSK);
 
-			writel((u32)otg.up_ptr, S5P_OTG_DIEPDMA_IN);
+			writel((u32)(ulong)otg.up_ptr, S5P_OTG_DIEPDMA_IN);
 
 			pktcnt = (u32)(otg.up_size/otg.bulkin_max_pktsize);
 			remainder = (u32)(otg.up_size%otg.bulkin_max_pktsize);
@@ -1379,7 +1379,7 @@ static void s3c_usb_download_start(u32 fifo_cnt_byte)
 		(*((u8 *)(tmp_buf+6))<<16)+
 		(*((u8 *)(tmp_buf+7))<<24);
 
-	otg.dn_ptr=(u8 *)otg.dn_addr;
+	otg.dn_ptr=(u8 *)(ulong)otg.dn_addr;
 	DBG_BULK1("downloadAddress : 0x%x, downloadFileSize: %x\n",
 		otg.dn_addr, otg.dn_filesize);
 
@@ -1402,7 +1402,7 @@ static void s3c_usb_download_start(u32 fifo_cnt_byte)
 			INT_RESET|INT_SUSPEND, S5P_OTG_GINTMSK); /*gint unmask */
 		writel(MODE_DMA|BURST_INCR4|GBL_INT_UNMASK,
 			S5P_OTG_GAHBCFG);
-		writel((u32)otg.dn_ptr, S5P_OTG_DOEPDMA_OUT);
+		writel((u32)(ulong)otg.dn_ptr, S5P_OTG_DOEPDMA_OUT);
 		pkt_cnt = (u32)(otg.dn_filesize-otg.bulkout_max_pktsize)/otg.bulkout_max_pktsize;
 		remain_cnt = (u32)((otg.dn_filesize-otg.bulkout_max_pktsize)%otg.bulkout_max_pktsize);
 		if(remain_cnt != 0) {
@@ -1438,7 +1438,7 @@ static void s3c_usb_download_continue(u32 fifo_cnt_byte)
 			S5P_OTG_DOEPCTL_OUT);
 
 		/* USB format : addr(4)+size(4)+data(n)+cs(2) */
-		if (((u32)otg.dn_ptr - otg.dn_addr) >= (otg.dn_filesize - 8)) {
+		if (((u32)(ulong)otg.dn_ptr - otg.dn_addr) >= (otg.dn_filesize - 8)) {
 			printf("Download Done!! Download Address: 0x%x, Download Filesize:0x%x\n",
 				otg.dn_addr, (otg.dn_filesize-10));
 
@@ -1473,8 +1473,8 @@ static void s3c_usb_dma_in_done(void)
 
 	DBG_BULK0("DMA IN : Transfer Done\n");
 
-	otg.up_ptr = (u8 *)readl(S5P_OTG_DIEPDMA_IN);
-	remain_cnt = otg.up_size- ((u32)otg.up_ptr - otg.up_addr);
+	otg.up_ptr = (u8 *)(ulong)readl(S5P_OTG_DIEPDMA_IN);
+	remain_cnt = otg.up_size- ((u32)(ulong)otg.up_ptr - otg.up_addr);
 
 	if (remain_cnt>0) {
 		u32 pktcnt, remainder;
@@ -1505,9 +1505,9 @@ static void s3c_usb_dma_out_done(void)
 
 	DBG_BULK1("DMA OUT : Transfer Done\n");
 
-	otg.dn_ptr = (u8 *)readl(S5P_OTG_DOEPDMA_OUT);
+	otg.dn_ptr = (u8 *)(ulong)readl(S5P_OTG_DOEPDMA_OUT);
 
-	remain_cnt = otg.dn_filesize - ((u32)otg.dn_ptr - otg.dn_addr + 8);
+	remain_cnt = otg.dn_filesize - ((u32)(ulong)otg.dn_ptr - otg.dn_addr + 8);
 
 	if (remain_cnt>0) {
 		u32 pktcnt, remainder;
@@ -1541,9 +1541,9 @@ static void s3c_usb_set_all_outep_nak(void)
 
 	for(i=0;i<16;i++)
 	{
-		tmp = readl(S5P_OTG_DOEPCTL0+0x20*i);
+		tmp = readl((ulong)(S5P_OTG_DOEPCTL0+0x20*i));
 		tmp |= DEPCTL_SNAK;
-		writel(tmp, S5P_OTG_DOEPCTL0+0x20*i);
+		writel(tmp, (ulong)(S5P_OTG_DOEPCTL0+0x20*i));
 	}
 }
 
@@ -1554,9 +1554,9 @@ static void s3c_usb_clear_all_outep_nak(void)
 
 	for(i=0;i<16;i++)
 	{
-		tmp = readl(S5P_OTG_DOEPCTL0+0x20*i);
+		tmp = readl((ulong)(S5P_OTG_DOEPCTL0+0x20*i));
 		tmp |= (DEPCTL_EPENA|DEPCTL_CNAK);
-		writel(tmp, S5P_OTG_DOEPCTL0+0x20*i);
+		writel(tmp, (ulong)(S5P_OTG_DOEPCTL0+0x20*i));
 	}
 }
 

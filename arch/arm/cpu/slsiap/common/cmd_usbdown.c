@@ -416,7 +416,7 @@ static void nx_usb_int_bulkin(void)
 	NX_DEBUG_MSG("Bulk In Function\n");
 
 	bulkin_buf = (U8*)pUSBBootStatus->up_ptr;
-	remain_cnt = pUSBBootStatus->up_size - ((U32)pUSBBootStatus->up_ptr - pUSBBootStatus->up_addr);
+	remain_cnt = pUSBBootStatus->up_size - ((U32)((ulong)(pUSBBootStatus->up_ptr - pUSBBootStatus->up_addr)));
 
 	if (remain_cnt > pUSBBootStatus->bulkin_max_pktsize) {
 		pUOReg->DCSR.DEPIR[BULK_IN_EP].DIEPTSIZ = (1<<19)|(pUSBBootStatus->bulkin_max_pktsize<<0);
@@ -718,18 +718,22 @@ CBOOL iUSBBOOT(void)
 	pTieoffreg->TIEOFFREG[14] |= 3<<8;			// 8: enable, 9:phy word interface (0: 8 bit, 1: 16 bit)
 	pTieoffreg->TIEOFFREG[13] = 0xA3006C00;		// VBUSVLDEXT=1,VBUSVLDEXTSEL=1,POR=0
 	pTieoffreg->TIEOFFREG[13] = 0xA3006C80;		// POR_ENB=1
-
+	dmb();
 	udelay(40);		// 40us delay need.
 
 	pTieoffreg->TIEOFFREG[13] = 0xA3006C88;		// nUtmiResetSync : 00000001
+	dmb();
 	udelay(10);	// 10 clock need
 	pTieoffreg->TIEOFFREG[13] = 0xA3006C8C;		// nResetSync : 00000001
+	dmb();
 	udelay(10);	// 10 clock need
 
 	/* usb core soft reset */
 	pUOReg->GCSR.GRSTCTL = CORE_SOFT_RESET;
-	while(!(pUOReg->GCSR.GRSTCTL & AHB_MASTER_IDLE));
+	dmb();
 
+	while(!(pUOReg->GCSR.GRSTCTL & AHB_MASTER_IDLE));
+	dmb();
 
 	/* init_core */
 	pUOReg->GCSR.GAHBCFG = PTXFE_HALF|NPTXFE_HALF|MODE_SLAVE|BURST_SINGLE|GBL_INT_UNMASK;
@@ -829,7 +833,7 @@ int do_usbdown(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
         goto usage;
 
     printf("Download Address %x ",addr);
-    pUSBBootStatus->RxBuffAddr = (U8*)addr;
+    pUSBBootStatus->RxBuffAddr = (U8*)((ulong)addr);
     iUSBBOOT();
 	flush_dcache_all();
 	printf("Download complete \n");

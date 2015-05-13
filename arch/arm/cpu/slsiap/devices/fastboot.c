@@ -331,7 +331,6 @@ int fastboot_poll(void)
 	//printf("DEBUG: %s is called.\n", __FUNCTION__);
 	/* No activity */
 	int ret = FASTBOOT_INACTIVE;
-
 	u32 intrusb;
 
 	/* Look at the interrupt registers */

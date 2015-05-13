@@ -89,8 +89,8 @@ static inline void pwm_clock(int ch, int mux, int scl)
 
 static inline void pwm_count(int ch, unsigned int cnt, unsigned int cmp)
 {
-	writel((cnt-1), PWM_BASE + PWM_CNTB + (PWM_CH_OFFS * ch));
-	writel((cmp-1), PWM_BASE + PWM_CMPB + (PWM_CH_OFFS * ch));
+	writel((cnt-1), ((ulong)(PWM_BASE + PWM_CNTB + (PWM_CH_OFFS * ch))));
+	writel((cmp-1), ((ulong)(PWM_BASE + PWM_CMPB + (PWM_CH_OFFS * ch))));
 }
 
 static inline void pwm_start(int ch, int irqon)

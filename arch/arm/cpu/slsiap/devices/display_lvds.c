@@ -31,12 +31,12 @@ static void disp_lvds_init(void)
 	int clkid = DISP_CLOCK_LVDS;
 
 	/* BASE : TOP_CLKGEN */
-	NX_DISPTOP_CLKGEN_SetBaseAddress(clkid, (U32)IO_ADDRESS(NX_DISPTOP_CLKGEN_GetPhysicalAddress(clkid)));
+	NX_DISPTOP_CLKGEN_SetBaseAddress(clkid, (void*)IO_ADDRESS(NX_DISPTOP_CLKGEN_GetPhysicalAddress(clkid)));
 
 	/* BASE : LVDS */
 	NX_LVDS_Initialize();
 	for (index = 0; NX_LVDS_GetNumberOfModule() > index; index++)
-		NX_LVDS_SetBaseAddress(index, (U32)IO_ADDRESS(NX_LVDS_GetPhysicalAddress(index)));
+		NX_LVDS_SetBaseAddress(index, (void*)IO_ADDRESS(NX_LVDS_GetPhysicalAddress(index)));
 
 	/* CLOCK: top CLKGEN not use BCLK */
 	NX_DISPTOP_CLKGEN_SetClockPClkMode(clkid, NX_PCLKMODE_ALWAYS);

@@ -1512,7 +1512,6 @@ static int fboot_cmd_download(const char *cmd, f_cmd_inf *inf, struct f_trans_st
 	fst->error = 0;
 	fst->down_percent = -1;
 
-	len = (fst->image_size & ~0x3) + 4;
 	clear += fst->image_size;
 	clear &= ~0x3;
 

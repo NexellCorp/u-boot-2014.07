@@ -60,9 +60,9 @@ int ehci_hcd_init(int index, enum usb_init_type init,
 	//reset
 	//1. ohci
 	writel(readl(0xc0011014) & ~(1<<18), 0xc0011014);
-	//2. auxwell	
+	//2. auxwell
 	writel(readl(0xc0011014) & ~(1<<19), 0xc0011014);
-	//3. ahb	
+	//3. ahb
 	writel(readl(0xc0011014) & ~(1<<17), 0xc0011014);
 	//4. hsic utmi
 	writel(readl(0xc0011014) & ~(1<<22), 0xc0011014);
@@ -162,7 +162,7 @@ int ehci_hcd_init(int index, enum usb_init_type init,
 	writel(readl(0xc0011014) |  (1<<20), 0xc0011014);
 	udelay(2);
 
-#if defined( CONFIG_USB_EHCI_MODE )	
+#if defined( CONFIG_USB_EHCI_MODE )
 	// Release ehci utmi reset
 	writel(readl(0xc0011014) |  (1<<21), 0xc0011014);
 	udelay(2);
@@ -177,16 +177,16 @@ int ehci_hcd_init(int index, enum usb_init_type init,
 
 	//Release ahb reset of EHCI
 	writel(readl(0xc0011014) |  (1<<17), 0xc0011014);
-	
+
 	//Release ahb reset of OHCI
 	writel(readl(0xc0011014) |  (1<<18), 0xc0011014);
-	
+
 	//Release auxwell reset of EHCI, OHCI
 	writel(readl(0xc0011014) |  (1<<19), 0xc0011014);
 
 
 	// set Base Address
-	NX_USB20HOST_SetBaseAddress( 0, NX_USB20HOST_GetPhysicalAddress(0) );
+	NX_USB20HOST_SetBaseAddress( 0, (void*)NX_USB20HOST_GetPhysicalAddress(0) );
 
 	*hccr	= ( struct ehci_hccr * )( NX_USB20HOST_GetBaseAddress(0) );
 	*hcor	= ( struct ehci_hcor * )( NX_USB20HOST_GetBaseAddress(0) + 0x10 );

@@ -24,14 +24,12 @@
 # =========================================================================
 #	Cross compiler
 # =========================================================================
-#CROSS_COMPILE := aarch64-linux-android-
+ifneq ($(CONFIG_ARM64), y)
 CROSS_COMPILE := arm-eabi-
-#ifneq ($(CONFIG_ARM64), y)
-#CROSS_COMPILE := arm-eabi-
-#else
-#CROSS_COMPILE := aarch64-linux-android-
+else
+CROSS_COMPILE := aarch64-linux-android-
 #CROSS_COMPILE := aarch64-linux-gnu-
-#endif
+endif
 
 # =========================================================================
 #	Build options

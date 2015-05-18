@@ -22,15 +22,15 @@
 #
 
 ifeq ($(CONFIG_ARM64), y)
-PLATFORM_RELFLAGS += -ffixed-x18 -Wno-unused-but-set-variable
+PLATFORM_RELFLAGS += -ffixed-x18
 # to link R_AARCH64_ABS64 field, remove "-pie"
 LDFLAGS_u-boot :=
 else
-PLATFORM_RELFLAGS += -mcpu=cortex-a9
+PLATFORM_RELFLAGS += -march=armv8-a
 endif
 
 # remove "uses variable-size enums yet the output is to use 32-bit enums..."
-PLATFORM_RELFLAGS += -fno-short-enums -fstrict-aliasing
+PLATFORM_RELFLAGS += -fno-short-enums -fstrict-aliasing -Wno-unused-but-set-variable
 
 # If armv7-a is not supported by GCC fall-back to armv5, which is
 # supported by more tool-chains
@@ -39,7 +39,7 @@ PF_CPPFLAGS_ARMV8 := $(call cc-option, -march=armv8-a)
 GCCMACHINE =  $(shell $(CC) -dumpmachine | cut -f1 -d-)
 GCCVERSION =  $(shell $(CC) -dumpversion | cut -f2 -d.)
 
-ifeq "$(GCCMACHINE)" "arm"
+ifeq  "$(GCCMACHINE)" "arm"
 ifneq "$(GCCVERSION)" "8"
 PLATFORM_CPPFLAGS += $(PF_CPPFLAGS_ARMV8)
 endif

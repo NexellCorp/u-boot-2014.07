@@ -247,9 +247,9 @@ int do_goImage (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	disable_mmu();
 #endif
 
+#ifdef CONFIG_ARM64
 	cleanup_before_linux();
 
-#ifdef CONFIG_ARM64
 	entry = (void(*)(void *, void *, void *, void *))addr;
 	do_nonsec_virt_switch();
 	entry((void*)addr2, NULL, NULL, NULL);

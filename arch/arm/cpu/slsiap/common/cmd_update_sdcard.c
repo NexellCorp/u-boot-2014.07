@@ -377,7 +377,7 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 		goto ret_error;
 	}
 
-	memset(f_sdcard_part, 0x0, sizeof(f_sdcard_part)*UPDATE_SDCARD_DEV_PART_MAX);
+	memset(f_sdcard_part, 0x0, sizeof(f_sdcard_part));
 
 	len_read = update_sd_do_load(cmdtp, flag, argc, argv, FS_TYPE_FAT, 16);
 

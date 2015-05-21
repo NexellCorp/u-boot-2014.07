@@ -21,14 +21,6 @@
 # MA 02111-1307 USA
 #
 
-ifeq ($(CONFIG_ARM64), y)
-PLATFORM_RELFLAGS += -ffixed-x18
-# to link R_AARCH64_ABS64 field, remove "-pie"
-LDFLAGS_u-boot :=
-else
-PLATFORM_RELFLAGS += -march=armv8-a
-endif
-
 # remove "uses variable-size enums yet the output is to use 32-bit enums..."
 PLATFORM_RELFLAGS += -fno-short-enums -fstrict-aliasing -Wno-unused-but-set-variable
 
@@ -44,6 +36,12 @@ ifneq "$(GCCVERSION)" "8"
 PLATFORM_CPPFLAGS += $(PF_CPPFLAGS_ARMV8)
 endif
 endif   # ifeq "$(GCCMACHINE)" "arm"
+
+ifeq ($(CONFIG_ARM64), y)
+PLATFORM_RELFLAGS += -ffixed-x18 -march=armv8-a -mstrict-align -Wint-to-pointer-cast
+# to link R_AARCH64_ABS64 field, remove "-pie"
+LDFLAGS_u-boot :=
+endif
 
 
 # =========================================================================

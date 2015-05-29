@@ -35,7 +35,7 @@ void nxp_rtc_init(void)
 {
 	DBGOUT("%s\n", __func__);
 	NX_RTC_Initialize();
-	NX_RTC_SetBaseAddress((U32)IO_ADDRESS(NX_RTC_GetPhysicalAddress()));
+	NX_RTC_SetBaseAddress((void*)IO_ADDRESS(NX_RTC_GetPhysicalAddress()));
 	NX_RTC_OpenModule();
 	NX_RTC_ClearInterruptPendingAll();
 	NX_RTC_SetInterruptEnableAll(CFALSE);

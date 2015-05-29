@@ -227,10 +227,10 @@ static inline void peri_clk_bclk(void *base, int on)
 	struct clkgen_register *preg = base;
 	register U32 val;
 
-	val	 = ReadIODW(&preg->CLKENB);
+	val	 = readl(&preg->CLKENB);
 	val &= ~(0x3);
 	val |=  (on ? 3 : 0) & 0x3;	/* always BCLK */
-	WriteIODW(&preg->CLKENB, val);
+	writel(val, &preg->CLKENB);
 }
 
 static inline void peri_clk_pclk(void *base, int on)
@@ -240,10 +240,10 @@ static inline void peri_clk_pclk(void *base, int on)
 
 	if (!on) return;
 
-	val	 = ReadIODW(&preg->CLKENB);
+	val	 = readl(&preg->CLKENB);
 	val &= ~(1 << 3);
 	val |=  (1 << 3);
-	WriteIODW(&preg->CLKENB, val);
+	writel(val, &preg->CLKENB);
 }
 
 static inline void peri_clk_rate(void *base, int level, int src, int div)
@@ -260,12 +260,12 @@ static inline void peri_clk_rate(void *base, int level, int src, int div)
 		printk("*** %s: Fail pll.%d for BCLK DFS ***\n", __func__, src);
 #endif
 
-	val  = ReadIODW(&preg->CLKGEN[level<<1]);
+	val  = readl(&preg->CLKGEN[level<<1]);
 	val &= ~(0x07   << 2);
 	val |=  (src    << 2);	/* source */
 	val	&= ~(0xFF   << 5);
 	val	|=  (div-1) << 5;	/* divider */
-	WriteIODW(&preg->CLKGEN[level<<1], val);
+	writel(val, &preg->CLKGEN[level<<1]);
 }
 
 static inline void peri_clk_invert(void *base, int level, int inv)
@@ -273,10 +273,10 @@ static inline void peri_clk_invert(void *base, int level, int inv)
 	struct clkgen_register *preg = base;
 	register U32 val;
 
-	val = ReadIODW(&preg->CLKGEN[level<<1]);
+	val = readl(&preg->CLKGEN[level<<1]);
 	val	&= ~(1  << 1);
 	val	|=	(inv<< 1);
-	WriteIODW(&preg->CLKGEN[level<<1], val);
+	writel(val, &preg->CLKGEN[level<<1]);
 }
 
 static inline void peri_clk_enable(void *base)
@@ -284,10 +284,10 @@ static inline void peri_clk_enable(void *base)
 	struct clkgen_register *preg = base;
 	register U32 val;
 
-	val	 = ReadIODW(&preg->CLKENB);
+	val	 = readl(&preg->CLKENB);
 	val	&= ~(1 << 2);
 	val	|=  (1 << 2);
-	WriteIODW(&preg->CLKENB, val);
+	writel(val, &preg->CLKENB);
 }
 
 static inline void peri_clk_disable(void *base)
@@ -295,10 +295,10 @@ static inline void peri_clk_disable(void *base)
 	struct clkgen_register *preg = base;
 	register U32 val;
 
-	val	 = ReadIODW(&preg->CLKENB);
+	val	 = readl(&preg->CLKENB);
 	val	&= ~(1 << 2);
 	val	|=  (0 << 2);
-	WriteIODW(&preg->CLKENB, val);
+	writel(val, &preg->CLKENB);
 }
 
 /*

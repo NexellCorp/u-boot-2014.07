@@ -183,27 +183,27 @@ static void cpu_base_init(void)
 	int i = 0;
 
 	NX_RSTCON_Initialize();
-	NX_RSTCON_SetBaseAddress((U32)IO_ADDRESS(NX_RSTCON_GetPhysicalAddress()));
+	NX_RSTCON_SetBaseAddress((void*)IO_ADDRESS(NX_RSTCON_GetPhysicalAddress()));
 
 	NX_TIEOFF_Initialize();
-	NX_TIEOFF_SetBaseAddress((U32)IO_ADDRESS(NX_TIEOFF_GetPhysicalAddress()));
+	NX_TIEOFF_SetBaseAddress((void*)IO_ADDRESS(NX_TIEOFF_GetPhysicalAddress()));
 
 	NX_CLKGEN_Initialize();
 	for (i = 0; NX_CLKGEN_GetNumberOfModule() > i; i++)
-		NX_CLKGEN_SetBaseAddress(i, (U32)IO_ADDRESS(NX_CLKGEN_GetPhysicalAddress(i)));
+		NX_CLKGEN_SetBaseAddress(i, (void*)IO_ADDRESS(NX_CLKGEN_GetPhysicalAddress(i)));
 
 	NX_GPIO_Initialize();
 	for (i = 0; NX_GPIO_GetNumberOfModule() > i; i++) {
-		NX_GPIO_SetBaseAddress(i, (U32)IO_ADDRESS(NX_GPIO_GetPhysicalAddress(i)));
+		NX_GPIO_SetBaseAddress(i, (void*)IO_ADDRESS(NX_GPIO_GetPhysicalAddress(i)));
 		NX_GPIO_OpenModule(i);
 	}
 
 	NX_ALIVE_Initialize();
-	NX_ALIVE_SetBaseAddress((U32)IO_ADDRESS(NX_ALIVE_GetPhysicalAddress()));
+	NX_ALIVE_SetBaseAddress((void*)IO_ADDRESS(NX_ALIVE_GetPhysicalAddress()));
 	NX_ALIVE_OpenModule();
 
 	NX_CLKPWR_Initialize();
-	NX_CLKPWR_SetBaseAddress((U32)IO_ADDRESS(NX_CLKPWR_GetPhysicalAddress()));
+	NX_CLKPWR_SetBaseAddress((void*)IO_ADDRESS(NX_CLKPWR_GetPhysicalAddress()));
 	NX_CLKPWR_OpenModule();
 
     /*
@@ -229,7 +229,7 @@ static void cpu_bus_init(void)
 {
 	/* MCUS for Static Memory. */
 	NX_MCUS_Initialize();
-	NX_MCUS_SetBaseAddress((U32)IO_ADDRESS(NX_MCUS_GetPhysicalAddress()));
+	NX_MCUS_SetBaseAddress((void*)IO_ADDRESS(NX_MCUS_GetPhysicalAddress()));
 	NX_MCUS_OpenModule();
 
 	/*

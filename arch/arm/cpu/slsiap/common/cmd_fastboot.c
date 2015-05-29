@@ -179,7 +179,7 @@ extern int mmc_get_part_table(block_dev_desc_t *desc, uint64_t (*parts)[2], int 
 
 static int mmc_make_parts(int dev, uint64_t (*parts)[2], int count)
 {
-	char cmd[256] = {0, };
+	char cmd[1024];
 	int i = 0, l = 0, p = 0;
 
 	l = sprintf(cmd, "fdisk %d %d:", dev, count);
@@ -188,6 +188,13 @@ static int mmc_make_parts(int dev, uint64_t (*parts)[2], int count)
 		l = sprintf(&cmd[p], " 0x%llx:0x%llx", parts[i][0], parts[i][1]);
 		p += l;
 	}
+	
+	if (p >= sizeof(cmd)) {
+		printf("** %s: cmd stack overflow : stack %d, cmd %d **\n",
+			__func__, sizeof(cmd), p);
+		while(1);
+	}	
+
 	cmd[p] = 0;
 	printf("%s\n", cmd);
 
@@ -495,7 +502,7 @@ static int nand_part_ftl(uint64_t start, uint64_t length, void *buf, int command
 
 	switch (command) {
 	case MIO_NAND_ERASE:
-		p += sprintf(args+p, "nanderase ");
+		p += sprintf(args+p, "nandrawerase ");
 		break;
 	case MIO_NAND_RAWWRITE:
 		p += sprintf(args+p, "nandrawwrite 0x%x ", (unsigned int)buf);
@@ -554,6 +561,8 @@ static int nand_part_write(struct fastboot_part *fpart, void *buf, uint64_t leng
 
 		/* erase */
 		nand_part_ftl(start, length, buf, MIO_NAND_ERASE);
+
+		start = fpart->start;
 
 		/* write */
 		for (i = 0; i < repeat; i++, start += offset) {
@@ -1417,8 +1426,8 @@ static int fboot_response(const char *resp, unsigned int len, unsigned int sync)
 static int fboot_cmd_reboot(const char *cmd, f_cmd_inf *inf, struct f_trans_stat *fst)
 {
 	fboot_response("OKAY", strlen("OKAY"), FASTBOOT_TX_SYNC);
-    run_command("env default -a", 0);
-    run_command("save", 0);
+	run_command("env default -a", 0);
+	run_command("save", 0);
 	return do_reset (NULL, 0, 0, NULL);
 }
 

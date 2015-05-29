@@ -302,7 +302,7 @@ int board_late_init(void)
 
 #ifndef CONFIG_USBBOOT_BURNING_MODE
 
-	#if defined(CONFIG_RECOVERY_BOOT)
+#if defined(CONFIG_RECOVERY_BOOT)
     if (RECOVERY_SIGNATURE == readl(SCR_RESET_SIG_READ)) {
         writel((-1UL), SCR_RESET_SIG_RESET); /* clear */
 
@@ -312,26 +312,28 @@ int board_late_init(void)
         run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
     }
     writel((-1UL), SCR_RESET_SIG_RESET);
-	#endif /* CONFIG_RECOVERY_BOOT */
+#endif /* CONFIG_RECOVERY_BOOT */
 
-	#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP
 	char *cmd = getenv("preloadcmd");
 	if (cmd) {
 		printf("preload cmd:%s\n", cmd);
 		run_command(cmd, 0);
 	}
 
-	//boot_animation();
-	#else
-	#if defined(CONFIG_DISPLAY_OUT)
-	//bd_display_run(0, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+	#if defined(CONFIG_DISPLAY_OUT) && defined(CONFIG_BOOT_LOGO_ENABLE)
+	boot_animation();
 	#endif
+#else
+	#if defined(CONFIG_DISPLAY_OUT) && defined(CONFIG_BOOT_LOGO_ENABLE)
+	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 	#endif
+#endif
 
-	#if defined(CONFIG_VIP)
+#if defined(CONFIG_VIP)
  	camera_run();
 	camera_preview();
-	#endif
+#endif
 #endif
 
 #ifdef CONFIG_USBBOOT_BURNING_MODE

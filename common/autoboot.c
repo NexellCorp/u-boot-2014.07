@@ -149,8 +149,10 @@ static int abortboot_normal(int bootdelay)
 #ifdef CONFIG_MENUPROMPT
 	printf(CONFIG_MENUPROMPT);
 #else
-	/*if (bootdelay >= 0)*/
-		/*printf("Hit any key to stop autoboot: %2d ", bootdelay);*/
+#ifdef CONFIG_BOOT_DELAY_ENABLE
+	if (bootdelay >= 0)
+		printf("Hit any key to stop autoboot: %2d ", bootdelay);
+#endif
 #endif
 
 #if defined CONFIG_ZERO_BOOTDELAY_CHECK
@@ -188,7 +190,9 @@ static int abortboot_normal(int bootdelay)
 		printf("\b\b\b%2d ", bootdelay);
 	}
 
-	/*putc('\n');*/
+#ifdef CONFIG_BOOT_DELAY_ENABLE
+	putc('\n');
+#endif
 
 #ifdef CONFIG_SILENT_CONSOLE
 	if (abort)
@@ -225,7 +229,7 @@ static void process_fdt_options(const void *blob)
 #endif /* CONFIG_OF_CONTROL */
 }
 
-#if 0
+#ifdef CONFIG_BOOT_DELAY_ENABLE
 const char *bootdelay_process(void)
 {
 	char *s;

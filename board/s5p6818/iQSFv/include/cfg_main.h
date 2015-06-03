@@ -141,7 +141,7 @@
  * 	TIMER/PWM
  */
 #define CFG_LCD_PRI_PWM_CH                      0
-#define CFG_LCD_PRI_PWM_FREQ                    30000
+#define CFG_LCD_PRI_PWM_FREQ                    25000
 #define CFG_LCD_PRI_PWM_DUTYCYCLE               50      /* (%) */
 
 //------------------------------------------------------------------------------

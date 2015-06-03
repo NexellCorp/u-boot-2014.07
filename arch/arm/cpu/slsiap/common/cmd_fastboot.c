@@ -1426,8 +1426,10 @@ static int fboot_response(const char *resp, unsigned int len, unsigned int sync)
 static int fboot_cmd_reboot(const char *cmd, f_cmd_inf *inf, struct f_trans_stat *fst)
 {
 	fboot_response("OKAY", strlen("OKAY"), FASTBOOT_TX_SYNC);
+#ifndef CONFIG_BOOT_DELAY_ENABLE
 	run_command("env default -a", 0);
 	run_command("save", 0);
+#endif
 	return do_reset (NULL, 0, 0, NULL);
 }
 

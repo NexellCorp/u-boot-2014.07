@@ -160,6 +160,7 @@ void setup_revision_tag(struct tag **in_params)
 	defined(CONFIG_INITRD_TAG) || \
 	defined(CONFIG_SERIAL_TAG) || \
 	defined(CONFIG_REVISION_TAG)
+__weak void setup_board_tags(struct tag **in_params) {}
 static void setup_end_tag(bd_t *bd)
 {
 	params->hdr.tag = ATAG_NONE;
@@ -237,6 +238,7 @@ int do_goImage (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		setup_initrd_tag(gd->bd, images->rd_start,
 		images->rd_end);
 	#endif
+	setup_board_tags(&params);
 	setup_end_tag(gd->bd);
 #endif
 	printf ("## Starting at 0x%08lx mach type %lu (0x%lx) ...\n",

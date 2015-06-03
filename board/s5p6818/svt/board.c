@@ -29,6 +29,7 @@
 //#include <asm/sections.h>
 
 #include <platform.h>
+#include <tags.h>
 #include <mach-api.h>
 #include <rtc_nxp.h>
 #include <pm.h>
@@ -390,3 +391,54 @@ int board_late_init(void)
 	return 0;
 }
 
+void setup_board_tags(struct tag **tmp)
+{
+	struct tag *params = *tmp;
+	struct tag_asv_margin *t;
+
+	char *p = getenv("margin");
+	char *s = p;
+	int value = 0;
+	int minus = 0, percent = 0;
+
+	s = strchr(s, '-');
+	if (s)
+		minus = true;
+	else
+		s = strchr(p, '+');
+
+	if (!s)
+		s = p;
+	else
+		s++;
+
+	if (strchr(p, '%'))
+		percent = 1;
+
+	value = simple_strtol(s, NULL, 10);
+	printf("ASV Margin:%s%d%s\n", minus?"-":"+", value, percent?"%":"mV");
+
+	/* set ARM margin */
+	params->hdr.tag = ATAG_ARM_MARGIN;
+	params->hdr.size = tag_size(tag_asv_margin);
+	t = (struct tag_asv_margin *)&params->u;
+	t->value = value;
+	t->minus = minus;
+	t->percent = percent;
+
+	params = tag_next(params);
+	*tmp = params;
+
+	/* set ARM margin */
+	params = *tmp;
+
+	params->hdr.tag = ATAG_CORE_MARGIN;
+	params->hdr.size = tag_size(tag_asv_margin);
+	t = (struct tag_asv_margin *)&params->u;
+	t->value = value;
+	t->minus = minus;
+	t->percent = percent;
+
+	params = tag_next(params);
+	*tmp = params;
+}

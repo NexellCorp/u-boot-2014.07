@@ -398,6 +398,9 @@
 
 		#define CONFIG_PMIC_NXE2000
 		#define CONFIG_REGULATOR_MP8845C
+
+		#define CONFIG_ASV_CORE_TABLE
+
 		//#define CONFIG_PMIC_REG_DUMP
 	#endif
 

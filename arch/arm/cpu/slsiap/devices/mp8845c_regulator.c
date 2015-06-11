@@ -39,6 +39,110 @@
 
 #include "mp8845c_regulator.h"
 
+#if defined(CONFIG_ASV_CORE_TABLE)
+#define FEATURE_ASV_CORE_TABLE
+#endif
+
+#ifdef FEATURE_ASV_CORE_TABLE
+struct asv_core_tb_info {
+	int ids;
+	int ro;
+	int uV;
+};
+
+static struct asv_core_tb_info asv_core_tables[] = {
+#if 1 // REV0.3
+	[0] = {	.ids = 6,	.ro = 90,	.uV = 1200000, },
+	[1] = {	.ids = 15,	.ro = 130,	.uV = 1175000, },
+	[2] = {	.ids = 38,	.ro = 170,	.uV = 1150000, },
+	[3] = {	.ids = 78,	.ro = 200,	.uV = 1100000, },
+	[4] = {	.ids = 78,	.ro = 200,	.uV = 1050000, },
+#else // REV0.2
+	[0] = {	.ids = 6,	.ro = 80,	.uV = 1200000, },
+	[1] = {	.ids = 15,	.ro = 120,	.uV = 1175000, },
+	[2] = {	.ids = 38,	.ro = 160,	.uV = 1150000, },
+	[3] = {	.ids = 78,	.ro = 190,	.uV = 1100000, },
+	[4] = {	.ids = 78,	.ro = 190,	.uV = 1050000, },
+#endif
+};
+
+#define	ASV_CORE_ARRAY_SIZE	ARRAY_SIZE(asv_core_tables)
+
+
+extern void nxp_cpu_id_string(u32 string[12]);
+extern void nxp_cpu_id_ecid(u32 ecid[4]);
+
+static inline unsigned int MtoL(unsigned int data, int bits)
+{
+	unsigned int result = 0;
+	unsigned int mask = 1;
+	int i = 0;
+	for (i = 0; i<bits ; i++) {
+		if (data&(1<<i))
+			result |= mask<<(bits-i-1);
+	}
+	return result;
+}
+
+static void read_cpu_id_ecid(u32 ecid[4])
+{
+	NX_ECID_SetBaseAddress((void*)IO_ADDRESS(NX_ECID_GetPhysicalAddress()));
+
+	while(!NX_ECID_GetKeyReady())
+	{
+		mdelay(1);
+		if (NX_ECID_GetKeyReady())
+			break;
+		PMIC_DBGOUT("%s(): Busy CHIP ECID.\n", __func__);
+	}
+
+	NX_ECID_GetECID(ecid);
+}
+
+static void asv_core_setup(struct mp8845c_power *power)
+{
+	unsigned int ecid[4] = { 0, };
+	//unsigned int string[12] = { 0, };
+	int i, ids = 0, ro = 0;
+	int idslv, rolv, asvlv;
+
+	//nxp_cpu_id_string(string);
+	read_cpu_id_ecid(ecid);
+
+	/* Use IDS/Ro */
+	ids = MtoL((ecid[1]>>16) & 0xFF, 8);
+	ro  = MtoL((ecid[1]>>24) & 0xFF, 8);
+
+	/* find IDS Level */
+	for (i=0; i<(ASV_CORE_ARRAY_SIZE-1); i++)
+	{
+		if (ids <= asv_core_tables[i].ids)
+			break;
+	}
+	idslv = ASV_CORE_ARRAY_SIZE != i ? i: (ASV_CORE_ARRAY_SIZE-1);
+
+	/* find RO Level */
+	for (i=0; i<(ASV_CORE_ARRAY_SIZE-1); i++)
+	{
+		if (ro <= asv_core_tables[i].ro)
+			break;
+	}
+	rolv = ASV_CORE_ARRAY_SIZE != i ? i: (ASV_CORE_ARRAY_SIZE-1);
+
+	/* find Lowest ASV Level */
+	asvlv = idslv > rolv ? rolv: idslv;
+
+	if(asvlv <= (ASV_CORE_ARRAY_SIZE-1))
+		power->init_voltage = asv_core_tables[asvlv].uV;
+	
+	PMIC_DBGOUT("IDS(%dmA) RO(%d) ASV(%d) Vol(%duV) \n", ids, ro, asvlv, power->init_voltage);
+
+	return;
+}
+#endif
+
+
+
 #if 1
 static const int vout_uV_list[] = {
 	6000,    // 0
@@ -299,7 +403,7 @@ static int mp8845c_i2c_update(struct mp8845c_power *power, int reg, uint8_t val,
 	return ret;
 }
 
-static int mp8845c_device_setup(struct mp8845c_power *power)
+static int mp8845c_device_setup(struct mp8845c_power *power, int asv)
 {
 	int	bus = power->i2c_bus;
 	int ret = 0;
@@ -312,9 +416,14 @@ static int mp8845c_device_setup(struct mp8845c_power *power)
 
 	mp8845c_i2c_set_bits(power, MP8845C_REG_SYSCNTL1, (1 << MP8845C_POS_MODE));
 
-	mp8845c_i2c_set_bits(power, MP8845C_REG_SYSCNTL2, (1 << MP8845C_POS_GO));
+#ifdef FEATURE_ASV_CORE_TABLE
+	if(asv)
+		asv_core_setup(power);
+#endif
+
 	reg_val = mp8845c_get_voltage_list(power->init_voltage);
 
+	mp8845c_i2c_set_bits(power, MP8845C_REG_SYSCNTL2, (1 << MP8845C_POS_GO));
 	mp8845c_i2c_update(power, MP8845C_REG_VSEL, reg_val, MP8845C_POS_OUT_VOL_MASK);
 
 #if defined(CONFIG_PMIC_REG_DUMP)
@@ -325,7 +434,7 @@ static int mp8845c_device_setup(struct mp8845c_power *power)
 }
 
 
-int bd_pmic_init_mp8845(int i2c_bus, int uVol)
+int bd_pmic_init_mp8845(int i2c_bus, int uVol, int asv)
 {
 	struct mp8845c_power nxe_power_config = {
 		.i2c_addr = MP8845C_I2C_ADDR,
@@ -335,7 +444,7 @@ int bd_pmic_init_mp8845(int i2c_bus, int uVol)
 
 	nxe_power_config.i2c_bus = i2c_bus;
 	nxe_power_config.init_voltage = uVol;
-	mp8845c_device_setup(&nxe_power_config);
+	mp8845c_device_setup(&nxe_power_config, asv);
 
 	return 0;
 }

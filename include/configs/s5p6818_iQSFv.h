@@ -233,9 +233,11 @@
 		#define CONFIG_POWER
 		#define CONFIG_POWER_I2C
 
-		//#define CONFIG_PMIC_REG_DUMP
-
 		#define CONFIG_REGULATOR_MP8845C
+
+		//#define CONFIG_ASV_CORE_TABLE
+
+		//#define CONFIG_PMIC_REG_DUMP
 	#endif
 
 

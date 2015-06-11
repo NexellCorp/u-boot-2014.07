@@ -550,7 +550,8 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 
 			update_sdcard_part_lists_print();
 			printf("\n");
-			update_sd_fdisk(fp->dev_no, fp);
+
+			// update_sd_fdisk(fp->dev_no, fp);
 
 			for(i=0; i<UPDATE_SDCARD_DEV_PART_MAX; i++, fp++)
 			{

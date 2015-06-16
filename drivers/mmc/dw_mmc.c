@@ -41,14 +41,13 @@ static void dwmci_set_idma_desc(struct dwmci_idmac *idmac,
 	desc->next_addr = (uintptr_t)desc + sizeof(struct dwmci_idmac);
 }
 
-static void dwmci_prepare_data(struct dwmci_host *host,
+void dwmci_prepare_data(struct dwmci_host *host,
 		struct mmc_data *data)
 {
 	unsigned long ctrl;
 	unsigned int i = 0, flags, cnt, blk_cnt;
 	ulong data_start, data_end, start_addr;
 	ALLOC_CACHE_ALIGN_BUFFER(struct dwmci_idmac, cur_idmac, data->blocks);
-
 
 	blk_cnt = data->blocks;
 
@@ -82,12 +81,15 @@ static void dwmci_prepare_data(struct dwmci_host *host,
 	} while(1);
 
 	data_end = (ulong)cur_idmac;
-#if 0
+
 	flush_dcache_range(data_start, data_end + ARCH_DMA_MINALIGN);
-#else
-	/*bok */
-	flush_dcache_all();
+#ifdef CONFIG_MMU_ENABLE
+	if(data->flags == MMC_DATA_READ)
+		invalidate_dcache_range(start_addr, start_addr + (data->blocks *512));
+	else	
+		flush_dcache_range(start_addr, start_addr + (data->blocks *512));
 #endif
+
 	ctrl = dwmci_readl(host, DWMCI_CTRL);
 	ctrl |= DWMCI_IDMAC_EN | DWMCI_DMA_EN;
 	dwmci_writel(host, DWMCI_CTRL, ctrl);
@@ -131,6 +133,8 @@ static int dwmci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 
 	dwmci_writel(host, DWMCI_RINTSTS, DWMCI_INTMSK_ALL);
 
+//	if((cmd->cmdidx == MMC_CMD_READ_SINGLE_BLOCK) | (cmd->cmdidx == MMC_CMD_READ_MULTIPLE_BLOCK))
+//		invalidate_dcache_all();
 	if (data)
 		dwmci_prepare_data(host, data);
 

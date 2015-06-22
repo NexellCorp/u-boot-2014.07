@@ -14,6 +14,14 @@
 #include <asm-generic/errno.h>
 
 #define PAGE_SIZE 4096
+#ifdef CONFIG_MMU_ENABLE
+#if defined CONFIG_MACH_S5P4418
+#define CACHE_LINE_SIZE 32
+#elif defined  CONFIG_MACH_S5P6818
+#define CACHE_LINE_SIZE 64
+#endif
+#endif
+#define CACHE_LINE_ALIGN(a, x) (a & ~(x-1))
 
 static int dwmci_wait_reset(struct dwmci_host *host, u32 value)
 {
@@ -40,6 +48,7 @@ static void dwmci_set_idma_desc(struct dwmci_idmac *idmac,
 	desc->addr = desc2;
 	desc->next_addr = (uintptr_t)desc + sizeof(struct dwmci_idmac);
 }
+
 
 void dwmci_prepare_data(struct dwmci_host *host,
 		struct mmc_data *data)
@@ -74,6 +83,7 @@ void dwmci_prepare_data(struct dwmci_host *host,
 				start_addr + (i * PAGE_SIZE));
 
 		if (blk_cnt <= 8)
+			
 			break;
 		blk_cnt -= 8;
 		cur_idmac++;
@@ -81,13 +91,18 @@ void dwmci_prepare_data(struct dwmci_host *host,
 	} while(1);
 
 	data_end = (ulong)cur_idmac;
+	
+	debug("s=0x%08lx, (0x%08lx), e 0x%08lx, (0x%08lx)\n", start_addr, CACHE_LINE_ALIGN(start_addr, CACHE_LINE_SIZE), 
+			start_addr + (data->blocks *512),roundup(start_addr + (data->blocks *512), CACHE_LINE_SIZE));
 
-	flush_dcache_range(data_start, data_end + ARCH_DMA_MINALIGN);
+	flush_dcache_range(CACHE_LINE_ALIGN(data_start,CACHE_LINE_SIZE), roundup(data_end + ARCH_DMA_MINALIGN, CACHE_LINE_SIZE));
 #ifdef CONFIG_MMU_ENABLE
 	if(data->flags == MMC_DATA_READ)
-		invalidate_dcache_range(start_addr, start_addr + (data->blocks *512));
+		invalidate_dcache_range(CACHE_LINE_ALIGN(start_addr, CACHE_LINE_SIZE), 
+			roundup(start_addr + (data->blocks *512), CACHE_LINE_SIZE));
 	else	
-		flush_dcache_range(start_addr, start_addr + (data->blocks *512));
+		flush_dcache_range(CACHE_LINE_ALIGN(start_addr, CACHE_LINE_SIZE), 
+			roundup(start_addr + (data->blocks *512), CACHE_LINE_SIZE));
 #endif
 
 	ctrl = dwmci_readl(host, DWMCI_CTRL);
@@ -133,8 +148,6 @@ static int dwmci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 
 	dwmci_writel(host, DWMCI_RINTSTS, DWMCI_INTMSK_ALL);
 
-//	if((cmd->cmdidx == MMC_CMD_READ_SINGLE_BLOCK) | (cmd->cmdidx == MMC_CMD_READ_MULTIPLE_BLOCK))
-//		invalidate_dcache_all();
 	if (data)
 		dwmci_prepare_data(host, data);
 
@@ -380,3 +393,4 @@ int add_dwmci(struct dwmci_host *host, u32 max_clk, u32 min_clk)
 	
 	return 0;
 }
+

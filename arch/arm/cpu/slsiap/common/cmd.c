@@ -241,8 +241,9 @@ int do_goImage (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	setup_board_tags(&params);
 	setup_end_tag(gd->bd);
 #endif
-	printf ("## Starting at 0x%08lx mach type %lu (0x%lx) ...\n",
-		addr, machtype, addr2);
+	/*printf ("## Starting at 0x%08lx mach type %lu (0x%lx) ...\n",*/
+		/*addr, machtype, addr2);*/
+	printf ("## Starting kernel\n");
 
 
 #ifdef CONFIG_MMU_ENABLE

@@ -253,8 +253,9 @@ void bd_display_run(char *cmd, int bl_duty, int bl_on)
 
 	if (cmd) {
 		run_command(cmd, 0);
-		lcd_draw_boot_logo(CONFIG_FB_ADDR, CFG_DISP_PRI_RESOL_WIDTH,
-			CFG_DISP_PRI_RESOL_HEIGHT, CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
+        lcd_set_logo_bmp_addr(0x47000000);
+        lcd_draw_boot_logo(CONFIG_FB_ADDR, CFG_DISP_PRI_RESOL_WIDTH,
+            CFG_DISP_PRI_RESOL_HEIGHT, CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
 	}
 
 	if (!display_init) {
@@ -316,7 +317,7 @@ int board_late_init(void)
 #endif
 
 	/* Temp check gpio to update */
-	auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
+	/*auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);*/
 
 #endif /* CONFIG_BAT_CHECK */
 

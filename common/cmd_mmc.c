@@ -423,17 +423,17 @@ static int do_mmc_dev(cmd_tbl_t *cmdtp, int flag,
 		return CMD_RET_FAILURE;
 
 	ret = mmc_select_hwpart(dev, part);
-	printf("switch to partitions #%d, %s\n",
-	       part, (!ret) ? "OK" : "ERROR");
+	/*printf("switch to partitions #%d, %s\n",*/
+		   /*part, (!ret) ? "OK" : "ERROR");*/
 	if (ret)
 		return 1;
 
 	curr_device = dev;
-	if (mmc->part_config == MMCPART_NOAVAILABLE)
-		printf("mmc%d is current device\n", curr_device);
-	else
-		printf("mmc%d(part %d) is current device\n",
-		       curr_device, mmc->part_num);
+	/*if (mmc->part_config == MMCPART_NOAVAILABLE)*/
+		/*printf("mmc%d is current device\n", curr_device);*/
+	/*else*/
+		/*printf("mmc%d(part %d) is current device\n",*/
+			   /*curr_device, mmc->part_num);*/
 
 	return CMD_RET_SUCCESS;
 }

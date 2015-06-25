@@ -64,7 +64,7 @@
 
 /* DCDC-LDO Voltage Value */
 #define AXP_DCDC1_VALUE						3300000		/* VCC3P3_SYS			DCDC1	 : 	AXP22:1600~3400, 100/setp*/
-#define AXP_DCDC2_VALUE						1100000		/* VCC1P1_ARM			DCDC2	 : 	AXP22:  600~1540,   20/step*/
+#define AXP_DCDC2_VALUE						1200000		/* VCC1P1_ARM			DCDC2	 : 	AXP22:  600~1540,   20/step*/
 #define AXP_DCDC3_VALUE						1100000		/* VCC1P0_CORE		DCDC3	 : 	AXP22:  600~1860,   20/step*/
 #define AXP_DCDC4_VALUE						1500000		/* VCC1P5_SYS			DCDC4	 : 	AXP22:  600~1540,   20/step*/
 #define AXP_DCDC5_VALUE						1500000		/* VCC1P5_DDR			DCDC5	 : 	AXP22:1000~2550,   50/step*/
@@ -90,11 +90,11 @@
 #define AXP_ALDO2_ENABLE					1		/* VCC1P8_ALIVE		ALDO2	 : 	AXP22:  700~3300, 100/step*/
 #define AXP_ALDO3_ENABLE					1		/* VCC1P0_ALIVE		ALDO3	 : 	AXP22:  700~3300, 100/step*/
 #define AXP_DLDO1_ENABLE					1		/* VCC_WIDE			DLDO1	 : 	AXP22:  700~3300, 100/step*/
-#define AXP_DLDO2_ENABLE					0		/* VCC1P8_CAM			DLDO2	 : 	AXP22 : 700~3300, 100/step*/
+#define AXP_DLDO2_ENABLE					1		/* VCC1P8_CAM			DLDO2	 : 	AXP22 : 700~3300, 100/step*/
 #define AXP_DLDO3_ENABLE					0		/* NC					DLDO3	 : 	AXP22:  700~3300, 100/step*/
 #define AXP_DLDO4_ENABLE					0		/* NC					DLDO4	 : 	AXP22:  700~3300, 100/step*/
 #define AXP_ELDO1_ENABLE					1		/* VCC1P8_SYS			ELDO1	 : 	AXP22:  700~3300, 100/step*/
-#define AXP_ELDO2_ENABLE					0		/* VCC3P3_WIFI			ELDO2	 : 	AXP22:  700~3300, 100/step*/
+#define AXP_ELDO2_ENABLE					1		/* VCC3P3_WIFI			ELDO2	 : 	AXP22:  700~3300, 100/step*/
 #define AXP_ELDO3_ENABLE					0		/* NC					ELDO3	 : 	AXP22:  700~3300, 100/step*/
 #define AXP_DC5LDO_ENABLE					0		/* VCC1P2_CVBS		DC5LDO	 : 	AXP22:  700~1400, 100/step*/
 #define AXP_DC1SW_ENABLE					0		/* NC					DC1SW	 : 	AXP22: */
@@ -127,7 +127,7 @@
 
 
 /* OCV Table */
-#if 1 // 20150330 
+#if 1 // 20150330
 #define OCVREG0		0
 #define OCVREG1		0
 #define OCVREG2		0
@@ -175,11 +175,11 @@
 #define OCVREGB								2		//3.64V
 #define OCVREGC								3		//3.66V
 #define OCVREGD								8		//3.70V
-#define OCVREGE								15		//3.73V 
+#define OCVREGE								15		//3.73V
 #define OCVREGF								23		//3.77V
 #define OCVREG10							29		//3.78V
 #define OCVREG11							37		//3.80V
-#define OCVREG12							42		//3.82V 
+#define OCVREG12							42		//3.82V
 #define OCVREG13							48		//3.84V
 #define OCVREG14							51		//3.85V
 #define OCVREG15							55		//3.87V
@@ -189,13 +189,13 @@
 #define OCVREG19							78		//4.01V
 #define OCVREG1A							82		//4.05V
 #define OCVREG1B							86		//4.08V
-#define OCVREG1C							89		//4.10V 
+#define OCVREG1C							89		//4.10V
 #define OCVREG1D							93		//4.12V
 #define OCVREG1E							96		//4.14V
 #define OCVREG1F							100		//4.15V
 #endif
 
-#define BATRDC								221 // 137 //100 
+#define BATRDC								221 // 137 //100
 
 /* Battery capacity */
 #define BATCAP								2974

@@ -61,7 +61,7 @@ void display_rgb(int module, unsigned int fbbase,
 {
 	int input = module == 0 ? DISP_DEVICE_SYNCGEN0 : DISP_DEVICE_SYNCGEN1;
 	int layer  = pmly->fb_layer;
-	printf("RGB: display.%d\n", module);
+	/*printf("RGB: display.%d\n", module);*/
 
 	disp_initialize();
 	disp_topctl_reset();

@@ -52,7 +52,7 @@ void boot_animation(void)
 	smp_cpu_raise(7);
 }
 
-extern void	bd_display(void);
+extern void	bd_display(int lcd_on);
 
 #define SPLASH_TAG			"splash"
 #define SPLASH_TAG_SIZE		6
@@ -136,7 +136,7 @@ static void do_draw_animation(int cpu)
 
 	pr_debug("splash %d * %d (%dEA)...\n", width, height, count);
 
-	//bd_display();
+	//bd_display(1);
 
 	/* set FB and wait sync  */
 	disp_mlc_set_address(module, layer, address);

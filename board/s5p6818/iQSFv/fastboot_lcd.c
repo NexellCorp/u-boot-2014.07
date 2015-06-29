@@ -51,13 +51,24 @@ void fboot_lcd_start(void)
 		CFG_DISP_PRI_RESOL_WIDTH * CFG_DISP_PRI_RESOL_HEIGHT *
 		CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
 
-	run_command(CONFIG_CMD_LOGO_UPDATE, 0);
+	//run_command(CONFIG_CMD_LOGO_UPDATE, 0);
+
 	lcd_draw_text("wait for update", _logo_left, _logo_top, 2, 2, 0);
 }
 
 void fboot_lcd_stop(void)
 {
-	run_command(CONFIG_CMD_LOGO_WALLPAPERS, 0);
+	int s = 2;
+	int l = _logo_left, t = _logo_top;
+	int w = (_logo_width*s), h = (_logo_height*s);
+	unsigned bg = 0x000000;
+
+	/* clear FB */
+	memset((void*)CONFIG_FB_ADDR, 0x00,
+		CFG_DISP_PRI_RESOL_WIDTH * CFG_DISP_PRI_RESOL_HEIGHT *
+		CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
+
+	lcd_fill_rectangle(l, t, w, h, bg, 0);
 }
 
 void fboot_lcd_part(char *part, char *stat)

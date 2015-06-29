@@ -23,7 +23,7 @@
 //------------------------------------------------------------------------------
 // PLL input crystal
 //------------------------------------------------------------------------------
-#define	CFG_SYS_PLLFIN		24000000UL
+#define	CFG_SYS_PLLFIN							24000000UL
 
 /*------------------------------------------------------------------------------
  * 	System Name
@@ -47,14 +47,14 @@
 /*------------------------------------------------------------------------------
  * 	Extern Ethernet
  */
-#define CFG_ETHER_EXT_PHY_BASEADDR          	0x04000000	// DM9000: CS1
+#define CFG_ETHER_EXT_PHY_BASEADDR				0x04000000	// DM9000: CS1
 #define	CFG_ETHER_EXT_IRQ_NUM					(IRQ_GPIO_C_START + 26)
 
 /*------------------------------------------------------------------------------
  * 	Nand (HWECC)
  */
-#define CFG_NAND_ECC_BYTES                      1024            /* 512 - 4,8,16,24  1024 - 24,40,60  */
-#define CFG_NAND_ECC_BITS                       40
+#define CFG_NAND_ECC_BYTES						1024            /* 512 - 4,8,16,24  1024 - 24,40,60  */
+#define CFG_NAND_ECC_BITS						40
 
 /*------------------------------------------------------------------------------
  *	Nand (GPIO)
@@ -64,85 +64,74 @@
 /*------------------------------------------------------------------------------
  * 	Display (DPC and MLC)
  */
-#define CFG_DISP_OUTPUT_MODOLE           		0	// 0 : Primary, 1 : Secondary
+#define CFG_DISP_OUTPUT_MODOLE					0	// 0 : Primary, 1 : Secondary
 
-#define CFG_DISP_PRI_SCREEN_LAYER               0
-#define CFG_DISP_PRI_SCREEN_RGB_FORMAT          MLC_RGBFMT_A8R8G8B8
-#define CFG_DISP_PRI_SCREEN_PIXEL_BYTE	        4
-#define CFG_DISP_PRI_SCREEN_COLOR_KEY	        0x090909
+#define CFG_DISP_PRI_SCREEN_LAYER				0
+#define CFG_DISP_PRI_SCREEN_RGB_FORMAT			MLC_RGBFMT_A8R8G8B8
+#define CFG_DISP_PRI_SCREEN_PIXEL_BYTE			4
+#define CFG_DISP_PRI_SCREEN_COLOR_KEY			0x090909
 
 #define CFG_DISP_PRI_VIDEO_PRIORITY				2	// 0, 1, 2, 3
-#define CFG_DISP_PRI_BACK_GROUND_COLOR	     	0x000000
+#define CFG_DISP_PRI_BACK_GROUND_COLOR			0xFFFFFF	//0x000000
 
-#define CFG_DISP_PRI_MLC_INTERLACE              CFALSE  //Progressive
+#define CFG_DISP_PRI_MLC_INTERLACE				CFALSE  //Progressive
 
-#define CFG_DISP_PRI_RESOL_WIDTH          		800	// X Resolution
+#define CFG_DISP_PRI_RESOL_WIDTH				800	// X Resolution
 #define CFG_DISP_PRI_RESOL_HEIGHT				480	// Y Resolution
 
-#if 0 // modified ischoi, BF500 setting
-#define CFG_DISP_PRI_HSYNC_SYNC_WIDTH            43 
-#define CFG_DISP_PRI_HSYNC_BACK_PORCH           147
-#define CFG_DISP_PRI_HSYNC_FRONT_PORCH          78
-#define CFG_DISP_PRI_HSYNC_ACTIVE_HIGH          CFALSE
-#define CFG_DISP_PRI_VSYNC_SYNC_WIDTH            4
-#define CFG_DISP_PRI_VSYNC_BACK_PORCH            3
-#define CFG_DISP_PRI_VSYNC_FRONT_PORCH           35
-#define CFG_DISP_PRI_VSYNC_ACTIVE_HIGH 	        CFALSE
-#else //
-#define CFG_DISP_PRI_HSYNC_SYNC_WIDTH           20
-#define CFG_DISP_PRI_HSYNC_BACK_PORCH           160
-#define CFG_DISP_PRI_HSYNC_FRONT_PORCH          160
-#define CFG_DISP_PRI_HSYNC_ACTIVE_HIGH          CTRUE
-#define CFG_DISP_PRI_VSYNC_SYNC_WIDTH           3
-#define CFG_DISP_PRI_VSYNC_BACK_PORCH           23
-#define CFG_DISP_PRI_VSYNC_FRONT_PORCH          12
-#define CFG_DISP_PRI_VSYNC_ACTIVE_HIGH 	        CTRUE
-#endif
+#define CFG_DISP_PRI_HSYNC_SYNC_WIDTH			20
+#define CFG_DISP_PRI_HSYNC_BACK_PORCH			160
+#define CFG_DISP_PRI_HSYNC_FRONT_PORCH			160
+#define CFG_DISP_PRI_HSYNC_ACTIVE_HIGH			CTRUE
+#define CFG_DISP_PRI_VSYNC_SYNC_WIDTH			3
+#define CFG_DISP_PRI_VSYNC_BACK_PORCH			23
+#define CFG_DISP_PRI_VSYNC_FRONT_PORCH			12
+#define CFG_DISP_PRI_VSYNC_ACTIVE_HIGH			CTRUE
 
-// PLL : [0] =  600000000, [1] = 1200000000, [2] =  800000000, [3] =  614394000
-#define CFG_DISP_PRI_CLKGEN0_SOURCE             DPC_VCLK_SRC_PLL2
-#define CFG_DISP_PRI_CLKGEN0_DIV                12 //12(PLL0, 50MHz), 25(PLL1, 48MHz)
-#define CFG_DISP_PRI_CLKGEN0_DELAY              0
-#define CFG_DISP_PRI_CLKGEN0_INVERT		0
-#define CFG_DISP_PRI_CLKGEN1_SOURCE             DPC_VCLK_SRC_VCLK2
-#define CFG_DISP_PRI_CLKGEN1_DIV                1
-#define CFG_DISP_PRI_CLKGEN1_DELAY              0
-#define CFG_DISP_PRI_CLKGEN1_INVERT		0
-#define CFG_DISP_PRI_CLKSEL1_SELECT		0
-#define CFG_DISP_PRI_PADCLKSEL                  DPC_PADCLKSEL_VCLK	/* VCLK=CLKGEN1, VCLK12=CLKGEN0 */
+//PLL : [0] =  800000000, [1] = 1200000000, [2] =  614394000, [3] =  800000000
+#define CFG_DISP_PRI_CLKGEN0_SOURCE				DPC_VCLK_SRC_PLL2
+#define CFG_DISP_PRI_CLKGEN0_DIV				15 //12(PLL0, 50MHz), 25(PLL1, 48MHz)
+#define CFG_DISP_PRI_CLKGEN0_DELAY				0
+#define CFG_DISP_PRI_CLKGEN0_INVERT				0
+#define CFG_DISP_PRI_CLKGEN1_SOURCE				DPC_VCLK_SRC_VCLK2
+#define CFG_DISP_PRI_CLKGEN1_DIV				1
+#define CFG_DISP_PRI_CLKGEN1_DELAY				0
+#define CFG_DISP_PRI_CLKGEN1_INVERT				0
+#define CFG_DISP_PRI_CLKSEL1_SELECT				0
+#define CFG_DISP_PRI_PADCLKSEL					DPC_PADCLKSEL_VCLK	/* VCLK=CLKGEN1, VCLK12=CLKGEN0 */
 
 #define	CFG_DISP_PRI_PIXEL_CLOCK				614394000/CFG_DISP_PRI_CLKGEN0_DIV
 
-#define	CFG_DISP_PRI_OUT_SWAPRB 			CFALSE
-#define CFG_DISP_PRI_OUT_FORMAT                 DPC_FORMAT_RGB888//DPC_FORMAT_MRGB888A, DPC_FORMAT_RGB666(original)
-#define CFG_DISP_PRI_OUT_YCORDER                DPC_YCORDER_CbYCrY
-#define CFG_DISP_PRI_OUT_INTERLACE              CFALSE
-#define CFG_DISP_PRI_OUT_INVERT_FIELD           CFALSE
+#define	CFG_DISP_PRI_OUT_SWAPRB 				CFALSE
+#define CFG_DISP_PRI_OUT_FORMAT					DPC_FORMAT_RGB888//DPC_FORMAT_MRGB888A, DPC_FORMAT_RGB666(original)
+#define CFG_DISP_PRI_OUT_YCORDER				DPC_YCORDER_CbYCrY
+#define CFG_DISP_PRI_OUT_INTERLACE				CFALSE
+#define CFG_DISP_PRI_OUT_INVERT_FIELD			CFALSE
 
 /*------------------------------------------------------------------------------
  * 	LVDS
  */
-#define CFG_DISP_LVDS_LCD_FORMAT             	LVDS_LCDFORMAT_VESA//LVDS_LCDFORMAT_VESA(original), LVDS_LCDFORMAT_JEIDA
+#define CFG_DISP_LVDS_LCD_FORMAT				LVDS_LCDFORMAT_VESA
 
 /*------------------------------------------------------------------------------
  *  SPI
  */
-#define CFG_SPI0_SRC_CLK                            100*1000*1000
-#define CFG_SPI0_OUT_CLK                            20*1000*1000
+#define CFG_SPI0_SRC_CLK						100*1000*1000
+#define CFG_SPI0_OUT_CLK						20*1000*1000
 
-#define CFG_SPI1_SRC_CLK                            100*1000*1000
-#define CFG_SPI1_OUT_CLK                            30*1000*1000
+#define CFG_SPI1_SRC_CLK						100*1000*1000
+#define CFG_SPI1_OUT_CLK						30*1000*1000
 
-#define CFG_SPI2_SRC_CLK                            100*1000*1000
-#define CFG_SPI2_OUT_CLK                            30*1000*1000
+#define CFG_SPI2_SRC_CLK						100*1000*1000
+#define CFG_SPI2_OUT_CLK						30*1000*1000
 
 
 /*------------------------------------------------------------------------------
  * 	TIMER/PWM
  */
-#define CFG_LCD_PRI_PWM_CH                      0
-#define CFG_LCD_PRI_PWM_FREQ                    25000
-#define CFG_LCD_PRI_PWM_DUTYCYCLE               50      /* (%) */
+#define CFG_LCD_PRI_PWM_CH						0
+#define CFG_LCD_PRI_PWM_FREQ					25000
+#define CFG_LCD_PRI_PWM_DUTYCYCLE				0      /* (%) */
 
 //------------------------------------------------------------------------------
 // Static Bus #0 ~ #9, NAND, IDE configuration

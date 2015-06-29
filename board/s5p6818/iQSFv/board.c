@@ -47,35 +47,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define DBGOUT(msg...)		do {} while (0)
 #endif
 
-/*------------------------------------------------------------------------------
- * intialize nexell soc and board status.
- */
-static inline void fdone_lcd_power(void)
-{
-	/* must be set after gpio init */	
-#if 1
-	/* Reset LCD_PWR_EN : default H */	
-	mdelay(100);
-	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENB), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), CFALSE);	
-	mdelay(200);
-	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENB), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), CTRUE);	
-#else
-    NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENB), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), CTRUE);        
-	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENV), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), CFALSE);
-	mdelay(100);
-	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENV), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), CTRUE);
-	mdelay(700);
-	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_GD_PWR_EN), PAD_GET_BITNO(CFG_IO_LCD_GD_PWR_EN), CTRUE);
-#endif
-
-	/* 
-	 * Set LCD_BL_EN : default L -> H 
-	 * move to kernel part 
-	 */	
-//	mdelay(10);
-//	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_BL_ENB), PAD_GET_BITNO(CFG_IO_LCD_BL_ENB), CTRUE);	
-}
-
+extern int bd_display(int lcd_on);
 static void bd_gpio_init(void)
 {
 	int index, bit;
@@ -152,9 +124,6 @@ static void bd_gpio_init(void)
 			NX_GPIO_SetDriveStrength(index, bit, (NX_GPIO_DRVSTRENGTH)stren); /* pad strength */
 		}
 	}
-
-	/* Fine LCD Power control */
-	fdone_lcd_power();
 }
 
 static void bd_alive_init(void)
@@ -242,6 +211,15 @@ int board_init(void)
 	return 0;
 }
 
+void bd_display_fill(void)
+{
+	/* clear FB */
+	memset((void*)CONFIG_FB_ADDR, 0x00, CFG_DISP_PRI_RESOL_WIDTH*CFG_DISP_PRI_RESOL_HEIGHT*CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
+	//lcd_draw_boot_logo(CONFIG_FB_ADDR, CFG_DISP_PRI_RESOL_WIDTH, CFG_DISP_PRI_RESOL_HEIGHT, CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
+	//flush_dcache_all();
+	bd_display(0);
+}
+
 void bd_display_run(char *cmd, int bl_duty, int bl_on)
 {
 	static int display_init = 0;
@@ -253,7 +231,7 @@ void bd_display_run(char *cmd, int bl_duty, int bl_on)
 	}
 
 	if (!display_init) {
-		bd_display();
+		bd_display(1);
 		pwm_init(CFG_LCD_PRI_PWM_CH, 0, 0);
 		display_init = 1;
 	}

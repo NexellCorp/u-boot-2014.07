@@ -184,7 +184,7 @@ void do_nonsec_virt_switch(void)
 }
 #endif
 
-int do_goImage (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+int do_goImage(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	ulong addr = 0, addr2 = 0;
 	long  machtype = machine_arch_type;
@@ -272,8 +272,49 @@ U_BOOT_CMD(
 	"addr2 \n"
 	"    - optional for DTS\n"
 	"machtype \n"
-	"    - optional to redefine machtype\n"
+	"    - optional for redefine machtype\n"
 );
+
+#ifdef CONFIG_CMD_UNZIP
+int do_gozImage(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	unsigned long src = 0, dst = 0;
+	unsigned long src_len = ~0UL, dst_len = ~0UL;
+
+	if (3 > argc) {
+		cmd_usage(cmdtp);
+		return 1;
+	}
+
+	src = simple_strtoul(argv[1], NULL, 16);
+	dst = simple_strtoul(argv[2], NULL, 16);
+
+	if (gunzip((void *) dst, dst_len, (void *) src, &src_len) != 0)
+		return 1;
+
+	printf("Uncompressed to 0x%lx size: %ld = 0x%lX\n", dst, src_len, src_len);
+	printf("goimage %s %s\n", argv[2], argv[3]);
+
+	return do_goImage(cmdtp, flag, (argc-1), &argv[1]);
+};
+
+U_BOOT_CMD(
+	gozimage, 4, 1,	do_gozImage,
+	"start compressed zImage at address 'addr',"
+	"decompress to 'addr2' dts 'addr3' and 'machtype'\n",
+	"addr addr2 addr3 machtype\n"
+	"    - start zImage at address 'addr' and \n"
+	"       decompress to 'addr2' with machine type, addr3 optional for DTS\n"
+	"addr \n"
+	"    - start zImage at address 'addr' with machine type integer\n"
+	"addr2 \n"
+	"    - decompress address 'addr2'\n"
+	"addr3 \n"
+	"    - optional for DTS\n"
+	"machtype \n"
+	"    - optional for redefine machtype\n"
+);
+#endif	/* CONFIG_CMD_UNZIP */
 
 int do_new_cmd (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {

@@ -44,6 +44,10 @@
 extern void CalUSBID(U16 *VID, U16 *PID, U32 ECID);
 extern void GetUSBID(U16 *VID, U16 *PID);
 
+#ifdef CONFIG_ENV_IS_NOWHERE
+#define saveenv()		0
+#endif
+
 #ifndef FASTBOOT_PARTS_DEFAULT
 #error "Not default FASTBOOT_PARTS_DEFAULT"
 #endif
@@ -179,7 +183,7 @@ extern int mmc_get_part_table(block_dev_desc_t *desc, uint64_t (*parts)[2], int 
 
 static int mmc_make_parts(int dev, uint64_t (*parts)[2], int count)
 {
-	char cmd[128];
+	char cmd[1024];
 	int i = 0, l = 0, p = 0;
 
 	l = sprintf(cmd, "fdisk %d %d:", dev, count);
@@ -188,6 +192,13 @@ static int mmc_make_parts(int dev, uint64_t (*parts)[2], int count)
 		l = sprintf(&cmd[p], " 0x%llx:0x%llx", parts[i][0], parts[i][1]);
 		p += l;
 	}
+	
+	if (p >= sizeof(cmd)) {
+		printf("** %s: cmd stack overflow : stack %d, cmd %d **\n",
+			__func__, sizeof(cmd), p);
+		while(1);
+	}	
+
 	cmd[p] = 0;
 	printf("%s\n", cmd);
 
@@ -260,7 +271,7 @@ static int mmc_part_write(struct fastboot_part *fpart, void *buf, uint64_t lengt
 		else
 			p = sprintf(args, "update_mmc %d boot", dev);
 
-		l = sprintf(&args[p], " 0x%x 0x%llx 0x%llx", (unsigned int)buf, fpart->start, length);
+		l = sprintf(&args[p], " %p 0x%llx 0x%llx", buf, fpart->start, length);
 		p += l;
 		args[p] = 0;
 
@@ -352,7 +363,7 @@ static int eeprom_part_write(struct fastboot_part *fpart, void *buf, uint64_t le
 		l = sprintf(&args[p], "%s", "raw");
 
 	p += l;
-	l = sprintf(&args[p], " 0x%x 0x%llx 0x%llx", (unsigned int)buf, fpart->start, length);
+	l = sprintf(&args[p], " %p 0x%llx 0x%llx", buf, fpart->start, length);
 	p += l;
 	args[p] = 0;
 
@@ -1016,7 +1027,7 @@ static int part_lists_make(const char *ptable_str, int ptable_str_len)
 		fp = malloc(sizeof(*fp));
 
 		if (!fp) {
-			printf("** Can't malloc fastboot part table entry (%d) **\n", sizeof(*fp));
+			printf("** Can't malloc fastboot part table entry **\n");
 			err = -1;
 			break;
 		}
@@ -1494,19 +1505,17 @@ done_getvar:
 static int fboot_cmd_download(const char *cmd, f_cmd_inf *inf, struct f_trans_stat *fst)
 {
 	char resp[RESP_SIZE] = "OKAY";
-	unsigned int len;
-	unsigned int clear = (unsigned int)inf->transfer_buffer;
+	unsigned int clear = (uintptr_t)(inf->transfer_buffer);
 
 	fst->image_size = simple_strtoull (cmd, NULL, 16);
 	fst->down_bytes = 0;
 	fst->error = 0;
 	fst->down_percent = -1;
 
-	len = (fst->image_size & ~0x3) + 4;
 	clear += fst->image_size;
 	clear &= ~0x3;
 
-	memset((char*)clear, 0x0, 16);	/* clear buffer for string parsing */
+	memset((void*)((ulong)clear), 0x0, 16);	/* clear buffer for string parsing */
 
 	printf("Starting download of %lld bytes\n", fst->image_size);
 
@@ -1722,8 +1731,8 @@ static int fboot_rx_handler(const unsigned char *buffer, unsigned int length)
 			if (fst->down_bytes >= fst->image_size) {
 
 				(fst->down_percent > 0) ? printf ("\n"): 0;
-				printf ("downloading of %lld bytes to 0x%x (0x%x) finished\n",
-					fst->down_bytes, (uint)inf->transfer_buffer, inf->transfer_buffer_size);
+				printf ("downloading of %lld bytes to %p (0x%x) finished\n",
+					fst->down_bytes, inf->transfer_buffer, inf->transfer_buffer_size);
 
 				if (fst->error)
 					sprintf(resp, "ERROR");

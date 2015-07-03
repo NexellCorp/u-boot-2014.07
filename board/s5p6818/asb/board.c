@@ -190,7 +190,12 @@ int board_early_init_f(void)
 	bd_alive_init();
 
 #if defined(CONFIG_REGULATOR_MP8845C) && !defined(CONFIG_PMIC_REG_DUMP)
-	bd_pmic_init_mp8845();
+#if defined(CONFIG_PMIC_I2C_BUSA)
+	bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSA, 1200000, 0);
+#endif
+#if defined(CONFIG_PMIC_I2C_BUSB)
+	bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSB, 1100000, 1);
+#endif
 #endif
 
 #if (defined(CONFIG_PMIC_NXE2000)||defined(CONFIG_PMIC_AXP228))&& !defined(CONFIG_PMIC_REG_DUMP)
@@ -209,13 +214,18 @@ int board_init(void)
 	return 0;
 }
 
-#if defined(CONFIG_PMIC_NXE2000)||defined(CONFIG_PMIC_AXP228)
+#if defined(CONFIG_PMIC_NXE2000)||defined(CONFIG_PMIC_AXP228)||defined(CONFIG_REGULATOR_MP8845C)
 int power_init_board(void)
 {
 	int ret = 0;
 #if defined(CONFIG_PMIC_REG_DUMP)
 #if defined(CONFIG_REGULATOR_MP8845C)
-	bd_pmic_init_mp8845();
+#if defined(CONFIG_PMIC_I2C_BUSA)
+	bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSA, 1200000, 0);
+#endif
+#if defined(CONFIG_PMIC_I2C_BUSB)
+	bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSB, 1100000, 1);
+#endif
 #endif
 	bd_pmic_init();
 #endif
@@ -306,7 +316,11 @@ int board_late_init(void)
 	    // psw0523 for cts
 	    // bat_check_skip = 1;
 
+#if defined(CONFIG_DISPLAY_OUT)
 		ret = power_battery_check(bat_check_skip, bd_display_run);
+#else
+		ret = power_battery_check(bat_check_skip, NULL);
+#endif
 
 		if(ret == 1)
 			auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
@@ -363,6 +377,10 @@ int board_late_init(void)
 	NX_CLKGEN_SetClockDivisorEnable(CLOCKINDEX_OF_VIP1_MODULE, CTRUE);
 	NX_RSTCON_SetRST(RESET_ID_VIP1, RSTCON_ASSERT);
 	NX_RSTCON_SetRST(RESET_ID_VIP1, RSTCON_NEGATE);
+	NX_CLKGEN_SetClockBClkMode(CLOCKINDEX_OF_VIP2_MODULE, NX_BCLKMODE_DYNAMIC);
+    NX_CLKGEN_SetClockDivisorEnable(CLOCKINDEX_OF_VIP2_MODULE, CTRUE);
+	NX_RSTCON_SetRST(RESET_ID_VIP2, RSTCON_ASSERT);
+	NX_RSTCON_SetRST(RESET_ID_VIP2, RSTCON_NEGATE);
 
 #if defined(CONFIG_DISPLAY_OUT)
 	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);

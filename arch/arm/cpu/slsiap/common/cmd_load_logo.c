@@ -144,7 +144,7 @@ static int do_loadbmp(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	free(args);
 	pr_dbg("%s loadbmp\n", ret?"Fail":"DONE");
 
-	return 0;
+	return ret;
 }
 
 U_BOOT_CMD(

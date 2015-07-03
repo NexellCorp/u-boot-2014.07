@@ -51,7 +51,7 @@ typedef unsigned int bool;
 #ifdef IO_ADDRESS
 #undef IO_ADDRESS
 #endif
-#define IO_ADDRESS(addr)	(addr)
+#define IO_ADDRESS(addr)	((ulong)addr)
 
 #define NS_IN_HZ (1000000000UL)
 #define TO_PERIOD_NS(freq)				(NS_IN_HZ/(freq))

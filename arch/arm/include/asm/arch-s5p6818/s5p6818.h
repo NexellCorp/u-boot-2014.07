@@ -248,6 +248,7 @@
 	#define RESET_ID_PPM				66
 	#define RESET_ID_VIP1				67
 	#define RESET_ID_VIP0				68
+	#define RESET_ID_VIP2				69
 
 /*
  * Interrupt

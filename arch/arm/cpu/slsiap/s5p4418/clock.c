@@ -227,10 +227,10 @@ static inline void peri_clk_bclk(void *base, int on)
 	struct clkgen_register *preg = base;
 	register U32 val;
 
-	val	 = ReadIODW(&preg->CLKENB);
+	val	 = readl(&preg->CLKENB);
 	val &= ~(0x3);
 	val |=  (on ? 3 : 0) & 0x3;	/* always BCLK */
-	WriteIODW(&preg->CLKENB, val);
+	writel(val, &preg->CLKENB);
 }
 
 static inline void peri_clk_pclk(void *base, int on)
@@ -240,10 +240,10 @@ static inline void peri_clk_pclk(void *base, int on)
 
 	if (!on) return;
 
-	val	 = ReadIODW(&preg->CLKENB);
+	val	 = readl(&preg->CLKENB);
 	val &= ~(1 << 3);
 	val |=  (1 << 3);
-	WriteIODW(&preg->CLKENB, val);
+	writel(val, &preg->CLKENB);
 }
 
 static inline void peri_clk_rate(void *base, int level, int src, int div)
@@ -260,12 +260,12 @@ static inline void peri_clk_rate(void *base, int level, int src, int div)
 		printk("*** %s: Fail pll.%d for BCLK DFS ***\n", __func__, src);
 #endif
 
-	val  = ReadIODW(&preg->CLKGEN[level<<1]);
+	val  = readl(&preg->CLKGEN[level<<1]);
 	val &= ~(0x07   << 2);
 	val |=  (src    << 2);	/* source */
 	val	&= ~(0xFF   << 5);
 	val	|=  (div-1) << 5;	/* divider */
-	WriteIODW(&preg->CLKGEN[level<<1], val);
+	writel(val, &preg->CLKGEN[level<<1]);
 }
 
 static inline void peri_clk_invert(void *base, int level, int inv)
@@ -273,10 +273,10 @@ static inline void peri_clk_invert(void *base, int level, int inv)
 	struct clkgen_register *preg = base;
 	register U32 val;
 
-	val = ReadIODW(&preg->CLKGEN[level<<1]);
+	val = readl(&preg->CLKGEN[level<<1]);
 	val	&= ~(1  << 1);
 	val	|=	(inv<< 1);
-	WriteIODW(&preg->CLKGEN[level<<1], val);
+	writel(val, &preg->CLKGEN[level<<1]);
 }
 
 static inline void peri_clk_enable(void *base)
@@ -284,10 +284,10 @@ static inline void peri_clk_enable(void *base)
 	struct clkgen_register *preg = base;
 	register U32 val;
 
-	val	 = ReadIODW(&preg->CLKENB);
+	val	 = readl(&preg->CLKENB);
 	val	&= ~(1 << 2);
 	val	|=  (1 << 2);
-	WriteIODW(&preg->CLKENB, val);
+	writel(val, &preg->CLKENB);
 }
 
 static inline void peri_clk_disable(void *base)
@@ -295,10 +295,10 @@ static inline void peri_clk_disable(void *base)
 	struct clkgen_register *preg = base;
 	register U32 val;
 
-	val	 = ReadIODW(&preg->CLKENB);
+	val	 = readl(&preg->CLKENB);
 	val	&= ~(1 << 2);
 	val	|=  (0 << 2);
-	WriteIODW(&preg->CLKENB, val);
+	writel(val, &preg->CLKENB);
 }
 
 /*
@@ -370,30 +370,32 @@ static unsigned int pll_get_div(unsigned int dvo)
 			  				((pll_get_div(4)>> 0)&0x3F)	/						\
 			  				((pll_get_div(4)>> 8)&0x3F))
 
-static inline void core_update_rate(int type)
+static unsigned long core_update_rate(int type)
 {
+	unsigned long rate = 0;
 	switch (type) {
-	case  0: core_hz[ 0] = PLLN_RATE ( 0);    break;   	// PLL 0
-	case  1: core_hz[ 1] = PLLN_RATE ( 1);    break;   	// PLL 1
-	case  2: core_hz[ 2] = PLLN_RATE ( 2);    break;   	// PLL 2
-	case  3: core_hz[ 3] = PLLN_RATE ( 3);    break;   	// PLL 3
-	case  4: core_hz[ 4] = FCLK_RATE ( 4);    break;   	// FCLK
-	case  5: core_hz[ 5] = MCLK_RATE ( 5);    break;   	// MCLK
-	case  6: core_hz[ 6] = BCLK_RATE ( 6);    break;   	// BCLK
-	case  7: core_hz[ 7] = PCLK_RATE ( 7);    break;   	// PCLK
-	case  8: core_hz[ 8] = HCLK_RATE ( 8);    break;   	// HCLK
-	case  9: core_hz[ 9] = MDCLK_RATE( 9);    break;   	// MDCLK
-	case 10: core_hz[10] = MBCLK_RATE(10);    break;   	// MBCLK
-	case 11: core_hz[11] = MPCLK_RATE(11);    break;   	// MPCLK
-	case 12: core_hz[12] = G3D_BCLK_RATE(12); break;	// G3D BCLK
-	case 13: core_hz[13] = MPG_BCLK_RATE(13); break;	// MPG BCLK
-	case 14: core_hz[14] = MPG_PCLK_RATE(14); break;	// MPG PCLK
+	case  0: rate = core_hz[ 0] = PLLN_RATE ( 0);    break;   	// PLL 0
+	case  1: rate = core_hz[ 1] = PLLN_RATE ( 1);    break;   	// PLL 1
+	case  2: rate = core_hz[ 2] = PLLN_RATE ( 2);    break;   	// PLL 2
+	case  3: rate = core_hz[ 3] = PLLN_RATE ( 3);    break;   	// PLL 3
+	case  4: rate = core_hz[ 4] = FCLK_RATE ( 4);    break;   	// FCLK
+	case  5: rate = core_hz[ 5] = MCLK_RATE ( 5);    break;   	// MCLK
+	case  6: rate = core_hz[ 6] = BCLK_RATE ( 6);    break;   	// BCLK
+	case  7: rate = core_hz[ 7] = PCLK_RATE ( 7);    break;   	// PCLK
+	case  8: rate = core_hz[ 8] = HCLK_RATE ( 8);    break;   	// HCLK
+	case  9: rate = core_hz[ 9] = MDCLK_RATE( 9);    break;   	// MDCLK
+	case 10: rate = core_hz[10] = MBCLK_RATE(10);    break;   	// MBCLK
+	case 11: rate = core_hz[11] = MPCLK_RATE(11);    break;   	// MPCLK
+	case 12: rate = core_hz[12] = G3D_BCLK_RATE(12); break;	// G3D BCLK
+	case 13: rate = core_hz[13] = MPG_BCLK_RATE(13); break;	// MPG BCLK
+	case 14: rate = core_hz[14] = MPG_PCLK_RATE(14); break;	// MPG PCLK
 	};
+	return rate;
 }
 
 static inline long core_rate(int type)
 {
-	return nxp_cpu_clock_hz(type);
+	return core_update_rate(type);
 }
 
 static inline long core_set_rate(struct clk *clk, long rate)
@@ -749,30 +751,7 @@ EXPORT_SYMBOL(clk_disable);
 /*
  * Core clocks APIs
  */
-unsigned int nxp_cpu_clock_hz(int type)
-{
-	unsigned int rate = 0;
-
-	switch (type) {
-	case  0: rate = core_hz[ 0];	break;	// PLL0
-	case  1: rate = core_hz[ 1];	break;	// PLL1
-	case  2: rate = core_hz[ 2];	break;	// PLL2, 295 MHZ
-	case  3: rate = core_hz[ 3];	break;	// PLL3
-	case  4: rate = core_hz[ 4];	break;	// FCLK
-	case  5: rate = core_hz[ 5];	break;	// MCLK
-	case  6: rate = core_hz[ 6];	break;	// BCLK
-	case  7: rate = core_hz[ 7];	break;	// PCLK, 166500000, 100000000
-	case  8: rate = core_hz[ 8];	break;	// HCLK
-	case  9: rate = core_hz[ 9];	break;	// MDCLK
-	case 10: rate = core_hz[10];	break;	// MBCLK
-	case 11: rate = core_hz[11];	break;	// MPCLK
-	default: printk("unknown core clock type %d ...\n", type);
-			break;
-	};
-	return rate;
-}
-
-void __init nxp_cpu_clock_init(void)
+void __init nxp_clk_init(void)
 {
 	struct nxp_clk_dev *cdev = clk_devices;
 	struct nxp_clk_periph *peri = clk_periphs;
@@ -816,7 +795,7 @@ void __init nxp_cpu_clock_init(void)
 	pr_info("CPU : Clock Generator= %d EA, ", DEVICE_NUM);
 }
 
-void nxp_cpu_clock_print(void)
+void nxp_clk_print(void)
 {
 	int pll, cpu, i = 0;
 	for (i = 0; ARRAY_SIZE(core_hz) > i; i++)

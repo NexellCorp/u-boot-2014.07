@@ -24,10 +24,10 @@
 #ifndef __CPU_H_
 #define __CPU_H_
 
-#define	NR_CPUS		4
+#define	NR_CPUS		8
 #define	MAX_GIC_NR	1
 
-extern void gic_init(unsigned int nr, int start, void __iomem *dist , void __iomem *cpu);
+extern void gic_dev_init(unsigned int nr, int start, void __iomem *dist , void __iomem *cpu);
 extern void gic_raise_softirq(int cpu);
 
 extern void smp_cpu_init_f(void);

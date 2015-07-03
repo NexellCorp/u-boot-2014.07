@@ -381,8 +381,11 @@ int board_late_init(void)
 	    // psw0523 for cts
 	    // bat_check_skip = 1;
 
+#if defined(CONFIG_DISPLAY_OUT)
 		ret = power_battery_check(bat_check_skip, bd_display_run);
-
+#else
+		ret = power_battery_check(bat_check_skip, NULL);
+#endif
 		if(ret == 1)
 			auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
 	}

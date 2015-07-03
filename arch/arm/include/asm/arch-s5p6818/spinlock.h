@@ -6,6 +6,11 @@
 #define barrier()	 	__asm__ __volatile__("": : :"memory")
 #define cpu_relax()     barrier()
 
+#if defined(CONFIG_ARM64)
+static inline void raw_spin_lock(spinlock_t *lock) {}
+static inline void raw_spin_unlock(spinlock_t *lock) {}
+#else
+
 #ifdef CONFIG_ARCH_S5P6818_REV
 #define	WFENE	"wfene\n"
 #define	SEV		"sev"
@@ -47,5 +52,5 @@ static inline void raw_spin_unlock(spinlock_t *lock)
 		SEV
 	);
 }
-
+#endif
 #endif /* __ASM_LINUX_SPINLOCK_H */

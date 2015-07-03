@@ -33,10 +33,12 @@
 #include <platform.h>
 #endif
 
+//#define	CONFIG_ARMV8_SWITCH_TO_EL1
+
 /*-----------------------------------------------------------------------
  *  u-boot-2014.07
  */
-#define CONFIG_SYS_LDSCRIPT "arch/arm/cpu/slsiap/u-boot.lds"
+#define CONFIG_SYS_LDSCRIPT "arch/arm/cpu/slsiap/u-boot_64.lds"
 #define CONFIG_SYS_GENERIC_BOARD
 
 #define	CONFIG_MACH_S5P6818
@@ -73,6 +75,10 @@
 /* Download OFFSET */
 #define CONFIG_MEM_LOAD_ADDR			0x48000000
 
+/* AARCH64 */
+#define COUNTER_FREQUENCY		200000000	// 12000000
+#define CPU_RELEASE_ADDR		CONFIG_SYS_INIT_SP_ADDR
+
 /*-----------------------------------------------------------------------
  *  High Level System Configuration
  */
@@ -90,7 +96,7 @@
 #define CONFIG_SYS_LOAD_ADDR			CONFIG_MEM_LOAD_ADDR					/* kernel load address */
 
 #define CONFIG_SYS_MEMTEST_START		CONFIG_SYS_MALLOC_END					/* memtest works on */
-#define CONFIG_SYS_MEMTEST_END			(CONFIG_SYS_SDRAM_BASE + CONFIG_SYS_SDRAM_SIZE)
+#define CONFIG_SYS_MEMTEST_END			((ulong)CONFIG_SYS_SDRAM_BASE + (ulong)CONFIG_SYS_SDRAM_SIZE)
 
 /*-----------------------------------------------------------------------
  *  System initialize options (board_init_f)
@@ -103,7 +109,7 @@
 #define	CONFIG_ARCH_MISC_INIT													/* board_init_r, call arch_misc_init */
 //#define	CONFIG_SYS_ICACHE_OFF
 
-#define CONFIG_MMU_ENABLE
+//#define CONFIG_MMU_ENABLE
 #ifdef  CONFIG_MMU_ENABLE
 #undef  CONFIG_SYS_DCACHE_OFF
 #endif
@@ -123,7 +129,7 @@
  *	U-Boot Environments
  */
 /* refer to common/env_common.c	*/
-#define CONFIG_BOOTDELAY	   			0
+#define CONFIG_BOOTDELAY	   			3
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 #define CONFIG_ETHADDR		   			00:e2:1c:ba:e8:60
 #define CONFIG_NETMASK		   			255.255.255.0
@@ -132,8 +138,7 @@
 #define CONFIG_GATEWAYIP				192.168.1.254
 #define CONFIG_BOOTFILE					"uImage"  		/* File to load	*/
 
-#define CONFIG_BOOTCOMMAND "run boot0"
-//#define CONFIG_BOOTCOMMAND "ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 root.img.gz;bootm 0x48000000"
+#define CONFIG_BOOTCOMMAND "fatload mmc 0:1 0x40080000 Image;fatload mmc 0:1 0x48000000 s5p6818-svt.dtb;fatload mmc 0:1 0x49000000 root.img.gz;goimage 0x40080000 0x48000000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -188,7 +193,7 @@
  * Ethernet configuration
  * depend on CONFIG_CMD_NET
  */
-//#define CONFIG_DRIVER_DM9000			1
+#define CONFIG_DRIVER_DM9000			1
 
 #if defined(CONFIG_CMD_NET)
 	/* DM9000 Ethernet device */
@@ -210,36 +215,13 @@
 /*-----------------------------------------------------------------------
  * NAND FLASH
  */
-#define CONFIG_CMD_NAND
-#define CONFIG_NAND_FTL
-//#define CONFIG_NAND_MTD
+//#define CONFIG_CMD_NAND
 //#define CONFIG_ENV_IS_IN_NAND
 
-#if defined(CONFIG_NAND_FTL) && defined(CONFIG_NAND_MTD)
-#error "Duplicated config for NAND Driver!!!"
-#endif
-
-#if defined(CONFIG_NAND_FTL)
-#define HAVE_BLOCK_DEVICE
-#endif
-
 #if defined(CONFIG_CMD_NAND)
-	#if !defined(CONFIG_NAND_FTL) && !defined(CONFIG_NAND_MTD)
-	#error "Select FTL or MTD for NAND Driver!!!"
-	#endif
-
 	#define CONFIG_SYS_MAX_NAND_DEVICE		(1)
 	#define CONFIG_SYS_NAND_MAX_CHIPS   	(1)
 	#define CONFIG_SYS_NAND_BASE		   	PHY_BASEADDR_CS_NAND							/* Nand data register, nand->IO_ADDR_R/_W */
-
-	#if defined(CONFIG_ENV_IS_IN_NAND)
-		#define	CONFIG_ENV_OFFSET			(0x1000000)									/* 4MB */
-		#define CONFIG_ENV_SIZE           	(0x100000)									/* 1 block size */
-		#define CONFIG_ENV_RANGE			(0x400000)		 							/* avoid bad block */
-	#endif
-#endif
-
-#if defined(CONFIG_NAND_MTD)
 	#define CONFIG_SYS_NAND_ONFI_DETECTION
 	#define CONFIG_CMD_NAND_TRIMFFS
 
@@ -256,6 +238,11 @@
 		#define	CONFIG_NAND_ECC_BCH
 	#endif
 
+	#if defined(CONFIG_ENV_IS_IN_NAND)
+		#define	CONFIG_ENV_OFFSET			(0x400000)									/* 4MB */
+		#define CONFIG_ENV_SIZE           	(0x100000)									/* 1 block size */
+		#define CONFIG_ENV_RANGE			(0x400000)		 							/* avoid bad block */
+	#endif
 
 	#undef  CONFIG_CMD_IMLS
 
@@ -310,7 +297,7 @@
 		#define CMD_SPI_DP				0xB9		// Deep Power-down
 		#define CMD_SPI_RES				0xAB		// Release from Deep Power-down
 
-		//#define CONFIG_SPI_EEPROM_WRITE_PROTECT
+		#define CONFIG_SPI_EEPROM_WRITE_PROTECT
 		#if defined(CONFIG_SPI_EEPROM_WRITE_PROTECT)
 			#define	CONFIG_SPI_EEPROM_WP_PAD 			CFG_IO_SPI_EEPROM_WP
 			#define	CONFIG_SPI_EEPROM_WP_ALT			CFG_IO_SPI_EEPROM_WP_ALT
@@ -417,9 +404,6 @@
 
 		#define CONFIG_PMIC_NXE2000
 		#define CONFIG_REGULATOR_MP8845C
-
-		#define CONFIG_ASV_CORE_TABLE
-
 		//#define CONFIG_PMIC_REG_DUMP
 	#endif
 
@@ -496,11 +480,10 @@
  * #> fatload mmc 0  0x.....	"file"
  *
  */
-//#define	CONFIG_CMD_MMC
+#define	CONFIG_CMD_MMC
 //#define CONFIG_ENV_IS_IN_MMC
 
 #if defined(CONFIG_CMD_MMC)
-
 	#define	CONFIG_MMC
 	#define CONFIG_GENERIC_MMC
 	#define HAVE_BLOCK_DEVICE
@@ -551,7 +534,7 @@
 /*-----------------------------------------------------------------------
  * FAT Partition
  */
-#if defined(CONFIG_MMC) || defined(CONFIG_CMD_USB) || defined(CONFIG_NAND_FTL)
+#if defined(CONFIG_MMC) || defined(CONFIG_CMD_USB)
 	#define CONFIG_DOS_PARTITION
 
 	#define CONFIG_CMD_FAT
@@ -611,10 +594,9 @@
 #define CONFIG_DISPLAY_OUT
 
 #define CONFIG_LOGO_DEVICE_MMC
-//#define CONFIG_LOGO_DEVICE_NAND
 
 #if defined(CONFIG_LOGO_DEVICE_MMC) && defined(CONFIG_LOGO_DEVICE_NAND)
-#error "Select one LOGO DEVICE!"
+#error "Duplicated config for logo device!!!"
 #endif
 
 #if	defined(CONFIG_DISPLAY_OUT)
@@ -622,54 +604,31 @@
 	/* display out device */
 	#define	CONFIG_DISPLAY_OUT_LVDS
 	// #define	CONFIG_DISPLAY_OUT_MIPI
-    #define	CONFIG_DISPLAY_OUT_HDMI
+   // #define	CONFIG_DISPLAY_OUT_HDMI
 
 	/* display logo */
 	#define CONFIG_LOGO_NEXELL				/* Draw loaded bmp file to FB or fill FB */
 //	#define CONFIG_CMD_LOGO_LOAD
 
 	/* Logo command: board.c */
-	/* From MMC */
+	#if defined(CONFIG_LOGO_DEVICE_NAND)
+	/* From NAND */
     #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
     #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
     #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
-#endif
-
-/*-----------------------------------------------------------------------
- * Extra Default ENV
- */
-#define	CONFIG_EXTRA_ENV_SETTINGS		\
-								"boot0=fatload mmc 0:1 0x48000000 uImage;fatload mmc 0:1 0x49000000 root.img.gz;bootm 0x48000000\0"	\
-
-/*-----------------------------------------------------------------------
- * Recover boot
- */
-//#define	CONFIG_RECOVERY_BOOT
-#if defined (CONFIG_RECOVERY_BOOT)
-	#define CONFIG_CMD_RECOVERY_BOOT "ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
+	#else
+	/* From SDFS */
+    #define CONFIG_CMD_LOGO_WALLPAPERS 	"fatload mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_BATTERY 	"fatload mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_UPDATE 		"fatload mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
+	#endif
 #endif
 
 /*-----------------------------------------------------------------------
  * Debug message
  */
 //#define DEBUG							/* u-boot debug macro, nand, ethernet,... */
-
-#define CONFIG_VIP
-#define CONFIG_MLC_VIDEO
-
-#if defined(CONFIG_VIP)
-// start address must be checked by kernel booting
-// each address must be aligned 4K
-#if 0
-#define CONFIG_VIP_LU_ADDR          0x7FEF2000
-#define CONFIG_VIP_CB_ADDR          0x7FF62800
-#define CONFIG_VIP_CR_ADDR          0x7FF79000
-#else
-#define CONFIG_VIP_LU_ADDR          0x7FD28000
-#define CONFIG_VIP_CB_ADDR          0x7FD98800
-#define CONFIG_VIP_CR_ADDR          0x7FDAF000
-#endif
-#endif
+//#define CONFIG_PROTOTYPE_DEBUG		/* prototype debug mode */
 
 #endif /* __CONFIG_H__ */
 

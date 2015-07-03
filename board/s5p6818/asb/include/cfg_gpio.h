@@ -227,7 +227,7 @@
  -----------------------------------------------------------------------------*/
 #define PAD_GPIOALV0    (PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_UP )				// POWER_KEY
 #define PAD_GPIOALV1    (PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_UP )				// SD0_CD
-#define PAD_GPIOALV2    (PAD_MODE_OUT | PAD_LEVEL_LOW  | PAD_PULL_UP )				// DUT_RDY
+#define PAD_GPIOALV2    (PAD_MODE_OUT | PAD_LEVEL_HIGH | PAD_PULL_UP )				// DUT_RDY
 #define PAD_GPIOALV3    (PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_UP )				// BASE_RDY
 #define PAD_GPIOALV4    (PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_UP )				// PMIC INT
 #define PAD_GPIOALV5    (PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_UP )				// BASE5

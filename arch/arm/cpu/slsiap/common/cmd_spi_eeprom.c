@@ -116,7 +116,7 @@ int do_update_eeprom(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 			size = simple_strtoul(argv[3], NULL, 16);
 		}
 
-		p = (unsigned char*)mem;
+		p = (unsigned char*)((ulong)mem);
 		for (i = 0; size > i; i++ )
 			CRC = get_fcs(CRC, p[i]);
 
@@ -143,15 +143,13 @@ int do_update_eeprom(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 	}
 
 	if (!strcmp(cmd, "2ndboot")) {
-		unsigned int *buf;
-		unsigned int CRC = 0;
-		int i, ret = 0;
+		int ret = 0;
 
-		p   = (unsigned char*)mem;
+		mem = simple_strtoul(argv[2], NULL, 16);
+		p   = (unsigned char*)((ulong)mem);
 
 		spi_init_f();
 
-		mem = simple_strtoul(argv[2], NULL, 16);
 		if (argc > 4) {
 			addr = simple_strtoul(argv[3], NULL, 16);
 			size = simple_strtoul(argv[4], NULL, 16);
@@ -168,7 +166,6 @@ int do_update_eeprom(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 		printf("update_eeprom 2ndboot 0x%p to 0x%08x, size 0x%x\n", p, addr, size);
 
 		ret = spi_write(offs, 3, (uchar*)p, size);
-		free(buf);
 
 		return ret;
 	}
@@ -184,7 +181,7 @@ int do_update_eeprom(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 		addr = simple_strtoul(argv[3], NULL, 16);
 		size = simple_strtoul(argv[4], NULL, 16);
 
-		p = (unsigned char*)mem;
+		p = (unsigned char*)((ulong)mem);
 		offs[0] = (addr >>  16);
 		offs[1] = (addr >>   8);
 		offs[2] = (addr & 0xFF);

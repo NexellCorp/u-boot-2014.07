@@ -47,34 +47,35 @@ static void (*DRAWTEXTFONT[])(char *, int, int, int, int, int) = {
 };
 
 #define RGB565_ALPHA_MASK	0xF7DE
-#define	RGB888TO565(c)		((((c>>16)&0xFF)&0xF8)<<8) | ((((c>>8)&0xFF)&0xFC)<<3) | ((((c>>0 )&0xFF)&0xF8)>>3)
+#define	RGB888TO565(c)	((((c>>16)&0xFF)&0xF8)<<8) | 	\
+		((((c>>8)&0xFF)&0xFC)<<3) | ((((c>>0 )&0xFF)&0xF8)>>3)
 
 static void PutPixel888To565(unsigned int base,
 			int xpos, int ypos, int width, int height, unsigned int color)
 {
-	*(U16*)(base + (ypos * width + xpos) * 2) = (U16)RGB888TO565(color);
+	*(U16*)((ulong)(base + (ypos * width + xpos) * 2)) = (U16)RGB888TO565(color);
 }
 
 static void PutPixel888To888(unsigned int base,
 			int xpos, int ypos, int width, int height, unsigned int color)
 {
 	base = base + (ypos * width + xpos) * 3;
-	*(U8*)(base++) = ((color>> 0)&0xFF);	// B
-	*(U8*)(base++) = ((color>> 8)&0xFF);	// G
-	*(U8*)(base)   = ((color>>16)&0xFF);	// R
+	*(U8*)((ulong)(base++)) = ((color>> 0)&0xFF);	// B
+	*(U8*)((ulong)(base++)) = ((color>> 8)&0xFF);	// G
+	*(U8*)((ulong)(base))   = ((color>>16)&0xFF);	// R
 }
 
 static void PutPixel888To8888(unsigned int base,
 			int xpos, int ypos, int width, int height, unsigned int color)
 {
-	*(U32*)(base + (ypos * width + xpos) * 4) = (0xFF000000) | (color & 0xFFFFFF);
+	*(U32*)((ulong)(base + (ypos * width + xpos) * 4)) = (0xFF000000) | (color & 0xFFFFFF);
 }
 
 static void ALPHAPixel888To565(unsigned int base,
 			int xpos, int ypos, int width, int height, unsigned int color)
 {
-	*(unsigned short*)(base + (ypos * width + xpos) * 2) =
-		(*(unsigned short*)(base + (ypos * width + xpos) * 2) & RGB565_ALPHA_MASK>>1)  |
+	*(unsigned short*)((ulong)(base + (ypos * width + xpos) * 2)) =
+		(*(unsigned short*)((ulong)(base + (ypos * width + xpos) * 2)) & RGB565_ALPHA_MASK>>1)  |
 		(unsigned short)RGB888TO565(color);
 }
 
@@ -82,16 +83,17 @@ static void ALPHAPixel888To888(unsigned int base,
 			int xpos, int ypos, int width, int height, unsigned int color)
 {
 	base = base + (ypos * width + xpos) * 3;
-	*(U8*)(base) = (*(U8*)(base)>>1) | ((color>> 0)&0xFF);	base++;	// B
-	*(U8*)(base) = (*(U8*)(base)>>1) | ((color>> 8)&0xFF);	base++;	// G
-	*(U8*)(base) = (*(U8*)(base)>>1) | ((color>>16)&0xFF);			// R
+	*(U8*)((ulong)(base)) = (*(U8*)((ulong)(base))>>1) | ((color>> 0)&0xFF);	base++;	// B
+	*(U8*)((ulong)(base)) = (*(U8*)((ulong)(base))>>1) | ((color>> 8)&0xFF);	base++;	// G
+	*(U8*)((ulong)(base)) = (*(U8*)((ulong)(base))>>1) | ((color>>16)&0xFF);			// R
 }
 
 static void ALPHAPixel888To8888(unsigned int base,
 			int xpos, int ypos, int width, int height, unsigned int color)
 {
 	base = base + (ypos * width + xpos) * 4;
-	*(unsigned int*)base = (0xFF000000) | (color & 0xFFFFFF) | (*(unsigned int*)base);
+	*(unsigned int*)((ulong)base) = (0xFF000000) | (color & 0xFFFFFF) |
+					(*(unsigned int*)((ulong)base));
 }
 
 static void (*PUTPIXELTABLE[])(U32, int, int, int, int, U32) =

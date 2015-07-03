@@ -36,7 +36,7 @@
 /*-----------------------------------------------------------------------
  *  u-boot-2014.07
  */
-#define CONFIG_SYS_LDSCRIPT "arch/arm/cpu/slsiap/u-boot.lds"
+#define CONFIG_SYS_LDSCRIPT "arch/arm/cpu/slsiap/u-boot_64.lds"
 #define CONFIG_SYS_GENERIC_BOARD
 
 #define	CONFIG_MACH_S5P6818
@@ -73,6 +73,10 @@
 /* Download OFFSET */
 #define CONFIG_MEM_LOAD_ADDR			0x48000000
 
+/* AARCH64 */
+#define COUNTER_FREQUENCY		200000000	// 12000000
+#define CPU_RELEASE_ADDR		CONFIG_SYS_INIT_SP_ADDR
+
 /*-----------------------------------------------------------------------
  *  High Level System Configuration
  */
@@ -90,7 +94,7 @@
 #define CONFIG_SYS_LOAD_ADDR			CONFIG_MEM_LOAD_ADDR					/* kernel load address */
 
 #define CONFIG_SYS_MEMTEST_START		CONFIG_SYS_MALLOC_END					/* memtest works on */
-#define CONFIG_SYS_MEMTEST_END			(CONFIG_SYS_SDRAM_BASE + CONFIG_SYS_SDRAM_SIZE)
+#define CONFIG_SYS_MEMTEST_END			((ulong)CONFIG_SYS_SDRAM_BASE + (ulong)CONFIG_SYS_SDRAM_SIZE)
 
 /*-----------------------------------------------------------------------
  *  System initialize options (board_init_f)
@@ -103,7 +107,7 @@
 #define	CONFIG_ARCH_MISC_INIT													/* board_init_r, call arch_misc_init */
 //#define	CONFIG_SYS_ICACHE_OFF
 
-#define CONFIG_MMU_ENABLE
+//#define CONFIG_MMU_ENABLE
 #ifdef  CONFIG_MMU_ENABLE
 #undef  CONFIG_SYS_DCACHE_OFF
 #endif
@@ -133,7 +137,6 @@
 #define CONFIG_BOOTFILE					"uImage"  		/* File to load	*/
 
 #define CONFIG_BOOTCOMMAND "run boot0"
-//#define CONFIG_BOOTCOMMAND "ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 root.img.gz;bootm 0x48000000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -210,36 +213,13 @@
 /*-----------------------------------------------------------------------
  * NAND FLASH
  */
-#define CONFIG_CMD_NAND
-#define CONFIG_NAND_FTL
-//#define CONFIG_NAND_MTD
+//#define CONFIG_CMD_NAND
 //#define CONFIG_ENV_IS_IN_NAND
 
-#if defined(CONFIG_NAND_FTL) && defined(CONFIG_NAND_MTD)
-#error "Duplicated config for NAND Driver!!!"
-#endif
-
-#if defined(CONFIG_NAND_FTL)
-#define HAVE_BLOCK_DEVICE
-#endif
-
 #if defined(CONFIG_CMD_NAND)
-	#if !defined(CONFIG_NAND_FTL) && !defined(CONFIG_NAND_MTD)
-	#error "Select FTL or MTD for NAND Driver!!!"
-	#endif
-
 	#define CONFIG_SYS_MAX_NAND_DEVICE		(1)
 	#define CONFIG_SYS_NAND_MAX_CHIPS   	(1)
 	#define CONFIG_SYS_NAND_BASE		   	PHY_BASEADDR_CS_NAND							/* Nand data register, nand->IO_ADDR_R/_W */
-
-	#if defined(CONFIG_ENV_IS_IN_NAND)
-		#define	CONFIG_ENV_OFFSET			(0x1000000)									/* 4MB */
-		#define CONFIG_ENV_SIZE           	(0x100000)									/* 1 block size */
-		#define CONFIG_ENV_RANGE			(0x400000)		 							/* avoid bad block */
-	#endif
-#endif
-
-#if defined(CONFIG_NAND_MTD)
 	#define CONFIG_SYS_NAND_ONFI_DETECTION
 	#define CONFIG_CMD_NAND_TRIMFFS
 
@@ -256,6 +236,11 @@
 		#define	CONFIG_NAND_ECC_BCH
 	#endif
 
+	#if defined(CONFIG_ENV_IS_IN_NAND)
+		#define	CONFIG_ENV_OFFSET			(0x400000)									/* 4MB */
+		#define CONFIG_ENV_SIZE           	(0x100000)									/* 1 block size */
+		#define CONFIG_ENV_RANGE			(0x400000)		 							/* avoid bad block */
+	#endif
 
 	#undef  CONFIG_CMD_IMLS
 
@@ -285,7 +270,7 @@
 
 #define CONFIG_CMD_EEPROM
 #define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
-#define CONFIG_ENV_IS_IN_EEPROM
+//#define CONFIG_ENV_IS_IN_EEPROM
 
 #if defined(CONFIG_CMD_EEPROM)
 
@@ -310,7 +295,7 @@
 		#define CMD_SPI_DP				0xB9		// Deep Power-down
 		#define CMD_SPI_RES				0xAB		// Release from Deep Power-down
 
-		//#define CONFIG_SPI_EEPROM_WRITE_PROTECT
+		#define CONFIG_SPI_EEPROM_WRITE_PROTECT
 		#if defined(CONFIG_SPI_EEPROM_WRITE_PROTECT)
 			#define	CONFIG_SPI_EEPROM_WP_PAD 			CFG_IO_SPI_EEPROM_WP
 			#define	CONFIG_SPI_EEPROM_WP_ALT			CFG_IO_SPI_EEPROM_WP_ALT
@@ -402,7 +387,7 @@
 	#if defined(CONFIG_PMIC)
 		#define CONFIG_CMD_I2C
 		#define CONFIG_PMIC_I2C
-		#define CONFIG_PMIC_I2C_BUS							I2C_2
+		#define CONFIG_PMIC_I2C_BUS							I2C_0
 
 		#define CONFIG_PMIC_CHARGING_PATH_ADP               (0) // Support only VADP. Do not supported USB ADP.
 		#define CONFIG_PMIC_CHARGING_PATH_UBC               (1) // Support only VUSB. (USB connector - USB ADP & PC)
@@ -417,9 +402,6 @@
 
 		#define CONFIG_PMIC_NXE2000
 		#define CONFIG_REGULATOR_MP8845C
-
-		#define CONFIG_ASV_CORE_TABLE
-
 		//#define CONFIG_PMIC_REG_DUMP
 	#endif
 
@@ -435,11 +417,11 @@
 	#endif
 
 	#if defined(CONFIG_REGULATOR_MP8845C)
-		#define CONFIG_PMIC_I2C_BUSA				I2C_0
-		#define CONFIG_PMIC_I2C_BUSB				I2C_3
+		#define CONFIG_PMIC_I2C_BUSA				I2C_1
+		#define CONFIG_PMIC_I2C_BUSB				I2C_2
 
-		#define	CFG_IO_I2C3_SCL						((PAD_GPIO_D + 6) | PAD_FUNC_ALT0)
-		#define	CFG_IO_I2C3_SDA						((PAD_GPIO_D + 7) | PAD_FUNC_ALT0)
+		#define	CFG_IO_I2C1_SCL						((PAD_GPIO_D + 2) | PAD_FUNC_ALT0)
+		#define	CFG_IO_I2C1_SDA						((PAD_GPIO_D + 3) | PAD_FUNC_ALT0)
 	#endif
 
 
@@ -473,16 +455,14 @@
 	#define	CONFIG_SYS_I2C_SPEED		100000				/* default speed, 100 khz */
 
 	#define	CONFIG_I2C0_NEXELL								/* 0 = i2c 0 */
-	#define	CONFIG_I2C0_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
+	#define	CONFIG_I2C0_NO_STOP				1				/* when tx end, 0= generate stop signal , 1: skip stop signal */
 
 	#define	CONFIG_I2C1_NEXELL								/* 1 = i2c 1 */
 	#define	CONFIG_I2C1_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
 
 	#define	CONFIG_I2C2_NEXELL								/* 2 = i2c 2 */
-	#define	CONFIG_I2C2_NO_STOP				1				/* when tx end, 0= generate stop signal , 1: skip stop signal */
+	#define	CONFIG_I2C2_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
 
-	#define	CONFIG_I2C3_NEXELL								/* 3 = i2c 3 */
-	#define	CONFIG_I2C3_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
 #endif
 
 /*-----------------------------------------------------------------------
@@ -496,8 +476,8 @@
  * #> fatload mmc 0  0x.....	"file"
  *
  */
-//#define	CONFIG_CMD_MMC
-//#define CONFIG_ENV_IS_IN_MMC
+#define	CONFIG_CMD_MMC
+#define CONFIG_ENV_IS_IN_MMC
 
 #if defined(CONFIG_CMD_MMC)
 
@@ -506,16 +486,16 @@
 	#define HAVE_BLOCK_DEVICE
 
 	#define	CONFIG_MMC0_ATTACH			TRUE	/* 0 = MMC0 */
-	#define	CONFIG_MMC1_ATTACH			TRUE	/* 1 = MMC1 */
-	#define	CONFIG_MMC2_ATTACH			TRUE	/* 2 = MMC2 */
+	#define	CONFIG_MMC1_ATTACH			FALSE	/* 1 = MMC1 */
+	#define	CONFIG_MMC2_ATTACH			FALSE	/* 2 = MMC2 */
 
-	#define CONFIG_MMC0_CLOCK			20000000
+	#define CONFIG_MMC0_CLOCK			25000000
 	#define CONFIG_MMC0_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(1)
 
-	#define CONFIG_MMC1_CLOCK			20000000
+	#define CONFIG_MMC1_CLOCK			50000000
 	#define CONFIG_MMC1_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(1)
 
-	#define CONFIG_MMC2_CLOCK			20000000
+	#define CONFIG_MMC2_CLOCK			50000000
 	#define CONFIG_MMC2_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(1)
 
 	#define CONFIG_DWMMC
@@ -551,7 +531,7 @@
 /*-----------------------------------------------------------------------
  * FAT Partition
  */
-#if defined(CONFIG_MMC) || defined(CONFIG_CMD_USB) || defined(CONFIG_NAND_FTL)
+#if defined(CONFIG_MMC) || defined(CONFIG_CMD_USB)
 	#define CONFIG_DOS_PARTITION
 
 	#define CONFIG_CMD_FAT
@@ -588,7 +568,7 @@
 /*-----------------------------------------------------------------------
  * FASTBOOT
  */
-#define CONFIG_FASTBOOT
+//#define CONFIG_FASTBOOT
 
 #if defined(CONFIG_FASTBOOT) & defined(CONFIG_USB_GADGET)
 #define CFG_FASTBOOT_TRANSFER_BUFFER        CONFIG_MEM_LOAD_ADDR
@@ -608,13 +588,12 @@
 /*-----------------------------------------------------------------------
  * Logo command
  */
-#define CONFIG_DISPLAY_OUT
+//#define CONFIG_DISPLAY_OUT
 
-#define CONFIG_LOGO_DEVICE_MMC
-//#define CONFIG_LOGO_DEVICE_NAND
+//#define CONFIG_LOGO_DEVICE_MMC
 
 #if defined(CONFIG_LOGO_DEVICE_MMC) && defined(CONFIG_LOGO_DEVICE_NAND)
-#error "Select one LOGO DEVICE!"
+#error "Duplicated config for logo device!!!"
 #endif
 
 #if	defined(CONFIG_DISPLAY_OUT)
@@ -629,10 +608,17 @@
 //	#define CONFIG_CMD_LOGO_LOAD
 
 	/* Logo command: board.c */
-	/* From MMC */
+	#if defined(CONFIG_LOGO_DEVICE_NAND)
+	/* From NAND */
     #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
     #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
     #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
+	#else
+	/* From SDFS */
+    #define CONFIG_CMD_LOGO_WALLPAPERS 	"fatload mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_BATTERY 	"fatload mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_UPDATE 		"fatload mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
+	#endif
 #endif
 
 /*-----------------------------------------------------------------------
@@ -653,23 +639,7 @@
  * Debug message
  */
 //#define DEBUG							/* u-boot debug macro, nand, ethernet,... */
-
-#define CONFIG_VIP
-#define CONFIG_MLC_VIDEO
-
-#if defined(CONFIG_VIP)
-// start address must be checked by kernel booting
-// each address must be aligned 4K
-#if 0
-#define CONFIG_VIP_LU_ADDR          0x7FEF2000
-#define CONFIG_VIP_CB_ADDR          0x7FF62800
-#define CONFIG_VIP_CR_ADDR          0x7FF79000
-#else
-#define CONFIG_VIP_LU_ADDR          0x7FD28000
-#define CONFIG_VIP_CB_ADDR          0x7FD98800
-#define CONFIG_VIP_CR_ADDR          0x7FDAF000
-#endif
-#endif
+//#define CONFIG_PROTOTYPE_DEBUG		/* prototype debug mode */
 
 #endif /* __CONFIG_H__ */
 

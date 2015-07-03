@@ -122,7 +122,7 @@ PutPixel555To565(
 		U32  color
 		)
 {
-	*(U16*)(base + (ypos * width + xpos) * 2) = (U16)RGB555TO565(color);
+	*(U16*)((ulong)(base + (ypos * width + xpos) * 2)) = (U16)RGB555TO565(color);
 }
 
 /*
@@ -150,9 +150,12 @@ PutPixel565To888(
 		U32  color
 		)
 {
-	*(U8*)(base + (ypos * width + xpos) * 3 + 0) = (((color >> 0 ) << 3) & 0xf8) | (((color >> 0 ) >> 2) & 0x7);	// B
-	*(U8*)(base + (ypos * width + xpos) * 3 + 1) = (((color >> 5 ) << 2) & 0xfc) | (((color >> 5 ) >> 4) & 0x3);	// G
-	*(U8*)(base + (ypos * width + xpos) * 3 + 2) = (((color >> 11) << 3) & 0xf8) | (((color >> 11) >> 2) & 0x7);	// R
+	*(U8*)((ulong)(base + (ypos * width + xpos) * 3 + 0)) =
+		(((color >> 0 ) << 3) & 0xf8) | (((color >> 0 ) >> 2) & 0x7);	// B
+	*(U8*)((ulong)(base + (ypos * width + xpos) * 3 + 1)) =
+		(((color >> 5 ) << 2) & 0xfc) | (((color >> 5 ) >> 4) & 0x3);	// G
+	*(U8*)((ulong)(base + (ypos * width + xpos) * 3 + 2)) =
+		(((color >> 11) << 3) & 0xf8) | (((color >> 11) >> 2) & 0x7);	// R
 }
 
 static void
@@ -165,10 +168,13 @@ PutPixel565To8888(
 		U32  color
 		)
 {
-	*(U8*)(base + (ypos * width + xpos) * 4 + 0) = (((color >> 0 ) << 3) & 0xf8) | (((color >> 0 ) >> 2) & 0x7);	// B
-	*(U8*)(base + (ypos * width + xpos) * 4 + 1) = (((color >> 5 ) << 2) & 0xfc) | (((color >> 5 ) >> 4) & 0x3);	// G
-	*(U8*)(base + (ypos * width + xpos) * 4 + 2) = (((color >> 11) << 3) & 0xf8) | (((color >> 11) >> 2) & 0x7);	// R
-	*(U8*)(base + (ypos * width + xpos) * 4 + 3) = 0;	// Alpha
+	*(U8*)((ulong)(base + (ypos * width + xpos) * 4 + 0)) =
+		(((color >> 0 ) << 3) & 0xf8) | (((color >> 0 ) >> 2) & 0x7);	// B
+	*(U8*)((ulong)(base + (ypos * width + xpos) * 4 + 1)) =
+		(((color >> 5 ) << 2) & 0xfc) | (((color >> 5 ) >> 4) & 0x3);	// G
+	*(U8*)((ulong)(base + (ypos * width + xpos) * 4 + 2)) =
+		(((color >> 11) << 3) & 0xf8) | (((color >> 11) >> 2) & 0x7);	// R
+	*(U8*)((ulong)(base + (ypos * width + xpos) * 4 + 3)) = 0;	// Alpha
 }
 
 #define	RGB888TO565(col) 	((((col>>16)&0xFF)&0xF8)<<8) | ((((col>>8)&0xFF)&0xFC)<<3) | ((((col>>0 )&0xFF)&0xF8)>>3)
@@ -183,7 +189,7 @@ PutPixel888To565(
 		U32  color
 		)
 {
-	*(U16*)(base + (ypos * width + xpos) * 2) = (U16)RGB888TO565(color);
+	*(U16*)((ulong)(base + (ypos * width + xpos) * 2)) = (U16)RGB888TO565(color);
 }
 
 static void
@@ -197,9 +203,9 @@ PutPixel888To888(
 		)
 {
 	base = base + (ypos * width + xpos) * 3;
-	*(U8*)(base++) = ((color>> 0)&0xFF);	// B
-	*(U8*)(base++) = ((color>> 8)&0xFF);	// G
-	*(U8*)(base)   = ((color>>16)&0xFF);	// R
+	*(U8*)((ulong)(base++)) = ((color>> 0)&0xFF);	// B
+	*(U8*)((ulong)(base++)) = ((color>> 8)&0xFF);	// G
+	*(U8*)((ulong)(base))   = ((color>>16)&0xFF);	// R
 }
 
 static void
@@ -212,7 +218,7 @@ PutPixel888To8888(
 		U32  color
 		)
 {
-	*(U32*)(base + (ypos * width + xpos) * 4) = (0xFF000000) | (color & 0xFFFFFF);
+	*(U32*)((ulong)(base + (ypos * width + xpos) * 4)) = (0xFF000000) | (color & 0xFFFFFF);
 }
 
 static void (*PUTPIXELTABLE[])(U32, int, int, int, int, U32) =
@@ -250,7 +256,7 @@ void lcd_draw_boot_logo(unsigned int framebase, int x_resol, int y_resol, int pi
 	BITMAPFILEHEADER  BMPFile  = { 0, };
 	BITMAPINFOHEADER  BMPInfo  = { 0, };
 
-	U8   * pBitMap  = NULL;
+	U8 *pBitMap  = NULL;
 	int BMPPixelByte;
 
 	int bmpsx, bmpsy, bmpex, bmpey;
@@ -259,7 +265,7 @@ void lcd_draw_boot_logo(unsigned int framebase, int x_resol, int y_resol, int pi
 
 	U8 *pPixel;
 	U32 Color;
-	U16 BMPID = BMPBase ? *(U16*)BMPBase : 0;
+	U16 BMPID = BMPBase ? *(U16*)((ulong)BMPBase) : 0;
 	U32 BMP_Align;
 
 	void (*PutPixel)(U32, int, int, int, int, U32) = NULL;
@@ -273,6 +279,11 @@ void lcd_draw_boot_logo(unsigned int framebase, int x_resol, int y_resol, int pi
 		if (BMPBase)
 			printf("can't find bmp at 0x%x (type:0x%x), fb:0x%x...\n",
 				BMPBase, BMPID, framebase);
+
+		if (0 >= x_resol ||	0 >= y_resol ||
+			0 >= pixelbyte)
+			return;
+
 		fill_lcd(framebase, x_resol, y_resol, pixelbyte);
 		flush_dcache_all();
 		return;
@@ -306,7 +317,7 @@ void lcd_draw_boot_logo(unsigned int framebase, int x_resol, int y_resol, int pi
 
 	BMPPixelByte = BMPInfo.biBitCount/8;
 
-	pBitMap = (U8*)(BMPBase + BMPFile.bfOffBits);	// BMP file end point.
+	pBitMap = (U8*)((ulong)(BMPBase + BMPFile.bfOffBits));	// BMP file end point.
 	lcdsx   = 0, lcdsy = 0;
 	bmpsx   = 0, bmpsy = 0, bmpex = BMPInfo.biWidth-1, bmpey = BMPInfo.biHeight-1;
 
@@ -391,7 +402,7 @@ void lcd_draw_boot_logo(unsigned int framebase, int x_resol, int y_resol, int pi
 					GColor  = dither_pattern6[GColor & 0x3][lx%2][ly%2] + (GColor>>2);	GColor= (GColor>63) ? 63: GColor;
 					BColor  = dither_pattern5[BColor & 0x7][lx%3][ly%3] + (BColor>>3);	BColor= (BColor>31) ? 31: BColor;
 					Color	= (RColor<<11) | (GColor<<5) | (BColor);
-					*(U16*)(framebase + (ly * x_resol + lx) * 2) = (U16)Color;
+					*(U16*)((ulong)(framebase + (ly * x_resol + lx) * 2)) = (U16)Color;
 				} else {
 					Color = ((RColor&0xFF)<<16) | ((GColor&0xFF)<<8) | (BColor&0xFF);
 					PutPixel(framebase, lx, ly, x_resol, y_resol, Color);

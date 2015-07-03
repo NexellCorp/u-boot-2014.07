@@ -61,8 +61,8 @@
 #define	NXE2000_DEF_LOWBAT_USB_ADP_VOL		3660000	/* VAL(uV), USB Charger  */	/* Refer form ADC	*/
 #define	NXE2000_DEF_LOWBAT_ADP_VOL			3660000	/* VAL(uV), ADP Charger  */	/* Refer form ADC	*/
 
-#define	NXE2000_DEF_DDC1_ON					1		/* VAL = 0: Off, 1: On, default(OTP) = On */	/* 1.1V ARM		*/
-#define	NXE2000_DEF_DDC2_ON					1		/* VAL = 0: Off, 1: On, default(OTP) = On */	/* 1.0V CORE	*/
+#define	NXE2000_DEF_DDC1_ON					0		/* VAL = 0: Off, 1: On, default(OTP) = On */	/* 1.1V ARM		*/
+#define	NXE2000_DEF_DDC2_ON					0		/* VAL = 0: Off, 1: On, default(OTP) = On */	/* 1.0V CORE	*/
 #define	NXE2000_DEF_DDC3_ON					1		/* VAL = 0: Off, 1: On, default(OTP) = On */	/* 3.3V SYS		*/
 #define	NXE2000_DEF_DDC4_ON					1		/* VAL = 0: Off, 1: On, default(OTP) = On */	/* 1.5V DDR		*/
 #define	NXE2000_DEF_DDC5_ON					1		/* VAL = 0: Off, 1: On, default(OTP) = On */	/* 1.5V SYS		*/
@@ -80,8 +80,8 @@
 #define	NXE2000_DEF_LDORTC1_ON				1		/* VAL = 0: Off, 1: On */	/* 1.8V ALIVE,	Boot On   */
 #define	NXE2000_DEF_LDORTC2_ON				1		/* VAL = 0: Off, 1: On */	/* 1.0V ALIVE,	Boot On   */
 
-#define	NXE2000_DEF_DDC1_VOL				1100000	/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.3V */
-#define	NXE2000_DEF_DDC2_VOL				1000000	/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.1V */
+#define	NXE2000_DEF_DDC1_VOL				1200000	/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.3V */
+#define	NXE2000_DEF_DDC2_VOL				1100000	/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.1V */
 #define	NXE2000_DEF_DDC3_VOL				3300000	/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 3.3V */
 #define	NXE2000_DEF_DDC4_VOL				1500000	/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.6V */
 #define	NXE2000_DEF_DDC5_VOL				1500000	/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.6V */

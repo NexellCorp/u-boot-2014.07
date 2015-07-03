@@ -696,7 +696,7 @@ int bd_pmic_init(void)
 }
 
 #if defined(CONFIG_BAT_CHECK)
-#if 1
+#if defined(CONFIG_DISPLAY_OUT)
 #define HEADER_PIXEL(data,pixel) {\
 pixel[0] = (((data[0] - 33) << 2) | ((data[1] - 33) >> 4)); \
 pixel[1] = ((((data[1] - 33) & 0xF) << 4) | ((data[2] - 33) >> 2)); \
@@ -811,9 +811,6 @@ void axp228_raw_image_draw(lcd_info *lcd, int sx, int sy, unsigned int *img_data
 
 	flush_dcache_all();
 }
-#else
-#define CONFIG_BAT_GAUGE_CNT		10
-#endif
 
 #define GAUGE_MAX					235
 
@@ -844,7 +841,7 @@ static int skip_check(struct power_battery *pb, int bat_state)
 
 	return ret;	
 }
-
+#endif
 
 int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 {
@@ -862,6 +859,7 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 		.dbg_win_height	= 780,
 		.alphablend		= 0,
 	};
+#endif
 
 #if defined(CONFIG_PMIC_REG_DUMP)
 	struct axp228_power nxe_power_config = {
@@ -976,6 +974,7 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 	if(skip)
 		skip_bat_ani = 2;
 
+#if defined(CONFIG_DISPLAY_OUT)
 	/*===========================================================*/
     if (skip_bat_ani > 1)
     {
@@ -990,199 +989,6 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 
 	/*===========================================================*/
 	// draw charing image
-#if 0
-	if (show_bat_state)
-	{
-		int lcdw = lcd.lcd_width, lcdh = lcd.lcd_height;
-		int bmpw = 240, bmph = 320;
-#if (CONFIG_BAT_GAUGE_CNT == 10)
-		int bw = 82, bh = 22;
-		int bx = 80, by = 61;
-		int sx, sy, dy, str_dy;
-		unsigned int color = (54<<16) + (221 << 8) + (19);
-		int i=0, cnt=0, time_delay = 1000, msec = 10;
-#else
-		int bw = 82, bh = 55;
-		int bx = 80, by = 68;
-		int sx, sy, dy, str_dy;
-		unsigned int color = (54<<16) + (221 << 8) + (19);
-		int i=0, cnt=0, msec = 10;
-#endif
-		char *str_ac_charging	= " AC Charging...   ";
-		char *str_usb_charging	= " USB Charging...  ";
-		char *str_discharging	= " Discharging...";
-		char *str_lowbatt  		= " Low Battery...";
-		char *str_nobatt  		= " No Battery... ";
-
-		sx = (lcdw - bmpw)/2 + bx;
-		sy = (lcdh - bmph)/2 + by;
-		dy = sy + (bh+2)*(CONFIG_BAT_GAUGE_CNT-1);
-		str_dy = dy;
-
-		if(!p_chrg->chrg->chrg_bat_present(p_chrg))
-		{
-			printf("## No Battery \n");
-			show_bat_state = 3;
-		}
-
-		lcd_debug_init(&lcd);
-
-		if(show_bat_state == 3)
-			lcd_draw_text(str_nobatt, (lcdw - strlen(str_lowbatt)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
-		else if(show_bat_state == 2)
-			lcd_draw_text(str_lowbatt, (lcdw - strlen(str_lowbatt)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
-		else
-		{
-			if(chrg == CHARGER_TA)
-				lcd_draw_text(str_ac_charging, (lcdw - strlen(str_ac_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
-			else if(chrg == CHARGER_USB)
-				lcd_draw_text(str_usb_charging, (lcdw - strlen(str_usb_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
-			else
-				lcd_draw_text(str_discharging, (lcdw - strlen(str_discharging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
-		}
-
-		while(1)
-		{
-			printf(".");
-			p_fg->fg->fg_battery_check(p_fg, p_bat);
-
-#if (CONFIG_BAT_GAUGE_CNT == 10)
-			if(pb->bat->capacity < 50)
-				time_delay = 100;
-			else
-				time_delay = 50;
-
-			if(pb->bat->capacity < 10)
-				cnt = 1;
-			else if(pb->bat->capacity < 20)
-				cnt = 2;
-			else if(pb->bat->capacity < 30)
-				cnt = 3;
-			else if(pb->bat->capacity < 40)
-				cnt = 4;	
-			else if(pb->bat->capacity < 50)
-				cnt = 5;	
-			else if(pb->bat->capacity < 60)
-				cnt = 6;	
-			else if(pb->bat->capacity < 70)
-				cnt = 7;	
-			else if(pb->bat->capacity < 80)
-				cnt = 8;	
-			else if(pb->bat->capacity < 90)
-				cnt = 9;	
-			else
-				cnt = 10;
-
-			if(i == 0)
-				color = (255<<16) + (0 << 8) + (0);
-			else if(i == 1)
-				color = (255<<16) + (80 << 8) + (0);
-			else if(i ==  2)
-				color = (255<<16) + (150 << 8) + (0);
-			else if(i ==  3)
-				color = (255<<16) + (200 << 8) + (0);
-			else if(i ==  4)
-				color = (255<<16) + (255 << 8) + (0);
-			else if(i ==  5)
-				color = (255<<16) + (255 << 8) + (0);
-			else if(i ==  6)
-				color = (200<<16) + (255 << 8) + (0);
-			else if(i ==  7)
-				color = (150<<16) + (255 << 8) + (0);	
-			else if(i ==  8)
-				color = (80<<16) + (255 << 8) + (0);
-			else
-				color = (0<<16) + (255 << 8) + (0);
-
-#else
-			if(pb->bat->capacity < 20)
-			{
-				color = (255<<16) + (0 << 8) + (0);		cnt = 1;
-			}
-			else if(pb->bat->capacity < 50)
-			{
-				color = (255<<16) + (150 << 8) + (0);		cnt = 2;	
-			}
-			else if(pb->bat->capacity < 75)
-			{
-				color = (150<<16) + (255 << 8) + (0);		cnt = 3;	
-			}
-			else
-			{
-				color = (0<<16) + (255 << 8) + (0);		cnt = 4;
-			}
-#endif
-			if(skip_check(pb, show_bat_state))
-			{
-		        goto skip_bat_animation;
-			}
-
-			/* Draw battery status */
-			if(power_depth > 0)
-			{
-				i++;
-				if(i <= cnt)
-				{
-					lcd_fill_rectangle(sx, dy, bw, bh, color, 0);
-					dy -= (bh+2);
-				}
-				else
-				{
-					power_depth--;
-#if (CONFIG_BAT_GAUGE_CNT == 10)
-					while(msec--)
-					{
-						udelay(100000);
-						if(skip_check(pb, show_bat_state))
-						{
-					        goto skip_bat_animation;
-						}
-					}
-					msec = 10;
-#endif
-					printf("\n");
-					lcd_draw_boot_logo(CONFIG_FB_ADDR, CFG_DISP_PRI_RESOL_WIDTH, CFG_DISP_PRI_RESOL_HEIGHT, CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
-					dy = sy + (bh+2)*(CONFIG_BAT_GAUGE_CNT-1);
-					i = 0;
-				}
-
-				if(show_bat_state == 3)
-					lcd_draw_text(str_nobatt, (lcdw - strlen(str_lowbatt)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
-				else if(show_bat_state == 2)
-					lcd_draw_text(str_lowbatt, (lcdw - strlen(str_lowbatt)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
-				else
-				{
-					if(chrg == CHARGER_TA)
-						lcd_draw_text(str_ac_charging, (lcdw - strlen(str_ac_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
-					else if(chrg == CHARGER_USB)
-						lcd_draw_text(str_usb_charging, (lcdw - strlen(str_usb_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
-					else
-						lcd_draw_text(str_discharging, (lcdw - strlen(str_discharging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
-				}
-			}
-			else
-			{
-				printf("\n");
-				lcd_draw_boot_logo(CONFIG_FB_ADDR, CFG_DISP_PRI_RESOL_WIDTH, CFG_DISP_PRI_RESOL_HEIGHT, CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
-				goto enter_shutdown;
-			}
-#if (CONFIG_BAT_GAUGE_CNT == 10)
-			mdelay(time_delay);
-#else
-			while(msec--)
-			{
-				udelay(100000);
-				if(skip_check(pb, show_bat_state))
-				{
-			        goto skip_bat_animation;
-				}
-			}
-			msec = 10;
-#endif
-		}
-
-	}
-#else
 	if (show_bat_state)
 	{
 		int lcdw = lcd.lcd_width, lcdh = lcd.lcd_height;
@@ -1306,12 +1112,11 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 
 		}
 	}
-#endif
 
 skip_bat_animation:
+	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, bl_duty, 1);
 #endif  /* CONFIG_DISPLAY_OUT */
 
-	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, bl_duty, 1);
 	printf("## Skip BAT Animation. \n");
 	//mdelay(200);
 
@@ -1344,6 +1149,7 @@ skip_bat_animation:
 
 	return ret;
 
+#if defined(CONFIG_DISPLAY_OUT)
 enter_shutdown:
 
 #if defined(CONFIG_PMIC_REG_DUMP)
@@ -1380,6 +1186,7 @@ enter_shutdown:
 	while(1);
 
 	return 0;
+#endif
 }
 #endif /* CONFIG_BAT_CHECK */
 

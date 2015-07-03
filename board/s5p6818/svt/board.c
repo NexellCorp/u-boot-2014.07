@@ -29,6 +29,7 @@
 //#include <asm/sections.h>
 
 #include <platform.h>
+#include <tags.h>
 #include <mach-api.h>
 #include <rtc_nxp.h>
 #include <pm.h>
@@ -38,6 +39,10 @@
 #if defined(CONFIG_PMIC_NXE2000)
 #include <power/pmic.h>
 #include <nxe2000-private.h>
+#endif
+
+#if defined(CONFIG_REGULATOR_MP8845C)
+#include <mp8845c_regulator.h>
 #endif
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -184,9 +189,20 @@ int board_early_init_f(void)
 {
 	bd_gpio_init();
 	bd_alive_init();
+
+#if defined(CONFIG_REGULATOR_MP8845C) && !defined(CONFIG_PMIC_REG_DUMP)
+#if defined(CONFIG_PMIC_I2C_BUSA)
+	bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSA, 1200000, 0);
+#endif
+#if defined(CONFIG_PMIC_I2C_BUSB)
+	bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSB, 1100000, 1);
+#endif
+#endif
+
 #if (defined(CONFIG_PMIC_NXE2000)||defined(CONFIG_PMIC_AXP228))&& !defined(CONFIG_PMIC_REG_DUMP)
 	bd_pmic_init();
 #endif
+
 #if defined(CONFIG_NXP_RTC_USE)
 	nxp_rtc_init();
 #endif
@@ -199,11 +215,19 @@ int board_init(void)
 	return 0;
 }
 
-#if defined(CONFIG_PMIC_NXE2000)||defined(CONFIG_PMIC_AXP228)
+#if defined(CONFIG_PMIC_NXE2000)||defined(CONFIG_PMIC_AXP228)||defined(CONFIG_REGULATOR_MP8845C)
 int power_init_board(void)
 {
 	int ret = 0;
 #if defined(CONFIG_PMIC_REG_DUMP)
+#if defined(CONFIG_REGULATOR_MP8845C)
+#if defined(CONFIG_PMIC_I2C_BUSA)
+	bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSA, 1200000, 0);
+#endif
+#if defined(CONFIG_PMIC_I2C_BUSB)
+	bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSB, 1100000, 1);
+#endif
+#endif
 	bd_pmic_init();
 #endif
 	ret = power_pmic_function_init();
@@ -293,7 +317,11 @@ int board_late_init(void)
 	    // psw0523 for cts
 	    // bat_check_skip = 1;
 
+#if defined(CONFIG_DISPLAY_OUT)
 		ret = power_battery_check(bat_check_skip, bd_display_run);
+#else
+		ret = power_battery_check(bat_check_skip, NULL);
+#endif
 
 		if(ret == 1)
 			auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
@@ -341,7 +369,7 @@ int board_late_init(void)
 	NX_RSTCON_SetRST(RESET_ID_SSP2_P, RSTCON_NEGATE);
 	NX_RSTCON_SetRST(RESET_ID_SSP2, RSTCON_NEGATE);
 
-	// vip 0/1 reset
+	// vip 0/1/2 reset
 	NX_CLKGEN_SetClockBClkMode(CLOCKINDEX_OF_VIP0_MODULE, NX_BCLKMODE_DYNAMIC);
     NX_CLKGEN_SetClockDivisorEnable(CLOCKINDEX_OF_VIP0_MODULE, CTRUE);
    	NX_RSTCON_SetRST(RESET_ID_VIP0, RSTCON_ASSERT);
@@ -350,6 +378,10 @@ int board_late_init(void)
 	NX_CLKGEN_SetClockDivisorEnable(CLOCKINDEX_OF_VIP1_MODULE, CTRUE);
 	NX_RSTCON_SetRST(RESET_ID_VIP1, RSTCON_ASSERT);
 	NX_RSTCON_SetRST(RESET_ID_VIP1, RSTCON_NEGATE);
+	NX_CLKGEN_SetClockBClkMode(CLOCKINDEX_OF_VIP2_MODULE, NX_BCLKMODE_DYNAMIC);
+	NX_CLKGEN_SetClockDivisorEnable(CLOCKINDEX_OF_VIP2_MODULE, CTRUE);
+	NX_RSTCON_SetRST(RESET_ID_VIP2, RSTCON_ASSERT);
+	NX_RSTCON_SetRST(RESET_ID_VIP2, RSTCON_NEGATE);
 
 #if defined(CONFIG_DISPLAY_OUT)
 	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
@@ -363,3 +395,54 @@ int board_late_init(void)
 	return 0;
 }
 
+void setup_board_tags(struct tag **tmp)
+{
+	struct tag *params = *tmp;
+	struct tag_asv_margin *t;
+
+	char *p = getenv("margin");
+	char *s = p;
+	int value = 0;
+	int minus = 0, percent = 0;
+
+	s = strchr(s, '-');
+	if (s)
+		minus = true;
+	else
+		s = strchr(p, '+');
+
+	if (!s)
+		s = p;
+	else
+		s++;
+
+	if (strchr(p, '%'))
+		percent = 1;
+
+	value = simple_strtol(s, NULL, 10);
+	printf("ASV Margin:%s%d%s\n", minus?"-":"+", value, percent?"%":"mV");
+
+	/* set ARM margin */
+	params->hdr.tag = ATAG_ARM_MARGIN;
+	params->hdr.size = tag_size(tag_asv_margin);
+	t = (struct tag_asv_margin *)&params->u;
+	t->value = value;
+	t->minus = minus;
+	t->percent = percent;
+
+	params = tag_next(params);
+	*tmp = params;
+
+	/* set ARM margin */
+	params = *tmp;
+
+	params->hdr.tag = ATAG_CORE_MARGIN;
+	params->hdr.size = tag_size(tag_asv_margin);
+	t = (struct tag_asv_margin *)&params->u;
+	t->value = value;
+	t->minus = minus;
+	t->percent = percent;
+
+	params = tag_next(params);
+	*tmp = params;
+}

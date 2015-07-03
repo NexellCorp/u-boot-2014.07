@@ -60,7 +60,7 @@ void disp_initialize(void)
 	NX_MLC_Initialize();
 
 	/* BASE : TOP */
-	NX_DISPLAYTOP_SetBaseAddress((U32)IO_ADDRESS(NX_DISPLAYTOP_GetPhysicalAddress()));
+	NX_DISPLAYTOP_SetBaseAddress((void*)IO_ADDRESS(NX_DISPLAYTOP_GetPhysicalAddress()));
 	NX_DISPLAYTOP_OpenModule();
 }
 
@@ -109,7 +109,7 @@ void disp_syncgen_reset(void)
 void disp_syncgen_init(int module)
 {
 	/* BASE : DPC */
-	NX_DPC_SetBaseAddress(module, (U32)IO_ADDRESS(NX_DPC_GetPhysicalAddress(module)));
+	NX_DPC_SetBaseAddress(module, (void*)IO_ADDRESS(NX_DPC_GetPhysicalAddress(module)));
 	NX_DPC_OpenModule(module);
 	/* CLOCK: MLC PCLK */
 	NX_DPC_SetClockPClkMode(module, NX_PCLKMODE_ALWAYS);
@@ -213,7 +213,7 @@ int disp_syncgen_setup(int module, struct disp_vsync_info *psync, struct disp_sy
 void disp_multily_init(int module)
 {
 	/* BASE : MLC */
-	NX_MLC_SetBaseAddress(module, (U32)IO_ADDRESS(NX_MLC_GetPhysicalAddress(module)));
+	NX_MLC_SetBaseAddress(module, (void*)IO_ADDRESS(NX_MLC_GetPhysicalAddress(module)));
 	NX_MLC_OpenModule(module);
 	/* CLOCK: MLC PCLK/BCLK */
 	NX_MLC_SetClockPClkMode(module, NX_PCLKMODE_ALWAYS);

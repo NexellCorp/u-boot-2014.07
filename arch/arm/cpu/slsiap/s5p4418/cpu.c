@@ -130,12 +130,12 @@ int arch_cpu_init (void)
 	/*
 	 * cpu initialize
 	 */
-	nxp_cpu_arch_init();
-	nxp_cpu_clock_init();
-	nxp_cpu_periph_init();
+	nxp_cpu_init();
+	nxp_clk_init();
+	nxp_periph_init();
 
 #if defined (CONFIG_SMP)
-	gic_init(0, 16, (void __iomem *)0xF0001000, (void __iomem *)0xF0000100);
+	gic_dev_init(0, 16, (void __iomem *)0xF0001000, (void __iomem *)0xF0000100);
 	smp_cpu_init_f();
 	flush_dcache_all();
 #endif
@@ -147,7 +147,7 @@ int arch_cpu_init (void)
 #if defined(CONFIG_DISPLAY_CPUINFO)
 int print_cpuinfo(void)
 {
-	nxp_print_cpu_info();
+	nxp_print_cpuinfo();
 	return 0;
 }
 #endif
@@ -254,6 +254,6 @@ int arch_misc_init(void)
 void arch_preboot_os(void)
 {
 #ifdef CONFOG_BOARD_PREBOOT_OS
-	nxp_board_preboot_os();
+	nxp_preboot_os();
 #endif
 }

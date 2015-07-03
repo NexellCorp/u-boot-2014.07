@@ -18,8 +18,7 @@ SECTIONS
 	.text :
 	{
 		*(.__image_copy_start)
-		SOCDIR/start.o (.text*)
-		SOCDIR/vectors.o (.text*)
+		SDIR/start.o (.text*)
 		*(.text*)
 	}
 

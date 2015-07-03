@@ -136,8 +136,8 @@ extern inline void __raw_readsl(unsigned long addr, void *data, int longlen)
  * TODO: The kernel offers some more advanced versions of barriers, it might
  * have some advantages to use them instead of the simple one here.
  */
-#ifndef CONFIG_MACH_S5P6818
-#define dmb()		__asm__ __volatile__ ("dmb" : : : "memory")
+#ifdef CONFIG_ARM64
+#define dmb()		__asm__ __volatile__ ("dmb sy" : : : "memory")
 #define __iormb()	dmb()
 #define __iowmb()	dmb()
 #else

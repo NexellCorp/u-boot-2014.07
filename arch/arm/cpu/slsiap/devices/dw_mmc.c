@@ -75,21 +75,22 @@ static void dw_mci_clksel(struct dwmci_host *host)
 	dwmci_writel(host, DWMCI_CLKSEL, val);
 }
 
-static void dw_mci_clk_delay(int val ,int regbase )
+static void dw_mci_clk_delay(u32 val, unsigned long regbase)
 {
-	writel(val, regbase + DWMCI_CLKCTRL);
+	writel(val, (regbase + DWMCI_CLKCTRL));
 }
 
-static void dw_mci_reset(int ch )
+static void dw_mci_reset(int ch)
 {
 	int rst_id = RESET_ID_SDMMC0 + ch;
 
 	NX_RSTCON_SetRST(rst_id, 0);
 	NX_RSTCON_SetRST(rst_id, 1);
 }
-static int dw_mci_init(u32 regbase, int bus_width, int index, int max_clock, int ddr)
+
+struct dwmci_host *host = NULL;
+static int dw_mci_init(unsigned long regbase, int bus_width, int index, int max_clock, int ddr)
 {
-	struct dwmci_host *host = NULL;
 	int  fifo_size = 0x20;
 
 	host = malloc(sizeof(struct dwmci_host));
@@ -97,6 +98,7 @@ static int dw_mci_init(u32 regbase, int bus_width, int index, int max_clock, int
 		printf("dwmci_host malloc fail!\n");
 		return 1;
 	}
+	memset(host, 0x00, sizeof(*host));
 
 	dw_mci_set_clk(index, max_clock * 4);
 
@@ -107,10 +109,10 @@ static int dw_mci_init(u32 regbase, int bus_width, int index, int max_clock, int
 	host->dev_index = index;
 	host->get_mmc_clk = dw_mci_get_clk;
 	host->fifoth_val = MSIZE(0x2) | RX_WMARK(fifo_size/2 -1) | TX_WMARK(fifo_size/2);
-	
+
 	if(ddr == 1)
 		host->caps |= MMC_MODE_DDR_52MHz;// | MMC_MODE_4BIT | MMC_MODE_HS_52MHz ;
-	
+
 	add_dwmci(host, max_clock, 400000);
 
 #ifdef CONFIG_MACH_S5P6818
@@ -125,7 +127,7 @@ int board_mmc_init(bd_t *bis)
 {
 	int err = 0;
 	int bus = 0, speed = 0,ddr = 0;
-	
+
 	#if(CONFIG_MMC0_ATTACH == TRUE)
 	writel(readl(0xC0012004) | (1<<7), 0xC0012004);
 	#endif
@@ -135,7 +137,7 @@ int board_mmc_init(bd_t *bis)
 	#else
 	speed = 52000000;
 	#endif
-	
+
 	#if(CONFIG_MMC0_BUS_WIDTH)
 	bus = CONFIG_MMC0_BUS_WIDTH;
 	#else
@@ -157,7 +159,7 @@ int board_mmc_init(bd_t *bis)
 	#else
 	speed = 52000000;
 	#endif
-	
+
 	#if(CONFIG_MMC1_BUS_WIDTH)
 	bus = CONFIG_MMC1_BUS_WIDTH;
 	#else
@@ -168,9 +170,9 @@ int board_mmc_init(bd_t *bis)
 	#else
 	ddr = 0;
 	#endif
-	err = dw_mci_init(0xC0068000, bus, 0, speed, ddr);
+	err = dw_mci_init(0xC0068000, bus, 1, speed, ddr);
 	#ifdef CONFIG_MMC1_CLK_DELAY
-	dw_mci_clk_delay( CONFIG_MMC1_CLK_DELAY, 0xC0068000);
+	dw_mci_clk_delay(CONFIG_MMC1_CLK_DELAY, 0xC0068000);
 	#endif
 
 	#if(CONFIG_MMC2_ATTACH == TRUE)
@@ -182,7 +184,7 @@ int board_mmc_init(bd_t *bis)
 	#else
 	speed = 52000000;
 	#endif
-	
+
 	#if(CONFIG_MMC2_BUS_WIDTH)
 	bus = CONFIG_MMC2_BUS_WIDTH;
 	#else

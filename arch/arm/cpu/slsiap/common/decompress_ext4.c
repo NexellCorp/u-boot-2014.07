@@ -78,7 +78,7 @@ int write_raw_chunk(char* data, unsigned int sector, unsigned int sector_size) {
 	char run_cmd[64];
 
 	ext4_printf("write raw data in %d size %d \n", sector, sector_size);
-	sprintf(run_cmd,"mmc write 0x%x 0x%x 0x%x", (int)data, sector, sector_size);
+	sprintf(run_cmd,"mmc write 0x%x 0x%x 0x%x", (int)((ulong)data), sector, sector_size);
 	run_command(run_cmd, 0);
 
 	return 0;

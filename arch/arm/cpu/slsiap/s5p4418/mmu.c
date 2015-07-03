@@ -205,7 +205,7 @@ static void scu_enable(void __iomem *scu_base)
 
 void mmu_on(void)
 {
-	void *vector_base = (void *)0xFFFF0000;
+	//void *vector_base = (void *)0xFFFF0000;
 
 	dcache_disable();
 	arm_init_before_mmu();				/* Flush DCACHE */

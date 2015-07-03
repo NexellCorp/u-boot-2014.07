@@ -26,28 +26,6 @@
 # =========================================================================
 CROSS_COMPILE := arm-cortex_a9-linux-gnueabi-
 
-# prevent GCC-4.6.x (arm-linux-gnueabi-gcc) warning
-CC = $(CROSS_COMPILE)gcc
-GCCVERSION =  $(shell $(CC) -dumpversion | cut -f2 -d.)
-
-ifneq "$(GCCVERSION)" "3"
-PLATFORM_RELFLAGS += -Wno-unused-but-set-variable
-endif
-
-# PLATFORM_RELFLAGS += -Wno-strict-aliasing
-
-# =========================================================================
-# option "-pie" when ld, -pie must be used with -fPIC gcc option
-# set use relocate code
-# =========================================================================
-BUILD_PIC_OPTION := n
-ifeq ($(BUILD_PIC_OPTION),y)
-PLATFORM_RELFLAGS += -fPIC
-else
-#when under u-boot-2013.x
-#LDFLAGS_u-boot :=
-endif
-
 # =========================================================================
 #	Build options
 # =========================================================================

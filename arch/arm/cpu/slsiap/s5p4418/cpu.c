@@ -82,6 +82,8 @@ int cleanup_before_linux(void)
 	 */
 	cpu_cache_initialization();
 
+	nxp_before_linux();
+
 	return 0;
 }
 

@@ -66,6 +66,20 @@ static void cpu_base_init(void)
  	 */
 	NX_ALIVE_SetWriteEnable(CTRUE);
 	__raw_writel(0xFFFFFFFF, SCR_ARM_SECOND_BOOT);
+
+	// write 0xf0 on alive scratchpad reg for boot success check
+	NX_ALIVE_SetScratchReg(NX_ALIVE_GetScratchReg() | 0xF0);
+
+	NX_WDT_Initialize();
+	NX_WDT_SetBaseAddress(0, (void*)IO_ADDRESS(NX_WDT_GetPhysicalAddress(0)));
+	NX_WDT_OpenModule(0);
+
+	// watchdog disable
+	if (NX_WDT_GetEnable(0)) {
+		NX_WDT_SetEnable(0, CFALSE);
+		NX_WDT_SetResetEnable(0, CFALSE);
+		NX_WDT_ClearInterruptPending(0, NX_WDT_GetInterruptNumber(0));
+	}
 }
 
 static void cpu_bus_init(void)
@@ -157,6 +171,10 @@ void nxp_periph_init(void)
 
 void nxp_before_linux(void)
 {
+#ifdef CONFIG_HW_WATCHDOG
+    // enable hw watchdog
+	hw_watchdog_restart();
+#endif
 #ifdef CONFIG_ARM64
 	void __iomem *base = (void*)0xC0009000;
 	int i;

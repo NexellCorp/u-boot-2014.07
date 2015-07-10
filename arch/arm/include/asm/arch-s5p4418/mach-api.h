@@ -31,6 +31,7 @@ extern void	nxp_cpu_init(void);
 extern void nxp_periph_init(void);
 extern void nxp_print_cpuinfo(void);
 extern void nxp_preboot_os(void);
+extern void nxp_before_linux(void);
 
 extern unsigned int logo_get_logo_bmp_addr(void);
 extern void 		lcd_set_logo_bmp_addr(unsigned int bmp_base);

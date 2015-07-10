@@ -14,6 +14,8 @@ obj-y += $(PROTOTYPE)/$(MODULES)/nx_pwm.o
 obj-y += $(PROTOTYPE)/$(MODULES)/nx_tieoff.o
 obj-y += $(PROTOTYPE)/$(MODULES)/nx_ecid.o
 
+obj-y += $(PROTOTYPE)/$(MODULES)/nx_wdt.o
+
 obj-$(CONFIG_CMD_MMC)				+= $(PROTOTYPE)/$(MODULES)/nx_sdmmc.o
 obj-$(CONFIG_SPI)					+= $(PROTOTYPE)/$(MODULES)/nx_ssp.o
 

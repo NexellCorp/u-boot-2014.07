@@ -17,3 +17,4 @@ obj-$(CONFIG_CMD_EXT4) 				+= decompress_ext4.o
 obj-$(CONFIG_VIP)					+= camera.o
 obj-$(CONFIG_NAND_FTL)				+= cmd_mio.o cmd_nandparts.o
 obj-$(CONFIG_SMP) 					+= smp_start.o smp_cpu.o
+obj-$(CONFIG_HW_WATCHDOG)			+= wdt.o

@@ -93,6 +93,7 @@ void dwmci_prepare_data(struct dwmci_host *host,
 	data_end = (ulong)cur_idmac;
 	
 #ifdef CONFIG_MMU_ENABLE
+#ifdef CONFIG_MACH_S5P6818
 	debug("s=0x%08lx, (0x%08lx), e 0x%08lx, (0x%08lx)\n", 
 			start_addr, CACHE_LINE_ALIGN(start_addr, CACHE_LINE_SIZE), 
 			start_addr + (data->blocks *512),
@@ -107,6 +108,9 @@ void dwmci_prepare_data(struct dwmci_host *host,
 	else	
 		flush_dcache_range(CACHE_LINE_ALIGN(start_addr, CACHE_LINE_SIZE), 
 			roundup(start_addr + (data->blocks *512), CACHE_LINE_SIZE));
+#else
+	flush_dcache_all();
+#endif
 #endif
 
 	ctrl = dwmci_readl(host, DWMCI_CTRL);

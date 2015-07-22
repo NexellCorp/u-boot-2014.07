@@ -52,6 +52,9 @@
 #include <linux/wait.h>
 #include <linux/vmalloc.h>
 #include <linux/gfp.h>
+#if defined (__COMPILE_MODE_X64__)
+    #include <nexell/nxp-ftl-nand.h>
+#endif
 #elif defined (__BUILD_MODE_ARM_UBOOT_DEVICE_DRIVER__)
 #include <div64.h>
 #include <linux/math64.h>
@@ -63,8 +66,8 @@
  * Import Extern
  ******************************************************************************/
 extern void FTL_Configuration(void * _Config);
-extern int FTL_Format(unsigned char * _chip_name, unsigned int _chip_id_base, unsigned char _option);
-extern int FTL_Open(unsigned char * _chip_name, unsigned int _chip_id_base, unsigned int _format_open);
+extern int FTL_Format(unsigned char * _chip_name, unsigned long _chip_id_base, unsigned char _option);
+extern int FTL_Open(unsigned char * _chip_name, unsigned long _chip_id_base, unsigned int _format_open);
 extern int FTL_Close(void);
 extern int FTL_Boot(unsigned char _mode);
 
@@ -260,7 +263,13 @@ void __ratio(unsigned char * _sz, unsigned long long _v1, unsigned long long _v2
 /******************************************************************************
  *
  ******************************************************************************/
+#if defined (__BUILD_MODE_ARM_LINUX_DEVICE_DRIVER__)
+#if !defined (__COMPILE_MODE_X64__)
 extern unsigned long nxp_ftl_start_block; /* byte address, Must Be Multiple of 8MB */
+#endif
+#elif defined (__BUILD_MODE_ARM_UBOOT_DEVICE_DRIVER__)
+extern unsigned long nxp_ftl_start_block; /* byte address, Must Be Multiple of 8MB */
+#endif
 #define _BLOCK_ALIGN_			(8<<20)
 
 /******************************************************************************
@@ -268,15 +277,27 @@ extern unsigned long nxp_ftl_start_block; /* byte address, Must Be Multiple of 8
  ******************************************************************************/
 void EXCHANGE_init(void)
 {
+    unsigned long ftl_start_block = 0;
+
     /**************************************************************************
      * FTL Start Offset Must Be Multiple Of 8MB
      **************************************************************************/
-	if (nxp_ftl_start_block & (_BLOCK_ALIGN_-1))
+#if defined (__BUILD_MODE_ARM_LINUX_DEVICE_DRIVER__)
+#if defined (__COMPILE_MODE_X64__)
+    ftl_start_block = nxp_nand.nxp_ftl_start_block;
+#else    
+    ftl_start_block = nxp_ftl_start_block;
+#endif
+#elif defined (__BUILD_MODE_ARM_UBOOT_DEVICE_DRIVER__)
+    ftl_start_block = nxp_ftl_start_block;
+#endif
+
+	if (ftl_start_block & (_BLOCK_ALIGN_-1))
     {
-		nxp_ftl_start_block = ALIGN(nxp_ftl_start_block, _BLOCK_ALIGN_);
+		ftl_start_block = ALIGN(ftl_start_block, _BLOCK_ALIGN_);
 	}
 
-    Exchange.ewsftl_start_offset  = nxp_ftl_start_block;
+    Exchange.ewsftl_start_offset  = ftl_start_block;
     Exchange.ewsftl_start_page    = 0;
     Exchange.ewsftl_start_block   = 0;
 
@@ -345,7 +366,7 @@ void EXCHANGE_init(void)
 
 #endif
 
-    Exchange.sys.fn.print("EWS.FTL Start Block is 0x%x\n", nxp_ftl_start_block);
+    Exchange.sys.fn.print("EWS.FTL Start Block is 0x%x\n", ftl_start_block);
 }
 
 /******************************************************************************

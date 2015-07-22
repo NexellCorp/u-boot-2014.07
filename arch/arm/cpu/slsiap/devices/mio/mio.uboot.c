@@ -34,6 +34,14 @@
 #include "mio.uboot.rwtest.h"
 #endif
 
+/******************************************************************************
+ * Optimize Option
+ ******************************************************************************/
+#if defined (__COMPILE_MODE_BEST_DEBUGGING__)
+//#pragma GCC push_options
+#pragma GCC optimize("O0")
+#endif
+
 /*******************************************************************************
  *
  *******************************************************************************/
@@ -104,6 +112,7 @@ int mio_format(int _format_type)
   //Exchange.debug.misc.media_open = 1;
   //Exchange.debug.misc.media_format = 1;
   //Exchange.debug.misc.media_close = 1;
+  //Exchange.debug.misc.media_rw_memcpy = 1;
   //Exchange.debug.misc.smart_store = 1;
     Exchange.debug.misc.uboot_format = 1;
   //Exchange.debug.misc.uboot_init = 1;
@@ -206,6 +215,7 @@ int mio_init(void)
   //Exchange.debug.misc.media_open = 1;
   //Exchange.debug.misc.media_format = 1;
   //Exchange.debug.misc.media_close = 1;
+  //Exchange.debug.misc.media_rw_memcpy = 1;
   //Exchange.debug.misc.smart_store = 1;
   //Exchange.debug.misc.uboot_format = 1;
   //Exchange.debug.misc.uboot_init = 1;
@@ -290,8 +300,8 @@ int mio_init(void)
     Exchange.sys.fn.print("MIO.INIT: Capacity %xh(%d) Sectors = %d MB\n", capacity, capacity, ((capacity>>10)<<9)>>10);
     is_mio_init = 1;
 
-    Exchange.sys.fn.print("MIO.INIT.WriteCacheBase: 0x%0x, Sectors: 0x%0x\n", (U32)(*Exchange.buffer.BaseOfWriteCache), (U32)(*Exchange.buffer.SectorsOfWriteCache));
-    Exchange.sys.fn.print("MIO.INIT.ReadBufferBase: 0x%0x, Sectors: 0x%0x\n", (U32)(*Exchange.buffer.BaseOfReadBuffer), (U32)(*Exchange.buffer.SectorsOfReadBuffer));
+    Exchange.sys.fn.print("MIO.INIT.WriteCacheBase: 0x%0lx, Sectors: 0x%0x\n", (unsigned long)(*Exchange.buffer.BaseOfWriteCache), (U32)(*Exchange.buffer.SectorsOfWriteCache));
+    Exchange.sys.fn.print("MIO.INIT.ReadBufferBase: 0x%0lx, Sectors: 0x%0x\n", (unsigned long)(*Exchange.buffer.BaseOfReadBuffer), (U32)(*Exchange.buffer.SectorsOfReadBuffer));
 
     NFC_PHY_LOWAPI_init();
 
@@ -429,6 +439,38 @@ void mio_deinit_rwtest_buffer(void)
 int mio_info(void)
 {
     NAND * nand = (NAND *)&phy_features.nand_config;
+
+    #if 0
+    {
+        int i = 0;
+        unsigned long *ret = 0xFFFFFFFF;
+        unsigned long val64 = 0x4567890ABCDEF;
+        unsigned long val64_a = 0x4567890ABCDEF;
+        unsigned long val32 = 0xBCCDD;
+
+        if ((unsigned int)ret == 0xFFFFFFFF)
+        {
+            printf("same\n");
+        }
+
+        printf("123456789 123456789 123456789 123456789 123456789\n");
+        printf("val64:%016lx  val32:%016lx  val32:%016lx\n", val64, val32, val32);
+
+
+        val64 = 0x1;
+        val64_a = 0x1;
+        for (i=0; i<64; i++)
+        {
+            val64 = (((U32)(val64))<<(1));
+            printf("%016lx ", val64);
+
+            val64_a = (((unsigned long)(val64_a))<<(1));
+            printf("%016lx ", val64_a);
+
+            printf("\n");
+        }
+    }
+    #endif
 
     printf("\n NAND INFORMATION");
 
@@ -846,7 +888,7 @@ int mio_init_without_ftl(void)
   //Exchange.debug.nfc.sche.operation = 1;
 
   //Exchange.debug.nfc.phy.operation = 1;
-  //Exchange.debug.nfc.phy.info_feature = 1;
+    Exchange.debug.nfc.phy.info_feature = 1;
   //Exchange.debug.nfc.phy.info_ecc = 1;
   //Exchange.debug.nfc.phy.info_ecc_correction = 1;
   //Exchange.debug.nfc.phy.info_ecc_corrected = 1;
@@ -1055,6 +1097,11 @@ static void mio_fill_read_buffer(void *pvBuff, U32 uiSectors)
         pucSrcBuff = (U8 *)(*Exchange.buffer.BaseOfReadBuffer + (uiCurrExtIndex << 9));
         uiCpyBytes = (*Exchange.buffer.SectorsOfReadBuffer - uiCurrExtIndex) << 9;
         memcpy((void *)pucDestBuff, (const void *)pucSrcBuff, uiCpyBytes);
+        if (Exchange.debug.misc.uboot_rw_memcpy)
+        {
+            if (sizeof(unsigned long) == 8) { Exchange.sys.fn.print("memcpy(Dest:%016lx Src:%016lx bytes:%08x)\n", pucDestBuff, pucSrcBuff, (U32)uiCpyBytes); }
+            else                            { Exchange.sys.fn.print("memcpy(Dest:%08x Src:%08x bytes:%08x)\n", pucDestBuff, pucSrcBuff, (U32)uiCpyBytes); }
+        }
 #if defined (__SUPPORT_DEBUG_MIO_UBOOT_ERROR_STOP__)
         if (!uiCpyBytes) { Exchange.sys.fn.print("mio_fill_read_buffer: memcpy error (copybytes 0)\n"); while(1); }
 #endif
@@ -1063,6 +1110,11 @@ static void mio_fill_read_buffer(void *pvBuff, U32 uiSectors)
         pucSrcBuff = (U8 *)(*Exchange.buffer.BaseOfReadBuffer);
         uiCpyBytes = (uiSectors << 9) - uiCpyBytes;
         memcpy((void *)pucDestBuff, (const void *)pucSrcBuff, uiCpyBytes);
+        if (Exchange.debug.misc.uboot_rw_memcpy)
+        {
+            if (sizeof(unsigned long) == 8) { Exchange.sys.fn.print("memcpy(Dest:%016lx Src:%016lx bytes:%08x)\n", pucDestBuff, pucSrcBuff, (U32)uiCpyBytes); }
+            else                            { Exchange.sys.fn.print("memcpy(Dest:%08x Src:%08x bytes:%08x)\n", pucDestBuff, pucSrcBuff, (U32)uiCpyBytes); }
+        }
 #if defined (__SUPPORT_DEBUG_MIO_UBOOT_ERROR_STOP__)
         if (!uiCpyBytes) { Exchange.sys.fn.print("mio_fill_read_buffer: memcpy error (copybytes 0)\n"); while(1); }
 #endif
@@ -1072,6 +1124,11 @@ static void mio_fill_read_buffer(void *pvBuff, U32 uiSectors)
         pucSrcBuff = (U8*)(*Exchange.buffer.BaseOfReadBuffer + (uiCurrExtIndex << 9));
         uiCpyBytes = uiSectors << 9;
         memcpy((void *)pucDestBuff, (const void *)pucSrcBuff, uiCpyBytes);
+        if (Exchange.debug.misc.uboot_rw_memcpy)
+        {
+            if (sizeof(unsigned long) == 8) { Exchange.sys.fn.print("memcpy(Dest:%016lx Src:%016lx bytes:%08x)\n", pucDestBuff, pucSrcBuff, (U32)uiCpyBytes); }
+            else                            { Exchange.sys.fn.print("memcpy(Dest:%08x Src:%08x bytes:%08x)\n", pucDestBuff, pucSrcBuff, (U32)uiCpyBytes); }
+        }
 #if defined (__SUPPORT_DEBUG_MIO_UBOOT_ERROR_STOP__)
         if (!uiCpyBytes) { Exchange.sys.fn.print("mio_fill_read_buffer: memcpy error (copybytes 0)\n"); while(1); }
 #endif

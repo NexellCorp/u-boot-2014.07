@@ -49,6 +49,10 @@
 #define __SUPPORT_X64_OS__
 #endif
 
+#if 0
+    #define __SUPPORT_X64_OS__
+#endif
+
 #if defined (__SUPPORT_X64_OS__)
     #define __COMPILE_MODE_X64__
 #endif

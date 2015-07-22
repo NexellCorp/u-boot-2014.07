@@ -40,16 +40,23 @@
 #include <linux/clk.h>
 #include <asm/io.h>
 #include <asm/sizes.h>
-#include <asm/mach-types.h>
+//#include <asm/mach-types.h>
 #include <linux/bitops.h>
 
 #include <linux/sched.h>
 #include <asm/stacktrace.h>
 #include <asm/traps.h>
-#include <asm/unwind.h>
+//#include <asm/unwind.h>
 
-#include <mach/devices.h>
-#include <mach/soc.h>
+#if defined (__COMPILE_MODE_X64__)
+    /* nexell soc headers */
+    #include <nexell/platform.h>
+    #include <nexell/soc-s5pxx18.h>
+#else
+    #include <mach/platform.h>
+    #include <mach/devices.h>
+    #include <mach/soc.h>
+#endif
 
 #elif defined (__BUILD_MODE_ARM_UBOOT_DEVICE_DRIVER__)
 #include <common.h>

@@ -574,8 +574,8 @@
 			"flash=eeprom,0:2ndboot:2nd:0x0,0x4000;"	\
 			"flash=eeprom,0:bootloader:boot:0x10000,0x70000;"	\
 			"flash=mmc,1:boot:ext4:0x000100000,0x004000000;"	\
-			"flash=mmc,1:system:ext4:0x004100000,0x028E00000;"	\
-			"flash=mmc,1:cache:ext4:0x02CF00000,0x21000000;"	\
+			"flash=mmc,1:system:ext4:0x004100000,0x2F200000;"	\
+			"flash=mmc,1:cache:ext4:0x33300000,0x1AC00000;"	\
  			"flash=mmc,1:misc:ext4:0x4e000000,0x800000;"	\
  			"flash=mmc,1:recovery:ext4:0x4e900000,0x1600000;"	\
 			"flash=mmc,1:userdata:ext4:0x50000000,0x0;"

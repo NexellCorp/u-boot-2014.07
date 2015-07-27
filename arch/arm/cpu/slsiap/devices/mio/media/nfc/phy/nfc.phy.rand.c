@@ -60,6 +60,9 @@
 #include <linux/vmalloc.h>
 #include <linux/gfp.h>
 
+#include <linux/random.h>
+#include <linux/jiffies.h>
+
 #elif defined (__BUILD_MODE_ARM_UBOOT_DEVICE_DRIVER__)
 #include <common.h>
 #include <malloc.h>
@@ -79,6 +82,23 @@ static struct
     int buf_size;
 
 } randomizer;
+
+#ifdef __MIO_UNIT_TEST_RANDOMIZER__
+
+#define RAND_TEST_BUFSIZE	8192
+
+static unsigned long long rand_elapse_sum = 0;
+
+static struct
+{
+	ktime_t s;
+	ktime_t e;
+	ktime_t ns;
+} rand_elapse_t;
+
+char rand_test_buffer[RAND_TEST_BUFSIZE];
+#endif
+
 
 #define NFC_PHY_RAND_PAGESEED_CNT   (128)
 static unsigned short page_seed[NFC_PHY_RAND_PAGESEED_CNT] =
@@ -144,6 +164,9 @@ static int randomizer_page(int page, unsigned char *buffer, int size, unsigned c
  ******************************************************************************/
 int NFC_PHY_RAND_Init(int _buf_size)
 {
+#ifdef __MIO_UNIT_TEST_RANDOMIZER__
+	srandom32((uint)jiffies);
+#endif
     Exchange.nfc.fnRandomize_Enable = NFC_PHY_RAND_Enable;
 
     NFC_PHY_RAND_DeInit();
@@ -183,6 +206,83 @@ void NFC_PHY_RAND_Enable(unsigned char _enable)
     if (Exchange.debug.nfc.phy.info_randomizer) { Exchange.sys.fn.print("NFC_PHY_RAND_Enable: %d \n", _enable); }
     randomizer.enable = (_enable)? 1: 0;
 }
+
+
+#ifdef __MIO_UNIT_TEST_RANDOMIZER__
+static void unit_test_rand_start(void)
+{
+	rand_elapse_t.s = ktime_get();
+}
+
+static void unit_test_rand_end(void)
+{
+	rand_elapse_t.e = ktime_get();
+	rand_elapse_t.ns.tv64 = ktime_to_ns(ktime_sub(rand_elapse_t.e, rand_elapse_t.s));
+
+	rand_elapse_sum += rand_elapse_t.ns.tv64;
+}
+
+
+static void * NFC_PHY_RAND_RUN(void *_buf, int _buf_size, unsigned char keep)
+{
+    unsigned char *rand_buf = (unsigned char *)_buf;
+    int size = _buf_size;
+
+	unit_test_rand_start();
+
+    if (keep > 1)
+    {
+        if (!rand_buf || (size > randomizer.buf_size))
+        {
+            if (Exchange.debug.nfc.phy.info_randomizer) { Exchange.sys.fn.print("NFC_PHY_RAND_Randomize: error: rand_buf:0x%08x, size:%d\n", (unsigned int)rand_buf, size); }
+        }
+        else
+        {
+			randomizer_page(randomizer.curr_page, rand_buf, size, 1);
+		}
+    }
+
+	unit_test_rand_end();
+
+    return (void *)rand_buf;
+}
+void NFC_PHY_RAND_Test(int cnt)
+{
+	u32 page;
+    char * data = rand_test_buffer;
+	int i;
+	
+	Exchange.sys.fn.print(" [UNIT TEST] Run Rand Test ............. (count: %d)\n", cnt);
+
+	for (i = 0; i < cnt; i++)
+	{
+		page = random32();
+
+		NFC_PHY_RAND_SetPageSeed(page & 0xff);
+		memset(data, (page & 1) ? 0xAA : 0x55, RAND_TEST_BUFSIZE);
+
+		data = (char *)NFC_PHY_RAND_RUN((void *)data, 1024, 2);
+	}
+}
+
+void NFC_PHY_RAND_Print(void)
+{
+	Exchange.sys.fn.print(" [UNIT TEST] randomizer total: %15llu (ns)\n", rand_elapse_sum);
+}
+
+void NFC_PHY_RAND_Clear(void)
+{
+	rand_elapse_sum = 0;
+}
+#else
+#define unit_test_rand_start()		do {} while (0)
+#define unit_test_rand_end()		do {} while (0)
+
+void NFC_PHY_RAND_Test(int cnt)		{ }
+void NFC_PHY_RAND_Print(void)		{ }
+void NFC_PHY_RAND_Clear(void)		{ }
+#endif /* __MIO_UNIT_TEST_RANDOMIZER__ */
+
 
 int NFC_PHY_RAND_IsEnable(void)
 {

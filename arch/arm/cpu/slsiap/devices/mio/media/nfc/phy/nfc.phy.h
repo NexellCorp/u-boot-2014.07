@@ -113,18 +113,6 @@ typedef struct __NF_TIME_REGS__
 
 NFC_PHY_EXT int NFC_PHY_ForceSet_Nftime(NF_TIME_REGS _t);
 
-/******************************************************************************
- *
- * NFC IO Width
- *
- ******************************************************************************/
-#define IO_BURST_X4		(0x4)
-#define IO_BURST_X1		(0x2)
-#define IO_BURST_X0		(0x1)
-
-#define IOR_WIDTH		IO_BURST_X4	/* IO_BURST_X4 */
-#define IOW_WIDTH		IO_BURST_X0
-
 
 /******************************************************************************
  *

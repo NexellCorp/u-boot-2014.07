@@ -42,6 +42,7 @@
 #include <asm/sizes.h>
 //#include <asm/mach-types.h>
 #include <linux/bitops.h>
+#include <linux/log2.h>
 
 #include <linux/sched.h>
 #include <asm/stacktrace.h>
@@ -2011,6 +2012,50 @@ void NFC_PHY_ScanMicronHelp(unsigned char * _id)
     Exchange.sys.fn.print("\n");
 }
 
+
+
+/******************************************************************************
+ *
+ ******************************************************************************/
+#if defined (__BUILD_MODE_ARM_LINUX_DEVICE_DRIVER__)
+#elif defined (__BUILD_MODE_ARM_UBOOT_DEVICE_DRIVER__)
+#define __fls(x) (fls(x) - 1)
+//#define ffs(x) ({ unsigned long __t = (x); fls(__t & -__t); })
+#define __ffs(x) (ffs(x) - 1)
+#define ffz(x) __ffs( ~(x) )
+
+
+
+static int is_power_of_2(int x)
+{
+	return (x != 0 && ((x & (x - 1)) == 0));
+}
+#endif
+
+
+static int break_down_power_of_2(int x, int *value, int *rest)
+{
+	int e = __fls(x);
+	int is_pow_of_2;
+
+	if (x == 0)
+	{
+		is_pow_of_2 = *value = *rest = e = 0;
+	}
+	else
+	{
+		is_pow_of_2 = is_power_of_2(x);
+		*value = (1 << e);
+		*rest  = x - (1 << e);
+	}
+
+	return is_pow_of_2;
+}
+
+
+/******************************************************************************
+ *
+ ******************************************************************************/
 unsigned int NFC_PHY_ScanMicron(unsigned char * _id, unsigned char * _onfi_id, unsigned int _scan_format)
 {
     unsigned int nand = 0;
@@ -2098,7 +2143,25 @@ unsigned int NFC_PHY_ScanMicron(unsigned char * _id, unsigned char * _onfi_id, u
          **********************************************************************/
         if (scan_format)
         {
+			NAND * nand_config = (NAND *)&phy_features.nand_config;
+
             bytes_per_page = NFC_PHY_ConfigOnfi(id, nand, (void *)&phy_features.nand_config, (void *)&phy_features.onfi_param, (void *)&phy_features.onfi_ext_param);
+
+			/*
+			 * Override
+			 */
+			switch (nand)
+			{
+				case NAND_MICRON_L83A_MT29F32G08CBADA:
+				{
+					int base, ext;
+					break_down_power_of_2(nand_config->_f.mainblocks_per_lun, &base, &ext);
+
+					nand_config->_f.mainblocks_per_lun				= base;
+					nand_config->_f.extendedblocks_per_lun			= ext;
+				} break;
+			}
+
             if (Exchange.ftl.fnConfig) { Exchange.ftl.fnConfig((void *)&phy_features.nand_config); }
         }
         else

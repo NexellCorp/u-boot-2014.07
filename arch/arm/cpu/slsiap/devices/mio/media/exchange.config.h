@@ -49,7 +49,7 @@
 #define __SUPPORT_X64_OS__
 #endif
 
-#if 0
+#if defined(CONFIG_ARM64)
     #define __SUPPORT_X64_OS__
 #endif
 
@@ -87,6 +87,14 @@
   //#define __COMPILE_MODE_BEST_DEBUGGING__
     #define __COMPILE_MODE_ELAPSE_T__
   //#define __COMPILE_MODE_READONLY__
+
+  //#define __MIO_UNIT_TEST_RANDOMIZER__
+  //#define __MIO_UNIT_TEST_THREAD__
+  //#define __MIO_UNIT_TEST_SLEEP__
+
+	#ifndef CONFIG_LOCAL_TIMERS
+    #define __USING_DELAY_FOR_SHORT_SLEEP__
+	#endif
 
 #elif defined (__SUPPORT_MIO_UBOOT__)
 

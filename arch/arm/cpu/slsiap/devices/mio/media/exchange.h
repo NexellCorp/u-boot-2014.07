@@ -717,17 +717,6 @@ typedef struct __ExDEBUG__
 #define ELAPSE_T_IO_16                          (ELAPSE_T_IO_(0x16))
 #define ELAPSE_T_IO_17                          (ELAPSE_T_IO_(0x17))
 
-#if 0
-#define ELAPSE_T_IO_18                          (ELAPSE_T_IO_(0x18))
-#define ELAPSE_T_IO_19                          (ELAPSE_T_IO_(0x19))
-#define ELAPSE_T_IO_1A                          (ELAPSE_T_IO_(0x1A))
-#define ELAPSE_T_IO_1B                          (ELAPSE_T_IO_(0x1B))
-#define ELAPSE_T_IO_1C                          (ELAPSE_T_IO_(0x1C))
-#define ELAPSE_T_IO_1D                          (ELAPSE_T_IO_(0x1D))
-#define ELAPSE_T_IO_1E                          (ELAPSE_T_IO_(0x1E))
-#define ELAPSE_T_IO_1F                          (ELAPSE_T_IO_(0x1F))
-#endif
-
 // Measure Block
 #define ELAPSE_T_TRANSACTION_THREAD_BACKGROUND  ELAPSE_T_TRANSACTION_THREAD_00
 #define ELAPSE_T_TRANSACTION_THREAD_SCHEDULED   ELAPSE_T_TRANSACTION_THREAD_01
@@ -756,13 +745,6 @@ typedef struct __ExDEBUG__
 #define ELAPSE_T_IO_NFC_DELAY_W                 ELAPSE_T_IO_14
 #define ELAPSE_T_IO_MEMIO_W                     ELAPSE_T_IO_15
 #define ELAPSE_T_IO_FTL_MAP_SEARCH_W            ELAPSE_T_IO_16
-
-#if 0
-#define ELAPSE_T_IO_DATA_R						ELAPSE_T_IO_17
-#define ELAPSE_T_IO_ECC_R						ELAPSE_T_IO_18
-#define ELAPSE_T_IO_ECC_GEN						ELAPSE_T_IO_19
-#define ELAPSE_T_IO_ECC_CORRECT					ELAPSE_T_IO_19
-#endif
 
     struct
     {

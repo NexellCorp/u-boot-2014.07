@@ -275,10 +275,56 @@ extern unsigned long nxp_ftl_start_block; /* byte address, Must Be Multiple of 8
 /******************************************************************************
  *
  ******************************************************************************/
+#if defined (__BUILD_MODE_ARM_LINUX_DEVICE_DRIVER__)
+static void __usleep_range(unsigned long min, unsigned long max)
+{
+	#ifdef __MIO_UNIT_TEST_SLEEP__
+	ktime_t t1;
+	s64 ns = 0;
+
+	t1 = ktime_get();
+	#endif
+
+	#ifdef __USING_DELAY_FOR_SHORT_SLEEP__
+	if (min < NSEC_PER_USEC)
+		udelay(min);
+	else
+	#endif
+		usleep_range(min, max);
+
+	#ifdef __MIO_UNIT_TEST_SLEEP__
+	ns = ktime_to_ns(ktime_sub(ktime_get(), t1));
+	ns = div64_u64(ns, 1000L);
+
+	if (ns >= min * 20)
+		Exchange.sys.fn.print("%s: sleeping too long!!! (req: %lu, elapse: %lld)\n", __func__, min, ns);
+	#endif
+}
+
+void __msleep(unsigned int msecs)
+{
+	#ifdef __MIO_UNIT_TEST_SLEEP__
+	ktime_t t1;
+	s64 ns = 0;
+
+	t1 = ktime_get();
+	#endif
+
+	msleep(msecs);
+
+	#ifdef __MIO_UNIT_TEST_SLEEP__
+	ns = ktime_to_ns(ktime_sub(ktime_get(), t1));
+	ns = div64_u64(ns, 1000L * 1000L);
+
+	if (ns >= msecs * 2)
+		Exchange.sys.fn.print("%s: sleeping too long!!! (req: %u, elapse: %lld)\n", __func__, msecs, ns);
+	#endif
+}
+#endif
+
 void EXCHANGE_init(void)
 {
-    unsigned long ftl_start_block = 0;
-
+	unsigned long ftl_start_block = 0;
     /**************************************************************************
      * FTL Start Offset Must Be Multiple Of 8MB
      **************************************************************************/
@@ -323,8 +369,8 @@ void EXCHANGE_init(void)
     Exchange.nfc.fnRandomize_Init = NFC_PHY_RAND_Init;
     Exchange.nfc.fnRandomize_DeInit = NFC_PHY_RAND_DeInit;
 
-    Exchange.sys.fn.usleep = usleep_range;
-    Exchange.sys.fn.msleep = msleep;
+    Exchange.sys.fn.usleep = __usleep_range;
+    Exchange.sys.fn.msleep = __msleep;
     Exchange.sys.fn.print = printk;
     Exchange.sys.fn.sprint = sprintf;
     Exchange.sys.fn.strlen = strlen;

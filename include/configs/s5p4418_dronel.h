@@ -46,12 +46,19 @@
  */
 #define CONFIG_RELOC_TO_TEXT_BASE												/* Relocate u-boot code to TEXT_BASE */
 
-#define	CONFIG_SYS_TEXT_BASE 			0x42C00000
-#define	CONFIG_SYS_INIT_SP_ADDR			CONFIG_SYS_TEXT_BASE					/* init and run stack pointer */
+//#define	CONFIG_SYS_TEXT_BASE 			0x42C00000
+#define	CONFIG_SYS_TEXT_BASE 			0x44000000
+#define CONFIG_LOADER_MEM_SIZE          (0x1000000 - 0x8000)         /* u-boot using memory range */
+
+//#define	CONFIG_SYS_INIT_SP_ADDR			CONFIG_SYS_TEXT_BASE					/* init and run stack pointer */
+#define CONFIG_SYS_INIT_SP_ADDR         (CONFIG_SYS_TEXT_BASE + CONFIG_LOADER_MEM_SIZE) /* init and run stack pointer */
 
 /* malloc() pool */
-#define	CONFIG_MEM_MALLOC_START			0x43000000
-#define CONFIG_MEM_MALLOC_LENGTH		32*1024*1024							/* more than 2M for ubifs: MAX 16M */
+//#define	CONFIG_MEM_MALLOC_START			0x43000000
+//#define CONFIG_MEM_MALLOC_LENGTH		32*1024*1024							/* more than 2M for ubifs: MAX 16M */
+#define	CONFIG_MEM_MALLOC_START			0x44200000
+#define CONFIG_MEM_MALLOC_LENGTH		4*1024*1024							/* more than 2M for ubifs: MAX 16M */
+
 
 /* when CONFIG_LCD */
 #define CONFIG_FB_ADDR					0x46000000

@@ -45,6 +45,11 @@
 #define ZBI_L2_FAULT_MARK(paddr)		(paddr|0x1E); 			// FIXME
 																// nG  S AP[2]  TEX[2:0] AP[1:0] C B 1 XN
 																//  0  1     0       001      01 1 1 1  0 = 0 10 001 01 111 0 = 0x45E
+#elif defined(CONFIG_ARCH_MX6Q)
+#define ZBI_L2_FAULT_MARK(paddr)		(paddr|0x1E); 			// FIXME
+																// nG  S APX  TEX[2:0] AP[1:0] P Domain XN C B 1 XN
+																//  0  0  0     000      01    0  0000   0 1 1 1  0 = 0x40E
+
 #else
 #define ZBI_L2_FAULT_MARK(paddr)		(paddr|0x2E); 			// FIXME
 																// nG  S APX  TEX AP C B 1 XN
@@ -67,18 +72,28 @@
 /// @{
 /// @brief  zbi 구조체
 ///-----------------------------------------------------------------------------
+
 typedef struct
 {
 	u32 		dest_paddr;
 	u16 		page_offset;
 	u16 		attr;
+#ifdef DEBUG_4K_CHECKSUM
+	u32			checksum;
+	u32			rsv;
+#endif
 } zbi_copy_info_t;
 
 #define ZBI_MAX_SIZE					(128*PAGE_SIZE)			// FIXME
 #ifdef CONFIG_ARCH_OMAP4
-#define ZBI_UNIT_SIZE					(15*PAGE_SIZE)			// FIXME
+	#define ZBI_UNIT_SIZE					(15*PAGE_SIZE)			// FIXME
 #else
-#define ZBI_UNIT_SIZE					(10*PAGE_SIZE)			// FIXME
+	#ifdef DEBUG_4K_CHECKSUM
+	#define ZBI_UNIT_SIZE					(ZBI_MAX_SIZE - PAGE_SIZE)
+	#else
+	//#define ZBI_UNIT_SIZE					(10*PAGE_SIZE)			// FIXME
+	#define ZBI_UNIT_SIZE					(127*PAGE_SIZE)			// FIXME
+	#endif
 #endif
 #define ZBI_HEADER_MAX					(ZBI_CPU_SAVE_SIZE+ZBI_CO_SAVE_SIZE+1024)
 #define ZBI_COPY_MAX					((ZBI_UNIT_SIZE-ZBI_HEADER_MAX)/sizeof(zbi_copy_info_t))	
@@ -120,11 +135,28 @@ typedef struct
 			// Added for 64K Extend
 			u32         bootup_paddress;    // adderss
 			u32         bootup_size;
+
+			// A9 MPCore base address
+			u32			armmp_base;
+
+			// cpu resume address
+			u32			cpu_idmap;
+			u32			phys_cpu_ptr;
+			u32			cpu_resume;
+			u32			cpu_offset;
+			u32			cpu_nocache;
+			u32			cpu_nr;
+
+			// nalcode used
+			u32			nal_reserv[16];
+
 		};
 		
 		u8	align_2048[2048];
 	};
 	
+//	u8	arm_smp[4096+2048];
+
 	zbi_copy_info_t		copy_data	[ZBI_COPY_MAX];
 } zbi_t;
 /// @}
@@ -141,7 +173,6 @@ extern void     	zbi_build_block_page				( void );
 extern void     	zbi_write_info_of_bootcopy_to_zbi	( void );
 extern void			zbi_build_block_page_for_m2n_data	( void );
                                                 		
-extern int 			zbi_save_coprocessor				( u8 *coprocessor_data , u32 size );
 extern int 			zbi_save_cpu						( u8 *cpu_data , u32 size );
 extern int 			zbi_jump_vaddr						( u32 vaddr );
 extern void 		zbi_set_zblk_io						( u32 vaddr );
@@ -155,9 +186,13 @@ extern void 		zbi_display							( void );
 
 extern void zbi_set_section_option(u32 opt);
 extern u32 zbi_get_section_option(void);
+extern zbi_t *get_zbi_base(void);
 
 extern u32 (*nalcode_func)( u32 function_offset, u32 arg1, u32 arg2, u32 arg3 );
 
+void zbi_info_dump(void);
+void zb_save_cpu_resume(void);
+void zbi_change_pgd(unsigned long);
 /// @}
 
 #endif  // _ZBI_H_

@@ -649,9 +649,12 @@
 #define CONFIG_VIP_CB_ADDR          0x7FF62800
 #define CONFIG_VIP_CR_ADDR          0x7FF79000
 #else
-#define CONFIG_VIP_LU_ADDR          0x7FD28000
-#define CONFIG_VIP_CB_ADDR          0x7FD98800
-#define CONFIG_VIP_CR_ADDR          0x7FDAF000
+//#define CONFIG_VIP_LU_ADDR          0x7FD28000
+//#define CONFIG_VIP_CB_ADDR          0x7FD98800
+//#define CONFIG_VIP_CR_ADDR          0x7FDAF000
+#define CONFIG_VIP_LU_ADDR          0x6f320000
+#define CONFIG_VIP_CB_ADDR          0x6f390800
+#define CONFIG_VIP_CR_ADDR          0x6f3a7000
 #endif
 #endif
 

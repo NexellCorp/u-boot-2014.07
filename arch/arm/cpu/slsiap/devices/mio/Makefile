@@ -7,6 +7,7 @@ obj-y += mio.uboot.rwtest.o
 obj-y += media/exchange.o
 obj-y += media/nfc/phy/nfc.phy.o
 ifdef CONFIG_ARM64
+obj-y += media/nfc/phy/nfc.lib64.o
 else
 obj-y += media/nfc/phy/nfc.lib.o
 endif

@@ -408,6 +408,11 @@ int board_late_init(void)
 
 #endif /* CONFIG_BAT_CHECK */
 
+#if defined(CONFIG_VIP)
+    camera_run();
+    camera_preview();
+#endif
+
 	return 0;
 }
 

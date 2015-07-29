@@ -340,7 +340,7 @@ int nxp_vip_set_addr(int module, u32 lu_addr, u32 cb_addr, u32 cr_addr)
 
 int nxp_vip_run(int module)
 {
-    dump_register(module);
+    //dump_register(module);
     _hw_run(module);
 
     // psw0523 debugging

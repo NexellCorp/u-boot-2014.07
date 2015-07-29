@@ -647,5 +647,26 @@
 //#define DEBUG							/* u-boot debug macro, nand, ethernet,... */
 //#define CONFIG_PROTOTYPE_DEBUG		/* prototype debug mode */
 
+#define CONFIG_VIP
+#define CONFIG_MLC_VIDEO
+#define CONFIG_MLC_RGB_OVERLAY
+
+#if defined(CONFIG_VIP)
+// start address must be checked by kernel booting
+// each address must be aligned 4K
+#if 0
+#define CONFIG_VIP_LU_ADDR          0x7FEF2000
+#define CONFIG_VIP_CB_ADDR          0x7FF62800
+#define CONFIG_VIP_CR_ADDR          0x7FF79000
+#else
+//#define CONFIG_VIP_LU_ADDR          0x7FD28000
+//#define CONFIG_VIP_CB_ADDR          0x7FD98800
+//#define CONFIG_VIP_CR_ADDR          0x7FDAF000
+#define CONFIG_VIP_LU_ADDR          0x6f320000
+#define CONFIG_VIP_CB_ADDR          0x6f390800
+#define CONFIG_VIP_CR_ADDR          0x6f3a7000
+#endif
+#endif
+
 #endif /* __CONFIG_H__ */
 

@@ -440,38 +440,6 @@ int mio_info(void)
 {
     NAND * nand = (NAND *)&phy_features.nand_config;
 
-    #if 0
-    {
-        int i = 0;
-        unsigned long *ret = 0xFFFFFFFF;
-        unsigned long val64 = 0x4567890ABCDEF;
-        unsigned long val64_a = 0x4567890ABCDEF;
-        unsigned long val32 = 0xBCCDD;
-
-        if ((unsigned int)ret == 0xFFFFFFFF)
-        {
-            printf("same\n");
-        }
-
-        printf("123456789 123456789 123456789 123456789 123456789\n");
-        printf("val64:%016lx  val32:%016lx  val32:%016lx\n", val64, val32, val32);
-
-
-        val64 = 0x1;
-        val64_a = 0x1;
-        for (i=0; i<64; i++)
-        {
-            val64 = (((U32)(val64))<<(1));
-            printf("%016lx ", val64);
-
-            val64_a = (((unsigned long)(val64_a))<<(1));
-            printf("%016lx ", val64_a);
-
-            printf("\n");
-        }
-    }
-    #endif
-
     printf("\n NAND INFORMATION");
 
     printf("\n");

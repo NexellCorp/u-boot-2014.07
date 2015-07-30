@@ -65,13 +65,15 @@
 
 #endif
 
+static unsigned int NFC_PHY_GetEccBitsOfMainData(unsigned int _data_bytes_per_page, unsigned int _spare_bytes_per_page, unsigned int _ecc_codeword_size);
+static unsigned int NFC_PHY_GetEccBitsOfBlockInformation(unsigned int _data_bytes_per_page, unsigned int _spare_bytes_per_page, unsigned int _ecc_codeword_size, unsigned int _ecc_bits_correctability);
 /******************************************************************************
  *
  ******************************************************************************/
 unsigned int NFC_PHY_GetEccBitsOfMainData(unsigned int _data_bytes_per_page, unsigned int _spare_bytes_per_page, unsigned int _ecc_codeword_size)
 {
     unsigned int eccbits_per_maindata = 0;
-    unsigned char valid_ecc_list[] = {4,8,16,24,40,60};
+    unsigned char valid_ecc_list[] = {4,8,12,16,24,40,60};
 	unsigned int spare_bytes_per_page = _spare_bytes_per_page;
     unsigned int ecc_units = _data_bytes_per_page / _ecc_codeword_size;
     unsigned int ecc_data_parity_size = 0;
@@ -79,7 +81,7 @@ unsigned int NFC_PHY_GetEccBitsOfMainData(unsigned int _data_bytes_per_page, uns
 
     for (i = sizeof(valid_ecc_list)/sizeof(valid_ecc_list[0]) - 1; i >= 0; i--)
     {
-		ecc_data_parity_size = NFC_PHY_GetEccParitySize(valid_ecc_list[i]) * ecc_units + 60;
+		ecc_data_parity_size = NFC_PHY_GetEccParitySize(_ecc_codeword_size, valid_ecc_list[i]) * ecc_units + NFC_PHY_GetEccBitsOfBlockInformation(_data_bytes_per_page, _spare_bytes_per_page, _ecc_codeword_size, valid_ecc_list[i]);
 		if (spare_bytes_per_page > ecc_data_parity_size)
         {
             // Get MainData's ECC bit
@@ -97,11 +99,12 @@ unsigned int NFC_PHY_GetEccBitsOfMainData(unsigned int _data_bytes_per_page, uns
 unsigned int NFC_PHY_GetEccBitsOfBlockInformation(unsigned int _data_bytes_per_page, unsigned int _spare_bytes_per_page, unsigned int _ecc_codeword_size, unsigned int _ecc_bits_correctability)
 {
     unsigned int eccbits_per_blockinformation = 0;
-    unsigned char valid_ecc_list[] = {4,8,16,24,40,60};
+    unsigned char valid_ecc_list[] = {4,8,12,16,24,40,60};
     unsigned int entire_page_size = _data_bytes_per_page + _spare_bytes_per_page;
     unsigned int ecc_codeword_size = _ecc_codeword_size;
+    unsigned int parity_ecc_codeword_size = 0;
     unsigned int ecc_units = _data_bytes_per_page / _ecc_codeword_size;
-    unsigned int ecc_data_parity_size = NFC_PHY_GetEccParitySize(_ecc_bits_correctability);
+    unsigned int ecc_data_parity_size = NFC_PHY_GetEccParitySize(_ecc_codeword_size, _ecc_bits_correctability);
     int i = 0;
 
     // FTL Data & Block Information
@@ -109,7 +112,8 @@ unsigned int NFC_PHY_GetEccBitsOfBlockInformation(unsigned int _data_bytes_per_p
 
     for (i = sizeof(valid_ecc_list)/sizeof(valid_ecc_list[0]) - 1; i >= 0; i--)
     {
-        if (entire_page_size > NFC_PHY_GetEccParitySize(valid_ecc_list[i]))
+        parity_ecc_codeword_size = (valid_ecc_list[i] <= 16)? 512: 1024;
+        if (entire_page_size > NFC_PHY_GetEccParitySize(parity_ecc_codeword_size, valid_ecc_list[i]))
         {
             // Get Block Information's ECC bit
             eccbits_per_blockinformation = valid_ecc_list[i];

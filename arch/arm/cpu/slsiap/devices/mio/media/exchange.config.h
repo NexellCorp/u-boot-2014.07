@@ -45,12 +45,9 @@
 /******************************************************************************
  * Register Width
  ******************************************************************************/
-#if defined(__x86_64__) || defined(__ia64__) || defined(_M_AMD64) || defined(_M_IA64) || defined(_WIN64) || defined(__alpha__) || defined(__s390__) /* ... */
+#if defined(__x86_64__) || defined(__ia64__) || defined(_M_AMD64) || defined(_M_IA64) || defined(_WIN64) || defined(__alpha__) || defined(__s390__) || \
+    defined(CONFIG_ARM64) /* ... */
 #define __SUPPORT_X64_OS__
-#endif
-
-#if defined(CONFIG_ARM64)
-    #define __SUPPORT_X64_OS__
 #endif
 
 #if defined (__SUPPORT_X64_OS__)

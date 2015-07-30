@@ -71,8 +71,6 @@ extern int FTL_Open(unsigned char * _chip_name, unsigned long _chip_id_base, uns
 extern int FTL_Close(void);
 extern int FTL_Boot(unsigned char _mode);
 
-extern unsigned int NFC_GetEccParitySize(unsigned int _eccbits);
-
 extern unsigned int NFC_PHY_Init(unsigned int _scan_format);
 extern void NFC_PHY_DeInit(void);
 

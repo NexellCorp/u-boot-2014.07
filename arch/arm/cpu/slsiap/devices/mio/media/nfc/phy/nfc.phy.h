@@ -195,7 +195,7 @@ NFC_PHY_EXT int NFC_PHY_EccDecoderGetErrorLocation(unsigned int * _errorlocation
 /******************************************************************************
  *
  ******************************************************************************/
-NFC_PHY_EXT unsigned int NFC_PHY_GetEccParitySize(unsigned int _eccbits);
+NFC_PHY_EXT unsigned int NFC_PHY_GetEccParitySize(unsigned int _ecc_codeword_size, unsigned int _eccbits);
 
 /******************************************************************************
  *

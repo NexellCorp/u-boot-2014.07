@@ -72,6 +72,34 @@ static struct pwm_device pwm_dev[] = {
 #define	PWM_BASE	IO_ADDRESS(PHY_BASEADDR_PWM)
 #define	DUTY_MIN_VAL	2
 
+#define PWM_RESET() do { \
+		if (!peri_reset_status(RESET_ID_PWN)) \
+			prei_reset_set(RESET_ID_PWN); \
+		} while (0)
+
+static void peri_reset_set(int id)
+{
+	unsigned long flags;
+	U32 RSTIndex = id;
+
+	NX_RSTCON_SetBaseAddress((void*)IO_ADDRESS(NX_RSTCON_GetPhysicalAddress()));
+	NX_RSTCON_SetnRST(RSTIndex, RSTCON_nDISABLE);
+	mdelay(1);
+	NX_RSTCON_SetNRST(RSTIndex, RSTCON_nENABLE);
+}
+
+static int peri_reset_status(int id)
+{
+	unsigned long flags;
+	U32 RSTIndex = id;
+	int power=0;
+
+	NX_RSTCON_SetBaseAddress((void*)IO_ADDRESS(NX_RSTCON_GetPhysicalAddress()));
+	power = NX_RSTCON_GetnRst(RSTIndex) ? 1 : 0;
+
+	return power;
+}
+
 static inline void pwm_clock(int ch, int mux, int scl)
 {
 	volatile U32 val;
@@ -124,7 +152,11 @@ int pwm_init(int pwm_id, int div, int invert)
 
 	pwm_dev[ch].max_freq = clk_get_rate(clk);
 	sprintf(name, "%s.%d", DEV_NAME_PWM, ch);
-printf("[%s] PWM NAME : %s\n", __func__, name);
+
+#if 0
+	printf("[%s] PWM NAME : %s\n", __func__, name);
+#endif
+
 	pwm_dev[ch].clk = clk_get(NULL, name);
 
 #if defined(CONFIG_MACH_S5P4418)
@@ -137,17 +169,22 @@ printf("[%s] PWM NAME : %s\n", __func__, name);
 
 int pwm_config(int pwm_id, int duty_ns, int period_ns)
 {
+
+#if 0
 	printf("[%s] pwm_id : %d\n", __func__, pwm_id);
 	printf("[%s] duty_ns : %d\n", __func__, duty_ns);
 	printf("[%s] period_ns : %d\n", __func__, period_ns);
+#endif
 
 	int ch = pwm_id;
 	unsigned int request = TO_HZ(period_ns);
 	int duty = TO_PERCENT(duty_ns, period_ns);
 
+#if 0
 	printf("[%s] ch : %d\n", __func__, ch);
 	printf("[%s] duty : %d\n", __func__, duty);
 	printf("[%s] request : %d\n", __func__, request);
+#endif
 
 	struct clk *clk = pwm_dev[ch].clk;
 	unsigned long max_clock = pwm_dev[ch].max_freq;
@@ -196,11 +233,13 @@ int pwm_config(int pwm_id, int duty_ns, int period_ns)
 	pwm_count(ch, counter, compare);
 	pwm_start(ch, 0);
 
+#if 0
 	printf("[%s] rate(clock) : %ld\n", __func__, clock);
 	printf("[%s] duty : %d\n", __func__, duty);
 	printf("[%s] pwn_hz  : %ld\n", __func__, pwmhz);
 	printf("[%s] counter  : %d\n", __func__, counter);
 	printf("[%s] compare  : %d\n", __func__, compare);
+#endif
 
 	/* PWM altfunction */
 	NX_GPIO_SetPadFunction(grp, bit, pwm_dev[ch].fn);
@@ -300,134 +339,3 @@ void pwm_disable(int pwm_id)
 
 	NX_GPIO_SetOutputValue(grp, bit, CFALSE);
 }
-
-#if 0
-static unsigned long    clk_in_max = 0;
-#define DUTY_MIN_VAL  2
-
-unsigned long pwm_set_frequency(int ch, unsigned int request, unsigned int duty)
-{
-  //struct pwm_device *pwm = &devs_pwm[ch];
-  struct pwm_device *pwm = &pwm_dev[ch];
-  volatile unsigned long rate, freq, clock = 0;
-  volatile unsigned long hz = 0, pwmhz = 0;
-  volatile unsigned int tcnt;
-  int i, n, end = 0;
-
-
-  printf("[%s] ch : %d\n", __func__, ch);
-  printf("[%s] duty : %d\n", __func__, duty);
-  printf("[%s] request : %d\n", __func__, request);
-#if 0
-  //RET_ASSERT_VAL(PWN_CHANNELS > ch, -EINVAL);
-  //RET_ASSERT_VAL(ch >= 0, -EINVAL);
-  //RET_ASSERT_VAL(100 >= duty && duty >= 0, -EINVAL);
-
-  if( PWN_CHANNELS > ch )
-  {
-    printf("PWN_CHANNELS > ch error...!!\n");
-    return -EINVAL;
-  }
-#endif
-printf("[%s] Line : %d\n", __func__, __LINE__);
-	struct clk *clk = clk_get(NULL, CORECLK_NAME_PCLK);
-
-printf("[%s] Line : %d\n", __func__, __LINE__);
-  clk_in_max  = clk_get_rate(clk);
-  clk_in_max /= 2;
-
-printf("[%s] Line : %d\n", __func__, __LINE__);
-  if (request > (clk_in_max/DUTY_MIN_VAL)) {
-    printf("Invalid request=%u hz over max pwm out %ld hz\n",
-      request, (clk_in_max/DUTY_MIN_VAL));
-    return -EINVAL;
-  }
-  if (0 == duty) {
-//    pwm->compare = 0;
-//    pwm->request = request;
-    //pwm_set_device(pwm);
- //   return request;
-  }
-
-  /* for suspend -> resume */
-#if 0
-    if (pwm->request == request) {
-        clock = pwm->rate;
-        pwmhz = pwm->pwm_hz;
-    }
-#endif
-
-  /* change only dutycycle */
-#if 0
-  if (pwm->request == request && pwm->duty != duty) {
-    clock = pwm->rate;
-    pwmhz = pwm->pwm_hz;
-  /* set new pwm out */
-  } else {
-#endif
-printf("[%s] Line : %d\n", __func__, __LINE__);
-    for (n = 1; !end; n *= 10) {
-printf("[%s] Line : %d\n", __func__, __LINE__);
-      for (i = (n == 1 ? DUTY_MIN_VAL : 1); 10 > i; i++) {
-printf("[%s] Line : %d\n", __func__, __LINE__);
-        freq = request * i * n;
-printf("[%s] Line : %d\n", __func__, __LINE__);
-        if (freq > clk_in_max) {
-printf("[%s] Line : %d\n", __func__, __LINE__);
-          end = 1;
-          break;
-				}
-printf("[%s] Line : %d\n", __func__, __LINE__);
-        rate = clk_round_rate(pwm->clk, freq);
-
-printf("[%s] Line : %d\n", __func__, __LINE__);
-        tcnt = rate/request;
-        hz = rate/tcnt;
-        if (0 == rate%request) {
-printf("[%s] Line : %d\n", __func__, __LINE__);
-          clock = rate, pwmhz = hz, end = 1;
-          break;
-        }
-
-        if (hz && (abs(hz-request) >= abs(pwmhz-request)))
-          continue;
-        clock = rate, pwmhz = hz;
-      }
-printf("[%s] Line : %d\n", __func__, __LINE__);
-    }
-#if 0
-  }
-#endif
-
-	//printf("[%s] clk : %d\n", __func__, pwm->clk);
-	printf("[%s] request : %d\n", __func__, request);
-	printf("[%s] rate : %ld\n", __func__, clock);
-	printf("[%s] duty : %d\n", __func__, duty);
-	printf("[%s] pwn_hz  : %ld\n", __func__, pwmhz);
-	printf("[%s] counter  : %ld\n", __func__, clock/request);
-	printf("[%s] compare  : %ld\n", __func__, PWM_COMPARE((clock/request), duty) ? : 1);
-
-#if 0
-  if (clock) {
-    pwm->request = request;
-    pwm->rate = clock;
-    pwm->duty = duty;
-    pwm->pwm_hz = pwmhz;
-    pwm->counter = clock/request;
-    pwm->compare = PWM_COMPARE(pwm->counter, duty) ? : 1;
-   // pwm_set_device(pwm);
-  } else {
-        printk("%s: can't find clock!!!\n", __func__);
-    }
-#endif
-
-  return clock ? pwmhz : 0;
-}
-#endif
-
-
-
-
-
-
-

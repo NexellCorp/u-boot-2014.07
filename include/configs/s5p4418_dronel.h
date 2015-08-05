@@ -453,7 +453,7 @@
 	#define	CONFIG_SYS_I2C_SPEED		100000				/* default speed, 100 khz */
 
 	#define	CONFIG_I2C0_NEXELL								/* 0 = i2c 0 */
-	#define	CONFIG_I2C0_NO_STOP				1				/* when tx end, 0= generate stop signal , 1: skip stop signal */
+	#define	CONFIG_I2C0_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
 
 	#define	CONFIG_I2C1_NEXELL								/* 1 = i2c 1 */
 	#define	CONFIG_I2C1_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
@@ -644,9 +644,21 @@
 #define CONFIG_VIP_CB_ADDR          0x7FF62800
 #define CONFIG_VIP_CR_ADDR          0x7FF79000
 #else
+
+#if 0
 #define CONFIG_VIP_LU_ADDR          0x7FD28000
 #define CONFIG_VIP_CB_ADDR          0x7FD98800
 #define CONFIG_VIP_CR_ADDR          0x7FDAF000
+#else
+//#define CONFIG_VIP_LU_ADDR          0x7FD08000
+//#define CONFIG_VIP_CB_ADDR          0x7FD8D000
+//#define CONFIG_VIP_CR_ADDR          0x7FDAF000
+
+#define CONFIG_VIP_LU_ADDR          0x78000000
+#define CONFIG_VIP_CB_ADDR          0x78085000
+#define CONFIG_VIP_CR_ADDR          0x780A7000
+#endif
+
 #endif
 #endif
 

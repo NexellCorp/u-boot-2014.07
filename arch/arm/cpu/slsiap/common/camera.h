@@ -15,7 +15,6 @@ struct camera_sensor_data {
     int module;
 		bool clock_invert;
     struct reg_val *reg_val;
-    struct reg_val *reg_val_dis;
 
     /* callbacks */
     int (*power_enable)(bool);

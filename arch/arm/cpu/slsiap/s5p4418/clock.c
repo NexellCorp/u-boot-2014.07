@@ -633,7 +633,7 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 	struct nxp_clk_periph *peri = cdev->peri;
 	unsigned long flags;
 	int i;
-//printf("[%s] Line : %d\n", __func__, __LINE__);
+
 	if (!peri)
 		return core_set_rate(clk, rate);
 

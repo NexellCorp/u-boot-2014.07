@@ -21,10 +21,7 @@ static int sensor_check_array(int chip, struct reg_val *regarray)
 
 		ret = i2c_read(chip, regarray[i].reg, 1, &value, 1);
   	if(ret !=0) 
-    {    
     	printf("read value failed\n");
-    }    
-
 
     //if(regarray[i].val != value)
     {    

@@ -73,17 +73,18 @@ int camera_sensor_run(int id)
 
     sensor = _sensor_list[id];
 
+    if (sensor->power_enable)
+        sensor->power_enable(true);
+
     if (sensor->setup_io)
         sensor->setup_io();
 
-    if (sensor->power_enable)
-        sensor->power_enable(true);
+    if (sensor->set_clock)
+        sensor->set_clock(sensor->clk_rate);
 
     ret = i2c_set_bus_num(sensor->bus);
     if (ret)
         return ret;
-    if (sensor->set_clock)
-        sensor->set_clock(sensor->clk_rate);
 
 		if(sensor->clock_invert)
 		{
@@ -93,14 +94,6 @@ int camera_sensor_run(int id)
 
 		regarray = sensor->reg_val;
     reg_val = sensor->reg_val;
-
-//#define SP2518              0x53
-#if 1
-		//printf("#################### Read Register Start#############################\n");
-		ret = i2c_read(sensor->chip, 0x02, 1, &read_val, 1);
-		//printf("Read REG : 0x02 = Value : W[0x%02X] -  R[0x%02X], ret : %d\n", 0x02, read_val, ret);
-		//printf("#################### Read Register End #############################\n");
-#endif
 
     while (reg_val->reg != 0xff) {
        ret =  i2c_write(sensor->chip, reg_val->reg, 1, &reg_val->val, 1);

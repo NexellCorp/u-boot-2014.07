@@ -403,10 +403,16 @@ int board_late_init(void)
 	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 #endif
 
+
 	/* Temp check gpio to update */
 	auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
 
 #endif /* CONFIG_BAT_CHECK */
+
+#if defined(CONFIG_VIP)
+    camera_run();
+    camera_preview();
+#endif
 
 	return 0;
 }

@@ -12,11 +12,13 @@ struct camera_sensor_data {
     int bus;   /* controller number */
     int chip;  /* device address */
     int clk_rate;
+    int module;
+		bool clock_invert;
     struct reg_val *reg_val;
 
     /* callbacks */
     int (*power_enable)(bool);
-    int (*set_clock)(int);
+    int (*set_clock)(ulong);
     void (*setup_io)(void);
 };
 

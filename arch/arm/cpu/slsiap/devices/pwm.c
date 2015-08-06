@@ -72,6 +72,34 @@ static struct pwm_device pwm_dev[] = {
 #define	PWM_BASE	IO_ADDRESS(PHY_BASEADDR_PWM)
 #define	DUTY_MIN_VAL	2
 
+#define PWM_RESET() do { \
+		if (!peri_reset_status(RESET_ID_PWN)) \
+			prei_reset_set(RESET_ID_PWN); \
+		} while (0)
+
+static void peri_reset_set(int id)
+{
+	unsigned long flags;
+	U32 RSTIndex = id;
+
+	NX_RSTCON_SetBaseAddress((void*)IO_ADDRESS(NX_RSTCON_GetPhysicalAddress()));
+	NX_RSTCON_SetnRST(RSTIndex, RSTCON_nDISABLE);
+	mdelay(1);
+	NX_RSTCON_SetNRST(RSTIndex, RSTCON_nENABLE);
+}
+
+static int peri_reset_status(int id)
+{
+	unsigned long flags;
+	U32 RSTIndex = id;
+	int power=0;
+
+	NX_RSTCON_SetBaseAddress((void*)IO_ADDRESS(NX_RSTCON_GetPhysicalAddress()));
+	power = NX_RSTCON_GetnRst(RSTIndex) ? 1 : 0;
+
+	return power;
+}
+
 static inline void pwm_clock(int ch, int mux, int scl)
 {
 	volatile U32 val;
@@ -124,6 +152,11 @@ int pwm_init(int pwm_id, int div, int invert)
 
 	pwm_dev[ch].max_freq = clk_get_rate(clk);
 	sprintf(name, "%s.%d", DEV_NAME_PWM, ch);
+
+#if 0
+	printf("[%s] PWM NAME : %s\n", __func__, name);
+#endif
+
 	pwm_dev[ch].clk = clk_get(NULL, name);
 
 #if defined(CONFIG_MACH_S5P4418)
@@ -136,9 +169,22 @@ int pwm_init(int pwm_id, int div, int invert)
 
 int pwm_config(int pwm_id, int duty_ns, int period_ns)
 {
+
+#if 0
+	printf("[%s] pwm_id : %d\n", __func__, pwm_id);
+	printf("[%s] duty_ns : %d\n", __func__, duty_ns);
+	printf("[%s] period_ns : %d\n", __func__, period_ns);
+#endif
+
 	int ch = pwm_id;
 	unsigned int request = TO_HZ(period_ns);
 	int duty = TO_PERCENT(duty_ns, period_ns);
+
+#if 0
+	printf("[%s] ch : %d\n", __func__, ch);
+	printf("[%s] duty : %d\n", __func__, duty);
+	printf("[%s] request : %d\n", __func__, request);
+#endif
 
 	struct clk *clk = pwm_dev[ch].clk;
 	unsigned long max_clock = pwm_dev[ch].max_freq;
@@ -175,6 +221,7 @@ int pwm_config(int pwm_id, int duty_ns, int period_ns)
 			clock = rate, pwmhz = hz;
 		}
 	}
+
 	clk_set_rate(clk, clock);
 	clk_enable(clk);
 
@@ -185,6 +232,89 @@ int pwm_config(int pwm_id, int duty_ns, int period_ns)
 	pwm_clock(ch, 5, 1);
 	pwm_count(ch, counter, compare);
 	pwm_start(ch, 0);
+
+#if 0
+	printf("[%s] rate(clock) : %ld\n", __func__, clock);
+	printf("[%s] duty : %d\n", __func__, duty);
+	printf("[%s] pwn_hz  : %ld\n", __func__, pwmhz);
+	printf("[%s] counter  : %d\n", __func__, counter);
+	printf("[%s] compare  : %d\n", __func__, compare);
+#endif
+
+	/* PWM altfunction */
+	NX_GPIO_SetPadFunction(grp, bit, pwm_dev[ch].fn);
+	return 0;
+}
+
+int pwm_config_camera(int ch, unsigned int request, unsigned int duty)
+{
+	//printf("[%s] pwm_id : %d\n", __func__, pwm_id);
+	//printf("[%s] duty_ns : %d\n", __func__, duty_ns);
+	//printf("[%s] period_ns : %d\n", __func__, period_ns);
+
+	printf("[%s] ch : %d\n", __func__, ch);
+	printf("[%s] duty : %d\n", __func__, duty);
+	printf("[%s] request : %d\n", __func__, request);
+
+	struct clk *clk = pwm_dev[ch].clk;
+	unsigned long max_clock = pwm_dev[ch].max_freq;
+	unsigned long rate, freq, clock = 0;
+	unsigned long hz = 0, pwmhz = 0;
+	unsigned int tcnt;
+	int i, n, end = 0;
+	unsigned int counter, compare;
+
+	int grp = PAD_GET_GROUP(pwm_dev[ch].io);
+	int bit = PAD_GET_BITNO(pwm_dev[ch].io);
+
+	if (duty == 0 || duty >= 100) {
+		NX_GPIO_SetOutputValue(grp, bit, duty == 0 ? CFALSE : CTRUE);
+		return 0;
+	}
+
+	for (n = 1; !end; n *= 10) {
+		for (i = (n == 1 ? DUTY_MIN_VAL : 1); 10 > i; i++) {
+			freq = request * i * n;
+			printf("[%s] freq : %ld, max_clock : %ld\n", __func__, freq, max_clock);
+			if (freq > max_clock) {
+				printf("[%s] Line : %d\n", __func__, __LINE__);
+				end = 1;
+				break;
+			}
+			rate = clk_round_rate(clk, freq);
+			printf("[%s] rate: %ld, freq : %ld\n", __func__, rate, freq);
+			tcnt = rate/request;
+			printf("[%s] tcnt : %d\n", __func__, tcnt);
+			hz   = rate/tcnt;
+			printf("[%s] hz: %ld\n", __func__, hz);
+			if (0 == rate%request) {
+				clock = rate, pwmhz = hz, end = 1;
+				printf("[%s - %d] clock : %ld, pwmhz : %ld\n", __func__, __LINE__, clock, pwmhz);
+				break;
+			}
+			if (hz && (abs(hz-request) >= abs(pwmhz-request)))
+				continue;
+			clock = rate, pwmhz = hz;
+			printf("[%s - %d] clock : %ld, pwmhz : %ld\n", __func__, __LINE__, clock, pwmhz);
+		}
+	}
+
+	clk_set_rate(clk, clock);
+	clk_enable(clk);
+
+	counter = (clock/request);
+	compare = PWM_COMPARE(counter, duty) ? : 1;
+
+	PWM_COMPARE(counter, duty) ? : 1;
+	pwm_clock(ch, 5, 1);
+	pwm_count(ch, counter, compare);
+	pwm_start(ch, 0);
+
+	printf("[%s] rate(clock) : %ld\n", __func__, clock);
+	printf("[%s] duty : %d\n", __func__, duty);
+	printf("[%s] pwn_hz  : %ld\n", __func__, pwmhz);
+	printf("[%s] counter  : %d\n", __func__, counter);
+	printf("[%s] compare  : %d\n", __func__, compare);
 
 	/* PWM altfunction */
 	NX_GPIO_SetPadFunction(grp, bit, pwm_dev[ch].fn);

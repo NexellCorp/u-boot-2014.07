@@ -80,7 +80,8 @@ static u8 axp228_ocv_table[] = {
 };
 
 
-static int axp228_i2c_read(struct axp228_power *power, u8 reg, u8 *value)
+//static int axp228_i2c_read(struct axp228_power *power, u8 reg, u8 *value)
+int axp228_i2c_read(struct axp228_power *power, u8 reg, u8 *value)
 {
 	uchar chip = power->i2c_addr;
 	u32   addr = (u32)reg & 0xFF;
@@ -88,7 +89,8 @@ static int axp228_i2c_read(struct axp228_power *power, u8 reg, u8 *value)
 	return i2c_read(chip, addr, alen, value, 1);
 }
 
-static int axp228_i2c_write(struct axp228_power *power, u8 reg, u8 value)
+//static int axp228_i2c_write(struct axp228_power *power, u8 reg, u8 value)
+int axp228_i2c_write(struct axp228_power *power, u8 reg, u8 value)
 {
 	uchar chip = power->i2c_addr;
 	u32   addr = (u32)reg & 0xFF;
@@ -96,7 +98,8 @@ static int axp228_i2c_write(struct axp228_power *power, u8 reg, u8 value)
 	return i2c_write(chip, addr, alen, &value, 1);
 }
 
-static int axp228_i2c_set_bits(struct axp228_power *power, int reg, uint8_t bit_mask)
+//static int axp228_i2c_set_bits(struct axp228_power *power, int reg, uint8_t bit_mask)
+int axp228_i2c_set_bits(struct axp228_power *power, int reg, uint8_t bit_mask)
 {
 	uint8_t reg_val;
 	int ret = 0;
@@ -202,7 +205,8 @@ static void axp228_set_charging_current(u32 current)
 		axp228_i2c_set_bits(&power_config, AXP22_CHARGE1,0x0F);
 }
 
-static u8 axp228_get_vol_step(int want_vol, int step, int min, int max)
+//static u8 axp228_get_vol_step(int want_vol, int step, int min, int max)
+u8 axp228_get_vol_step(int want_vol, int step, int min, int max)
 {
 	u32	vol_step = 0;
 	//u32	temp = 0;
@@ -1117,7 +1121,7 @@ skip_bat_animation:
 	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, bl_duty, 1);
 #endif  /* CONFIG_DISPLAY_OUT */
 
-	printf("## Skip BAT Animation. \n");
+	printf("## [%s]Skip BAT Animation. \n", __func__);
 	//mdelay(200);
 
 #if defined(CONFIG_PMIC_REG_DUMP)

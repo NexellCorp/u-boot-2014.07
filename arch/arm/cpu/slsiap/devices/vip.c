@@ -102,17 +102,10 @@ static void _hw_set_sensor_param(int module, struct nxp_vip_param *param)
 
 static void _hw_set_addr(int module, struct nxp_vip_param *param, u32 lu_addr, u32 cb_addr, u32 cr_addr)
 {
-#if 0
     NX_VIP_SetClipperAddr(module, NX_VIP_FORMAT_420, param->h_active, param->v_active,
             lu_addr, cb_addr, cr_addr,
-            param->interlace ? ALIGN(param->h_active, 64)   : param->h_active,
-            param->interlace ? ALIGN(param->h_active/2, 64) : param->h_active/2);
-#else
-    NX_VIP_SetClipperAddr(module, NX_VIP_FORMAT_420, param->h_active, param->v_active,
-            lu_addr, cb_addr, cr_addr,
-            ALIGN(param->h_active, 128),
-          	ALIGN(param->h_active/2, 64));
-#endif
+            param->interlace ? ALIGN(param->h_active, 64)   : ALIGN(param->h_active, 128),
+            param->interlace ? ALIGN(param->h_active/2, 64) : ALIGN(param->h_active/2, 64));
 
 #if 0
 		printf("lu addr : 0x%4X, cb addr : 0x%4X, cr addr : 0x%4X\n", lu_addr, cb_addr, cr_addr);

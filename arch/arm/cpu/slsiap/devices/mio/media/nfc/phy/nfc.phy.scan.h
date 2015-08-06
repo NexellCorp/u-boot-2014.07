@@ -72,6 +72,8 @@
 #define NAND_TOSHIBA_TH58TEG8DCJTA20            (NAND_TOSHIBA_19NM | (1<<0x04))     // Toshiba MLC 19nm [ 4 DIE, 2 CE, 2 R/B, Common IO   ]     256Gb, Toggle,
 #define NAND_TOSHIBA_TH58TEG8DCJTAK0            (NAND_TOSHIBA_19NM | (1<<0x05))
 
+#define NAND_TOSHIBA_TC58TEG5DCJTA00			(NAND_TOSHIBA_19NM | (1<<0x06))		// Toshiba MLC 19nm
+
 /******************************************************************************
  * NAND Maker SKHynix
  ******************************************************************************/
@@ -88,7 +90,8 @@
 
 // NAND Model
 #define NAND_HYNIX_H27UCG8T2ATR                 (NAND_HYNIX_20NM_A_DIE | (1<<0))    // Hynix MLC 20nm       [ 1 DIE, 1 CE, 1 R/B, Common IO   ]     64Gb, Async
-#define NAND_HYNIX_H27UCG8T2CTR                 (NAND_HYNIX_20NM_C_DIE | (1<<0))    // Hynix MLC 20nm       [ 1 DIE, 1 CE, 1 R/B, Common IO   ]     32Gb, Async
+#define NAND_HYNIX_H27UCG8T2BTR                 (NAND_HYNIX_20NM_B_DIE | (1<<0))    // Hynix MLC 20nm       [ 1 DIE, 1 CE, 1 R/B, Common IO   ]     64Gb, Async
+#define NAND_HYNIX_H27UBG8T2CTR                 (NAND_HYNIX_20NM_C_DIE | (1<<0))    // Hynix MLC 20nm       [ 1 DIE, 1 CE, 1 R/B, Common IO   ]     32Gb, Async
 #define NAND_HYNIX_H27UBG8T2DTR                 (NAND_HYNIX_16NM_x_DIE | (1<<0))    // Hynix MLC 16nm       [ 1 DIE, 1 CE, 1 R/B, Common IO   ]     32Gb, Async
 #define NAND_HYNIX_H27UCG8T2ETR                 (NAND_HYNIX_16NM_B_DIE | (1<<0))    // Hynix MLC 16nm       [ 1 DIE, 1 CE, 1 R/B, Common IO   ]     64Gb, Async
 
@@ -101,8 +104,11 @@
 #define NAND_MICRON_L83A                        ((NAND_MAKER_MICRON<<NAND_FIELD_MAKER) | (0x02<<NAND_FIELD_GENERATION))
 #define NAND_MICRON_L84A                        ((NAND_MAKER_MICRON<<NAND_FIELD_MAKER) | (0x04<<NAND_FIELD_GENERATION))
 #define NAND_MICRON_L85A                        ((NAND_MAKER_MICRON<<NAND_FIELD_MAKER) | (0x08<<NAND_FIELD_GENERATION))
+#define NAND_MICRON_L73A                        ((NAND_MAKER_MICRON<<NAND_FIELD_MAKER) | (0x09<<NAND_FIELD_GENERATION))
 
 // NAND Model
+#define NAND_MICRON_L73A_MT29F32G08CBACA        (NAND_MICRON_L73A | (1<<0x00))      // Micron MLC L73A      [ 1 DIE, 1 CE, 1 R/B, Common IO   ]     32Gb, Async,      ONFI 2.2,
+
 #define NAND_MICRON_L74A_MT29F64G08CBAAA        (NAND_MICRON_L74A | (1<<0x00))      // Micron MLC L74A      [ 1 DIE, 1 CE, 1 R/B, Common IO   ]     64Gb, Async,      ONFI 2.2,
 #define NAND_MICRON_L74A_MT29F64G08CBCAB        (NAND_MICRON_L74A | (1<<0x01))      // Micron MLC L74A      [ 1 DIE, 1 CE, 1 R/B, Common IO   ]     64Gb, Async/Sync, ONFI 2.2,
 #define NAND_MICRON_L74A_MT29F128G08CEAAA       (NAND_MICRON_L74A | (1<<0x02))      // Micron MLC L74A      [ 2 DIE, 2 CE, 2 R/B, Seperate IO ]    128Gb, Async,      ONFI 2.2,

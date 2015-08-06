@@ -41,17 +41,25 @@
 #include <linux/clk.h>
 #include <asm/io.h>
 #include <asm/sizes.h>
-#include <asm/mach-types.h>
+//#include <asm/mach-types.h>
 #include <linux/bitops.h>
+#include <linux/gpio.h>
 
 #include <linux/sched.h>
 #include <asm/stacktrace.h>
 #include <asm/traps.h>
-#include <asm/unwind.h>
+//#include <asm/unwind.h>
 
-#include <mach/devices.h>
-#include <mach/soc.h>
-#include <mach/platform.h>
+#if defined (__COMPILE_MODE_X64__)
+    /* nexell soc headers */
+    #include <nexell/platform.h>
+    #include <nexell/soc-s5pxx18.h>
+    #include <nexell/nxp-ftl-nand.h>
+#else
+    #include <mach/platform.h>
+    #include <mach/devices.h>
+    #include <mach/soc.h>
+#endif
 
 #elif defined (__BUILD_MODE_ARM_UBOOT_DEVICE_DRIVER__)
 #include <common.h>
@@ -63,6 +71,151 @@
 #include <asm/gpio.h>
 
 #endif
+
+
+/******************************************************************************
+ *
+ * NFC IO Width
+ *
+ ******************************************************************************/
+#define IO_BURST_X4		(0x4)
+#define IO_BURST_X1		(0x2)
+#define IO_BURST_X0		(0x1)
+
+#if defined(CONFIG_ARM64)			/* FIXME: u-boot cannot recognize__COMPILE_MODE_X64__ */
+#define IOR_WIDTH		IO_BURST_X4
+#define IOW_WIDTH		IO_BURST_X0
+#else
+#define IOR_WIDTH		IO_BURST_X4
+#define IOW_WIDTH		IO_BURST_X0
+#endif
+
+
+
+/******************************************************************************
+ * IO Read/Write Burst
+ ******************************************************************************/
+#ifdef CONFIG_ARM64
+void __nfc_read_burst(const void __iomem *addr, void *data, int len);
+void __nfc_write_burst(const void __iomem *addr, void *data, int len);
+
+static void ior_burst(char *data, void __iomem *nfdata, int len)
+{
+	__nfc_read_burst(nfdata, data, len);
+}
+
+static void iow_burst(char *data, void __iomem *nfdata, int len)
+{
+	__nfc_write_burst(nfdata, data, len);
+}
+#else
+void __nfc_readsb(const void __iomem *addr, void *data, int bytelen);
+void __nfc_readsl(const void __iomem *addr, void *data, int longlen);
+void __nfc_writesb(void __iomem *addr, const void *data, int bytelen);
+void __nfc_writesl(void __iomem *addr, const void *data, int longlen);
+
+static void ior_burst(char *data, void __iomem *nfdata, int len)
+{
+	int burst_len = len & ~(4-1);
+
+	//printk("nfcShadowI: %p, burst_len: %d, len: %d\n", nfcShadowI, burst_len, len);
+	__nfc_readsl(nfdata, data, burst_len/4);
+	__nfc_readsb(nfdata, data + burst_len, len-burst_len);
+}
+
+static void iow_burst(char *data, void __iomem *nfdata, int len)
+{
+	int burst_len = len & ~(4-1);
+
+	//printk("nfcShadowI: %p, burst_len: %d, len: %d\n", nfcShadowI, burst_len, len);
+	__nfc_writesl(nfdata, data, burst_len/4);
+	__nfc_writesb(nfdata, data + burst_len, len-burst_len);
+}
+#endif
+
+static char *nfc_io_read(char *data, void __iomem *nfdata, int len)
+{
+	unsigned int read_loop = read_loop;
+
+#if (IOR_WIDTH == IO_BURST_X4)
+	ior_burst(data, (void __iomem *)&nfcShadowI->nfdata, len);
+	data += len;
+#elif (IOR_WIDTH == IO_BURST_X1)
+	for (read_loop = 0; read_loop < len/4; read_loop++)
+	{
+		*((unsigned int *)data) = nfcShadowI32->nfdata; data+=4;
+	}
+	for (read_loop = 0; read_loop < len%4; read_loop++)
+	{
+		*data++ = nfcShadowI->nfdata;
+	}
+#else
+	for (read_loop = 0; read_loop < len; read_loop++)
+	{
+		*data++ = nfcShadowI->nfdata;
+	}
+#endif
+
+	return data;
+}
+
+static char *nfc_io_write(char *data, void __iomem *nfdata, int len)
+{
+	unsigned int write_loop = write_loop;
+
+#if (IOW_WIDTH == IO_BURST_X4)
+	iow_burst(data, (void __iomem *)&nfcShadowI->nfdata, len);
+	data += len;
+#elif (IOW_WIDTH == IO_BURST_X1)
+	for (write_loop = 0; write_loop < len/4; write_loop++)
+	{
+		nfcShadowI32->nfdata = *((unsigned int *)data); data+=4;
+	}
+	for (write_loop = 0; write_loop < len%4; write_loop++)
+	{
+		nfcShadowI->nfdata = *data; data += 1;
+	}
+#else
+	for (write_loop = 0; write_loop < len; write_loop++)
+	{
+		nfcShadowI->nfdata = *data; data += 1;
+	}
+#endif
+
+	return data;
+}
+
+
+
+#ifdef DEBUG_TRIGGER_GPIO
+
+#define CFG_IO_NFC_DEBUG		(PAD_GPIO_C + 3)	/* GPIO */
+
+#if defined (__BUILD_MODE_ARM_LINUX_DEVICE_DRIVER__)
+extern int /* -1 = invalid gpio, 0 = gpio's input mode, 1 = gpio's output mode. */ nxp_soc_gpio_get_io_dir(unsigned int /* gpio pad number, 32*n + bit (n= GPIO_A:0, GPIO_B:1, GPIO_C:2, GPIO_D:3, GPIO_E:4, ALIVE:5, bit= 0 ~ 32)*/);
+extern void nxp_soc_gpio_set_io_dir(unsigned int /* gpio pad number, 32*n + bit (n= GPIO_A:0, GPIO_B:1, GPIO_C:2, GPIO_D:3, GPIO_E:4, ALIVE:5, bit= 0 ~ 32)*/, int /* '1' is output mode, '0' is input mode */);
+extern void nxp_soc_gpio_set_out_value(unsigned int /* gpio pad number, 32*n + bit (n= GPIO_A:0, GPIO_B:1, GPIO_C:2, GPIO_D:3, GPIO_E:4, ALIVE:5, bit= 0 ~ 32)*/, int /* '1' is high level, '0' is low level */);
+extern int /* -1 = invalid gpio, 0 = gpio's input value is low level, alive input is low, 1 = gpio's input value is high level, alive input is high */ nxp_soc_gpio_get_in_value(unsigned int /* gpio pad number, 32*n + bit (n= GPIO_A:0, GPIO_B:1, GPIO_C:2, GPIO_D:3, GPIO_E:4, ALIVE:5, bit= 0 ~ 32)*/);
+
+#define NFC_DEBUG_PIN_ON()		do { nxp_soc_gpio_set_out_value(CFG_IO_NFC_DEBUG, 1); } while (0)
+#define NFC_DEBUG_PIN_OFF()		do { nxp_soc_gpio_set_out_value(CFG_IO_NFC_DEBUG, 0); } while (0)
+#else
+#define NFC_DEBUG_PIN_ON()		do { gpio_set_value(CFG_IO_NFC_DEBUG, 1); } while (0)
+#define NFC_DEBUG_PIN_OFF()		do { gpio_set_value(CFG_IO_NFC_DEBUG, 0); } while (0)
+#endif
+
+#else
+
+#define NFC_DEBUG_PIN_ON()		do { } while (0)
+#define NFC_DEBUG_PIN_OFF()		do { } while (0)
+
+#endif	/* DEBUG_TRIGGER_GPIO */
+
+
+
+
+
+
 
 /******************************************************************************
  * Optimize Option
@@ -292,6 +445,8 @@ void NFC_PHY_SetEccMode(unsigned int _mode)
     regval |= __POW(mode,NFECCCTRL_DECMODE_W);
 
     nfcI->nfeccctrl = regval;
+
+	dmb();
 }
 
 void NFC_PHY_RunEcc(void)
@@ -303,6 +458,8 @@ void NFC_PHY_RunEcc(void)
     regval |= __POW(0x1,NFECCCTRL_RUNECC_W);
 
     nfcI->nfeccctrl = regval;
+
+	dmb();
 }
 
 /******************************************************************************
@@ -312,17 +469,19 @@ void NFC_PHY_EccEncoderSetup(unsigned int _bytes_per_ecc, unsigned int _ecc_bits
 {
     unsigned int r = 0;
     unsigned int k = _bytes_per_ecc;
-    unsigned int m = 14;
+    unsigned int m = (_bytes_per_ecc == 512)? 13: 14;
     unsigned int t = _ecc_bits;
   //unsigned int tmax = 24; // case _bytes_per_ecc == 512 ? 24 : 60
 
-    r = (((m * t) / 8) - 1) & 0xFF;
+    r = (((m * t + 7) / 8) - 1) & 0xFF;
 
     NFC_PHY_SetEccBitMode(_bytes_per_ecc, _ecc_bits);
 
     NFC_PHY_SetBytesPerEcc(k);
     NFC_PHY_SetBytesPerParity(r);
     NFC_PHY_SetElpNum(t);
+
+	dmb();
 }
 
 void NFC_PHY_EccEncoderEnable(void)
@@ -331,6 +490,8 @@ void NFC_PHY_EccEncoderEnable(void)
 
     NFC_PHY_SetEccMode(0);
     NFC_PHY_RunEcc();
+
+	dmb();
 }
 
 void NFC_PHY_EccEncoderReadParity(unsigned int * _parity, unsigned int _ecc_bits)
@@ -371,6 +532,8 @@ void NFC_PHY_EccDecoderReset(unsigned int _bytes_per_ecc, unsigned int _ecc_bits
 
     nfcI->nfcontrol |= __POW(1,NFCONTROL_ECCRST);
     nfcI->nfeccautomode = (nfcI->nfeccautomode & ~__POW(1,NFECCAUTOMODE_CPUELP)) | __POW(1,NFECCAUTOMODE_CPUSYND);
+
+	dmb();
 }
 
 void NFC_PHY_EccDecoderSetOrg(unsigned int * _parity, unsigned int _ecc_bits)
@@ -395,17 +558,19 @@ void NFC_PHY_EccDecoderSetOrg(unsigned int * _parity, unsigned int _ecc_bits)
     {
         nfcI->nforgecc[loop] = parity[loop];
     }
+
+	dmb();
 }
 
 void NFC_PHY_EccDecoderEnable(unsigned int _bytes_per_ecc, unsigned int _ecc_bits)
 {
     unsigned int r = 0;
     unsigned int k = _bytes_per_ecc;
-    unsigned int m = 14;
+    unsigned int m = (_bytes_per_ecc == 512)? 13: 14;
     unsigned int t = _ecc_bits;
   //unsigned int tmax = 24; // case _bytes_per_ecc == 512 ? 24 : 60
 
-    r = ((m * t) / 8) - 1;
+    r = ((m * t+ 7) / 8) - 1;
 
     // connect syndrome path
   //nfcI->nfeccautomode = nfcI->nfeccautomode & ~(__POW(1,NFECCAUTOMODE_CPUELP) | __POW(1,NFECCAUTOMODE_CPUSYND));
@@ -417,6 +582,8 @@ void NFC_PHY_EccDecoderEnable(unsigned int _bytes_per_ecc, unsigned int _ecc_bit
                       __POW(t & 0x7F,NFECCCTRL_ELPNUM) |
                       __POW(r & 0xFF,NFECCCTRL_PDATACNT) |
                       __POW((k-1) & 0x3FF,NFECCCTRL_DATACNT);
+
+	dmb();
 }
 
 void NFC_PHY_EccDecoderWaitDone(void)
@@ -433,14 +600,14 @@ void NFC_PHY_EccDecoderCorrection(unsigned int _bytes_per_ecc, unsigned int _ecc
 {
     unsigned int r = 0;
     unsigned int k = _bytes_per_ecc;
-    unsigned int m = 14;
+    unsigned int m = (_bytes_per_ecc == 512)? 13: 14;
     unsigned int t = _ecc_bits;
   //unsigned int tmax = 24; // case _bytes_per_ecc == 512 ? 24 : 60
 
     // connect syndrome path
     nfcI->nfeccautomode = nfcI->nfeccautomode & ~(__POW(1,NFECCAUTOMODE_CPUELP) | __POW(1,NFECCAUTOMODE_CPUSYND));
 
-    r = ((m * t) / 8) - 1;
+    r = ((m * t+ 7) / 8) - 1;
 
     // load elp
     nfcI->nfeccctrl = __POW(0,NFECCCTRL_RUNECC_W) |
@@ -593,9 +760,9 @@ unsigned int NFC_PHY_EccCorrection(char         * _error_at,
 
     if (read_loop != bytes_per_parity)
     {
-        *report_ecc_correct_sector += __NROOT((1024 != bytes_per_ecc) ? 1024 : bytes_per_ecc, 9);
+        *report_ecc_correct_sector += __NROOT((512 != bytes_per_ecc) ? 1024 : bytes_per_ecc, 9);
 
-        NFC_PHY_EccDecoderCorrection((1024 != bytes_per_ecc) ? 1024 : bytes_per_ecc, ecc_bits);
+        NFC_PHY_EccDecoderCorrection((512 != bytes_per_ecc) ? 1024 : bytes_per_ecc, ecc_bits);
         NFC_PHY_EccDecoderWaitCorrectionDone();
 
         location = (unsigned int *)error_location_buffer;
@@ -663,7 +830,7 @@ unsigned int NFC_PHY_EccCorrection(char         * _error_at,
                 int data_idx=0;
                 unsigned int *data = (unsigned int *)read_buffer;
 
-                Exchange.sys.fn.print("uncorrected data: row:%d col:%d", row, col);
+                Exchange.sys.fn.print("%s uncorrected data: row:%d col:%d", _error_at, row, col);
                 for (data_idx=0; data_idx < (bytes_per_ecc/sizeof(unsigned int)); data_idx++)
                 {
                     if (!(data_idx % 16))
@@ -676,6 +843,17 @@ unsigned int NFC_PHY_EccCorrection(char         * _error_at,
                 }
                 Exchange.sys.fn.print("\n");
             }
+            
+          //{
+          //    int i = 0;
+          //    char *parity = parity_buffer;
+          //    Exchange.sys.fn.print("ParityBuff:0x%016lx", (unsigned long)parity);
+          //    for (i=0; i < bytes_per_parity; i++)
+          //    {
+          //        Exchange.sys.fn.print(" %02x", parity[i]);
+          //    }
+          //    Exchange.sys.fn.print("\n");
+          //}
 #endif
 
         }
@@ -692,24 +870,25 @@ unsigned int NFC_PHY_EccCorrection(char         * _error_at,
 /******************************************************************************
  *
  ******************************************************************************/
-unsigned int NFC_PHY_GetEccParitySize(unsigned int _eccbits)
+unsigned int NFC_PHY_GetEccParitySize(unsigned int _ecc_codeword_size, unsigned int _eccbits)
 {
     unsigned int i = 0;
     unsigned int uiBytesPerParity = 0;
+    unsigned int m = (_ecc_codeword_size == 512)? 13: 14;
 
 #if defined (__BUILD_MODE_X86_WINDOWS_SIMULATOR__)
     unsigned char pucValidEccList[] = {0};
 #elif defined (__BUILD_MODE_X86_LINUX_DEVICE_DRIVER__)
     unsigned char pucValidEccList[] = {0};
 #elif defined (__BUILD_MODE_ARM_LINUX_DEVICE_DRIVER__) || defined (__BUILD_MODE_ARM_UBOOT_DEVICE_DRIVER__)
-    unsigned char pucValidEccList[] = {4,8,16,24,40,60};
+    unsigned char pucValidEccList[] = {4,8,12,16,24,40,60};
 #endif
 
     for (i = 0; i < sizeof (pucValidEccList); ++i)
     {
         if (_eccbits == pucValidEccList[i])
         {
-            uiBytesPerParity = (14 * _eccbits + 7) / 8;
+            uiBytesPerParity = (m * _eccbits + 7) / 8;
             uiBytesPerParity = (uiBytesPerParity + (4-1)) & ~(4-1); // 4Byte Align
             break;
         }
@@ -721,13 +900,6 @@ unsigned int NFC_PHY_GetEccParitySize(unsigned int _eccbits)
 /******************************************************************************
  *
  ******************************************************************************/
-#if defined (__BUILD_MODE_ARM_LINUX_DEVICE_DRIVER__)
-extern int /* -1 = invalid gpio, 0 = gpio's input mode, 1 = gpio's output mode. */ nxp_soc_gpio_get_io_dir(unsigned int /* gpio pad number, 32*n + bit (n= GPIO_A:0, GPIO_B:1, GPIO_C:2, GPIO_D:3, GPIO_E:4, ALIVE:5, bit= 0 ~ 32)*/);
-extern void nxp_soc_gpio_set_io_dir(unsigned int /* gpio pad number, 32*n + bit (n= GPIO_A:0, GPIO_B:1, GPIO_C:2, GPIO_D:3, GPIO_E:4, ALIVE:5, bit= 0 ~ 32)*/, int /* '1' is output mode, '0' is input mode */);
-extern void nxp_soc_gpio_set_out_value(unsigned int /* gpio pad number, 32*n + bit (n= GPIO_A:0, GPIO_B:1, GPIO_C:2, GPIO_D:3, GPIO_E:4, ALIVE:5, bit= 0 ~ 32)*/, int /* '1' is high level, '0' is low level */);
-extern int /* -1 = invalid gpio, 0 = gpio's input value is low level, alive input is low, 1 = gpio's input value is high level, alive input is high */ nxp_soc_gpio_get_in_value(unsigned int /* gpio pad number, 32*n + bit (n= GPIO_A:0, GPIO_B:1, GPIO_C:2, GPIO_D:3, GPIO_E:4, ALIVE:5, bit= 0 ~ 32)*/);
-#endif
-
 void NFC_PHY_SporInit(void)
 {
 #if defined (__BUILD_MODE_ARM_LINUX_DEVICE_DRIVER__)
@@ -848,8 +1020,12 @@ void NFC_PHY_ChipSelect(unsigned int _channel, unsigned int _way, unsigned int _
     if (__TRUE == select) { if (Exchange.sys.fn.elapse_t_io_measure_start) { Exchange.sys.fn.elapse_t_io_measure_start(ELAPSE_T_IO_NFC_RW, ELAPSE_T_IO_NFC_R, ELAPSE_T_IO_NFC_W); } }
 #endif
 
+	dmb();
+
     NFC_PHY_SetNFBank(way);
     NFC_PHY_SetNFCSEnable(select);
+
+	dmb();
 
 #if defined (__COMPILE_MODE_ELAPSE_T__)
     if (__FALSE == select) { if (Exchange.sys.fn.elapse_t_io_measure_end) { Exchange.sys.fn.elapse_t_io_measure_end(ELAPSE_T_IO_NFC_RW, ELAPSE_T_IO_NFC_R, ELAPSE_T_IO_NFC_W); } }
@@ -942,9 +1118,15 @@ unsigned int NFC_PHY_Init(unsigned int _scan_format)
 
 #if defined (__BUILD_MODE_ARM_LINUX_DEVICE_DRIVER__)
     nfcI = (MCUS_I *)IO_ADDRESS(PHY_BASEADDR_MCUSTOP_MODULE);
+#if defined (__COMPILE_MODE_X64__)
+    nfcShadowI = (NFC_SHADOW_I *)nxp_nand.io_intf;
+    nfcShadowI16 = (NFC_SHADOW_I16 *)nxp_nand.io_intf;
+    nfcShadowI32 = (NFC_SHADOW_I32 *)nxp_nand.io_intf;
+#else
     nfcShadowI = (NFC_SHADOW_I *)__PB_IO_MAP_NAND_VIRT;
     nfcShadowI16 = (NFC_SHADOW_I16 *)__PB_IO_MAP_NAND_VIRT;
     nfcShadowI32 = (NFC_SHADOW_I32 *)__PB_IO_MAP_NAND_VIRT;
+#endif
 #elif defined (__BUILD_MODE_ARM_UBOOT_DEVICE_DRIVER__)
     nfcI = (MCUS_I *)IO_ADDRESS(PHY_BASEADDR_MCUSTOP_MODULE);
     nfcShadowI = (NFC_SHADOW_I *)CONFIG_SYS_NAND_BASE;
@@ -953,6 +1135,17 @@ unsigned int NFC_PHY_Init(unsigned int _scan_format)
 #endif
 
     NFC_PHY_DeInit();
+
+#ifdef DEBUG_TRIGGER_GPIO
+#if defined (__BUILD_MODE_ARM_LINUX_DEVICE_DRIVER__)
+	nxp_soc_gpio_set_out_value(CFG_IO_NFC_DEBUG, 0);
+	nxp_soc_gpio_set_io_dir(CFG_IO_NFC_DEBUG, 1);
+	nxp_soc_gpio_set_io_func(CFG_IO_NFC_DEBUG, nxp_soc_gpio_get_altnum(CFG_IO_NFC_DEBUG));
+#else
+	gpio_request(CFG_IO_NFC_DEBUG, "NFC Debug pin");
+	gpio_direction_output(CFG_IO_NFC_DEBUG, 1);
+#endif
+#endif
 
     NFC_PHY_ChipSelect(0, 0, __FALSE);
     NFC_PHY_ChipSelect(0, 1, __FALSE);
@@ -1384,6 +1577,8 @@ int NFC_PHY_ForceSet_Nftime(NF_TIME_REGS t)
 		}
 	}
 
+	dmb();
+
 	// debugging - Exchange.sys.fn.print
 	//printf(" force =>\n tACS: %u, tCOS: %u, tACC: %u, tOCH: %u, tCAH: %u\n",
 	//		nfcI->nftacs, nfcI->nftcos, nfcI->nftacc, nfcI->nftoch, nfcI->nftcah);
@@ -1507,7 +1702,7 @@ void NFC_PHY_SetFeatures(unsigned int _max_channel, unsigned int _max_way, void 
         unsigned int clkhz;
         unsigned int nclk = 0;
 
-        clk = clk_get(NULL, CORECLK_NAME_BCLK);
+        clk = clk_get(NULL, "bclk");
         clkhz = clk_get_rate(clk);
         clk_put(clk);
 
@@ -2131,6 +2326,7 @@ void NFC_PHY_GetStandardParameter(unsigned int _channel, unsigned int _way, unsi
     NFC_PHY_ChipSelect(channel, way, __FALSE);
 }
 
+
 /******************************************************************************
  *
  ******************************************************************************/
@@ -2270,8 +2466,6 @@ int NFC_PHY_2ndReadDataNoEcc(unsigned int _channel,
     char * spare_buffer = _spare_buffer;
     char * spare = spare_buffer;
 
-    unsigned int read_loop = 0;
-
     /**************************************************************************
      *
      **************************************************************************/
@@ -2292,21 +2486,7 @@ int NFC_PHY_2ndReadDataNoEcc(unsigned int _channel,
             {
                 if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                 {
-#if (IOR_WIDTH == IO_WIDTH_X32)
-                    for (read_loop = 0; read_loop < bytes_per_data_ecc/4; read_loop++)
-                    {
-                        *((unsigned int *)data) = nfcShadowI32->nfdata; data+=4;
-                    }
-                    for (read_loop = 0; read_loop < bytes_per_data_ecc%4; read_loop++)
-                    {
-                        *data++ = nfcShadowI->nfdata;
-                    }
-#elif (IOR_WIDTH == IO_WIDTH_X8)
-                    for (read_loop = 0; read_loop < bytes_per_data_ecc; read_loop++)
-                    {
-                        *data++ = nfcShadowI->nfdata;
-                    }
-#endif
+					data = nfc_io_read(data, (void *)&nfcShadowI->nfdata, bytes_per_data_ecc);
                 }
                 if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
             }
@@ -2319,21 +2499,7 @@ int NFC_PHY_2ndReadDataNoEcc(unsigned int _channel,
         {
             if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
             {
-#if (IOR_WIDTH == IO_WIDTH_X32)
-                for (read_loop = 0; read_loop < bytes_spare/4; read_loop++)
-                {
-                    *((unsigned int *)spare) = nfcShadowI32->nfdata; spare+=4;
-                }
-                for (read_loop = 0; read_loop < bytes_spare%4; read_loop++)
-                {
-                    *spare++ = nfcShadowI->nfdata;
-                }
-#elif (IOR_WIDTH == IO_WIDTH_X8)
-                for (read_loop = 0; read_loop < bytes_spare; read_loop++)
-                {
-                    *spare++ = nfcShadowI->nfdata;
-                }
-#endif
+				spare = nfc_io_read(spare, (void *)&nfcShadowI->nfdata, bytes_spare);
             }
             if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
         }
@@ -2358,8 +2524,6 @@ int NFC_PHY_2ndRandomReadDataNoEcc(unsigned int _channel,
     char * data_buffer = _data_buffer;
     char * data = data_buffer;
 
-    unsigned int read_loop = 0;
-
     /**************************************************************************
      *
      **************************************************************************/
@@ -2380,21 +2544,7 @@ int NFC_PHY_2ndRandomReadDataNoEcc(unsigned int _channel,
         {
             if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
             {
-#if (IOR_WIDTH == IO_WIDTH_X32)
-                for (read_loop = 0; read_loop < bytes_to_read/4; read_loop++)
-                {
-                    *((unsigned int *)data) = nfcShadowI32->nfdata; data+=4;
-                }
-                for (read_loop = 0; read_loop < bytes_to_read%4; read_loop++)
-                {
-                    *data++ = nfcShadowI->nfdata;
-                }
-#elif (IOR_WIDTH == IO_WIDTH_X8)
-                for (read_loop = 0; read_loop < bytes_to_read; read_loop++)
-                {
-                    *data++ = nfcShadowI->nfdata;
-                }
-#endif
+				data = nfc_io_read(data, (void *)&nfcShadowI->nfdata, bytes_to_read);
             }
             if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
         }
@@ -2458,7 +2608,6 @@ int NFC_PHY_2ndReadLog(unsigned int _channel,
     char * parity = __NULL;
   //char * fake = __NULL;
 
-    unsigned int read_loop = 0;
     char * cur_read = __NULL;
 
     unsigned int ecc_error_detected = 0;
@@ -2540,21 +2689,7 @@ int NFC_PHY_2ndReadLog(unsigned int _channel,
 
                 if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                 {
-#if (IOR_WIDTH == IO_WIDTH_X32)
-                    for (read_loop = 0; read_loop < bytes_per_log_parity/4; read_loop++)
-                    {
-                        *((unsigned int *)parity) = nfcShadowI32->nfdata; parity+=4;
-                    }
-                    for (read_loop = 0; read_loop < bytes_per_log_parity%4; read_loop++)
-                    {
-                        *parity++ = nfcShadowI->nfdata;
-                    }
-#elif (IOR_WIDTH == IO_WIDTH_X8)
-                    for (read_loop = 0; read_loop < bytes_per_log_parity; read_loop++)
-                    {
-                        *parity++ = nfcShadowI->nfdata;
-                    }
-#endif
+					parity = nfc_io_read(parity, (void *)&nfcShadowI->nfdata, bytes_per_log_parity);
                 }
                 if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
 
@@ -2579,21 +2714,7 @@ int NFC_PHY_2ndReadLog(unsigned int _channel,
 
                 if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                 {
-#if (IOR_WIDTH == IO_WIDTH_X32)
-                    for (read_loop = 0; read_loop < bytes_per_log_ecc/4; read_loop++)
-                    {
-                        *((unsigned int *)log) = nfcShadowI32->nfdata; log+=4;
-                    }
-                    for (read_loop = 0; read_loop < bytes_per_log_ecc%4; read_loop++)
-                    {
-                        *log++ = nfcShadowI->nfdata;
-                    }
-#elif (IOR_WIDTH == IO_WIDTH_X8)
-                    for (read_loop = 0; read_loop < bytes_per_log_ecc; read_loop++)
-                    {
-                        *log++ = nfcShadowI->nfdata;
-                    }
-#endif
+					log = nfc_io_read(log, (void *)&nfcShadowI->nfdata, bytes_per_log_ecc);
                 }
                 if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
 
@@ -2696,21 +2817,7 @@ int NFC_PHY_2ndReadLog(unsigned int _channel,
 
                 if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                 {
-#if (IOR_WIDTH == IO_WIDTH_X32)
-                    for (read_loop = 0; read_loop < bytes_per_data_parity/4; read_loop++)
-                    {
-                        *((unsigned int *)parity) = nfcShadowI32->nfdata; parity+=4;
-                    }
-                    for (read_loop = 0; read_loop < bytes_per_data_parity%4; read_loop++)
-                    {
-                        *parity++ = nfcShadowI->nfdata;
-                    }
-#elif (IOR_WIDTH == IO_WIDTH_X8)
-                    for (read_loop = 0; read_loop < bytes_per_data_parity; read_loop++)
-                    {
-                        *parity++ = nfcShadowI->nfdata;
-                    }
-#endif
+					parity = nfc_io_read(parity, (void *)&nfcShadowI->nfdata, bytes_per_data_parity);
                 }
                 if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
 
@@ -2735,21 +2842,7 @@ int NFC_PHY_2ndReadLog(unsigned int _channel,
 
                 if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                 {
-#if (IOR_WIDTH == IO_WIDTH_X32)
-                    for (read_loop = 0; read_loop < bytes_per_data_ecc/4; read_loop++)
-                    {
-                        *((unsigned int *)data) = nfcShadowI32->nfdata; data+=4;
-                    }
-                    for (read_loop = 0; read_loop < bytes_per_data_ecc%4; read_loop++)
-                    {
-                        *data++ = nfcShadowI->nfdata;
-                    }
-#elif (IOR_WIDTH == IO_WIDTH_X8)
-                    for (read_loop = 0; read_loop < bytes_per_data_ecc; read_loop++)
-                    {
-                        *data++ = nfcShadowI->nfdata;
-                    }
-#endif
+					data = nfc_io_read(data, (void *)&nfcShadowI->nfdata, bytes_per_data_ecc);
                 }
                 if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
 
@@ -2870,6 +2963,7 @@ int NFC_PHY_2ndReadData(unsigned int _stage,
     char * data_error_location_buffer = (char *)__error_location_buffer0;
 
     /* SPARE */
+    unsigned int bytes_per_spare_eccunit = (_spare_ecc_bits <= 16)? 512: 1024;
     unsigned int bytes_per_spare_ecc = _bytes_per_spare_ecc;
     unsigned int bytes_per_spare_parity = _bytes_per_spare_parity;
     unsigned int spare_ecc_bits = _spare_ecc_bits;
@@ -2975,21 +3069,7 @@ int NFC_PHY_2ndReadData(unsigned int _stage,
 
                     if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                     {
-#if (IOR_WIDTH == IO_WIDTH_X32)
-                        for (read_loop = 0; read_loop < bytes_per_data_parity/4; read_loop++)
-                        {
-                            *((unsigned int *)parity) = nfcShadowI32->nfdata; parity+=4;
-                        }
-                        for (read_loop = 0; read_loop < bytes_per_data_parity%4; read_loop++)
-                        {
-                            *parity++ = nfcShadowI->nfdata;
-                        }
-#elif (IOR_WIDTH == IO_WIDTH_X8)
-                        for (read_loop = 0; read_loop < bytes_per_data_parity; read_loop++)
-                        {
-                            *parity++ = nfcShadowI->nfdata;
-                        }
-#endif
+						parity = nfc_io_read(parity, (void *)&nfcShadowI->nfdata, bytes_per_data_parity);
                     }
                     if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
 
@@ -3014,21 +3094,7 @@ int NFC_PHY_2ndReadData(unsigned int _stage,
 
                     if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                     {
-#if (IOR_WIDTH == IO_WIDTH_X32)
-                        for (read_loop = 0; read_loop < bytes_per_data_ecc/4; read_loop++)
-                        {
-                            *((unsigned int *)fake) = nfcShadowI32->nfdata; fake+=4;
-                        }
-                        for (read_loop = 0; read_loop < bytes_per_data_ecc%4; read_loop++)
-                        {
-                            *fake++ = nfcShadowI->nfdata;
-                        }
-#elif (IOR_WIDTH == IO_WIDTH_X8)
-                        for (read_loop = 0; read_loop < bytes_per_data_ecc; read_loop++)
-                        {
-                            *fake++ = nfcShadowI->nfdata;
-                        }
-#endif
+						fake = nfc_io_read(fake, (void *)&nfcShadowI->nfdata, bytes_per_data_ecc);
                     }
                     if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
 
@@ -3148,21 +3214,7 @@ int NFC_PHY_2ndReadData(unsigned int _stage,
 
                         if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                         {
-#if (IOR_WIDTH == IO_WIDTH_X32)
-                            for (read_loop = 0; read_loop < bytes_per_data_parity/4; read_loop++)
-                            {
-                                *((unsigned int *)parity) = nfcShadowI32->nfdata; parity+=4;
-                            }
-                            for (read_loop = 0; read_loop < bytes_per_data_parity%4; read_loop++)
-                            {
-                                *parity++ = nfcShadowI->nfdata;
-                            }
-#elif (IOR_WIDTH == IO_WIDTH_X8)
-                            for (read_loop = 0; read_loop < bytes_per_data_parity; read_loop++)
-                            {
-                                *parity++ = nfcShadowI->nfdata;
-                            }
-#endif
+							parity = nfc_io_read(parity, (void *)&nfcShadowI->nfdata, bytes_per_data_parity);
                         }
                         if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
 
@@ -3186,22 +3238,8 @@ int NFC_PHY_2ndReadData(unsigned int _stage,
                         data = cur_read;
 
                         if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
-                        {
-#if (IOR_WIDTH == IO_WIDTH_X32)
-                            for (read_loop = 0; read_loop < bytes_per_data_ecc/4; read_loop++)
-                            {
-                                *((unsigned int *)data) = nfcShadowI32->nfdata; data+=4;
-                            }
-                            for (read_loop = 0; read_loop < bytes_per_data_ecc%4; read_loop++)
-                            {
-                                *data++ = nfcShadowI->nfdata;
-                            }
-#elif (IOR_WIDTH == IO_WIDTH_X8)
-                            for (read_loop = 0; read_loop < bytes_per_data_ecc; read_loop++)
-                            {
-                                *data++ = nfcShadowI->nfdata;
-                            }
-#endif
+						{
+							data = nfc_io_read(data, (void *)&nfcShadowI->nfdata, bytes_per_data_ecc);
                         }
                         if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
 
@@ -3315,21 +3353,7 @@ int NFC_PHY_2ndReadData(unsigned int _stage,
 
                     if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                     {
-#if (IOR_WIDTH == IO_WIDTH_X32)
-                        for (read_loop = 0; read_loop < bytes_per_data_parity/4; read_loop++)
-                        {
-                            *((unsigned int *)parity) = nfcShadowI32->nfdata; parity+=4;
-                        }
-                        for (read_loop = 0; read_loop < bytes_per_data_parity%4; read_loop++)
-                        {
-                            *parity++ = nfcShadowI->nfdata;
-                        }
-#elif (IOR_WIDTH == IO_WIDTH_X8)
-                        for (read_loop = 0; read_loop < bytes_per_data_parity; read_loop++)
-                        {
-                            *parity++ = nfcShadowI->nfdata;
-                        }
-#endif
+						parity = nfc_io_read(parity , (void *)&nfcShadowI->nfdata, bytes_per_data_parity);
                     }
                     if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
 
@@ -3354,21 +3378,7 @@ int NFC_PHY_2ndReadData(unsigned int _stage,
 
                     if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                     {
-#if (IOR_WIDTH == IO_WIDTH_X32)
-                        for (read_loop = 0; read_loop < bytes_per_data_ecc/4; read_loop++)
-                        {
-                            *((unsigned int *)fake) = nfcShadowI32->nfdata; fake+=4;
-                        }
-                        for (read_loop = 0; read_loop < bytes_per_data_ecc%4; read_loop++)
-                        {
-                            *fake++ = nfcShadowI->nfdata;
-                        }
-#elif (IOR_WIDTH == IO_WIDTH_X8)
-                        for (read_loop = 0; read_loop < bytes_per_data_ecc; read_loop++)
-                        {
-                            *fake++ = nfcShadowI->nfdata;
-                        }
-#endif
+						fake = nfc_io_read(fake, (void *)&nfcShadowI->nfdata, bytes_per_data_ecc);
                     }
                     if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
 
@@ -3486,21 +3496,7 @@ int NFC_PHY_2ndReadData(unsigned int _stage,
 
                         if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                         {
-#if (IOR_WIDTH == IO_WIDTH_X32)
-                            for (read_loop = 0; read_loop < bytes_per_spare_parity/4; read_loop++)
-                            {
-                                *((unsigned int *)parity) = nfcShadowI32->nfdata; parity+=4;
-                            }
-                            for (read_loop = 0; read_loop < bytes_per_spare_parity%4; read_loop++)
-                            {
-                                *parity++ = nfcShadowI->nfdata;
-                            }
-#elif (IOR_WIDTH == IO_WIDTH_X8)
-                            for (read_loop = 0; read_loop < bytes_per_spare_parity; read_loop++)
-                            {
-                                *parity++ = nfcShadowI->nfdata;
-                            }
-#endif
+							parity = nfc_io_read(parity , (void *)&nfcShadowI->nfdata, bytes_per_spare_parity);
                         }
                         if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
 
@@ -3517,34 +3513,20 @@ int NFC_PHY_2ndReadData(unsigned int _stage,
                         NFC_PHY_Cmd(NF_CMD_READ_RANDOM_2ND);
                         NFC_PHY_tDelay(NfcTime.tCCS2);
 
-                        NFC_PHY_EccDecoderReset(1024, spare_ecc_bits);
+                        NFC_PHY_EccDecoderReset(bytes_per_spare_eccunit, spare_ecc_bits);
                         NFC_PHY_EccDecoderSetOrg((unsigned int *)spare_parity_buffer, spare_ecc_bits);
-                        NFC_PHY_EccDecoderEnable(1024, spare_ecc_bits);
+                        NFC_PHY_EccDecoderEnable(bytes_per_spare_eccunit, spare_ecc_bits);
 
                         // 1st 512 data / 2nd 512 fake
                         fake = spare_fake_buffer;
 
                         if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                         {
-#if (IOR_WIDTH == IO_WIDTH_X32)
-                            for (read_loop = 0; read_loop < bytes_per_spare_ecc/4; read_loop++)
-                            {
-                                *((unsigned int *)fake) = nfcShadowI32->nfdata; fake+=4;
-                            }
-                            for (read_loop = 0; read_loop < bytes_per_spare_ecc%4; read_loop++)
-                            {
-                                *fake++ = nfcShadowI->nfdata;
-                            }
-#elif (IOR_WIDTH == IO_WIDTH_X8)
-                            for (read_loop = 0; read_loop < bytes_per_spare_ecc; read_loop++)
-                            {
-                                *fake++ = nfcShadowI->nfdata;
-                            }
-#endif
+							fake = nfc_io_read(fake, (void *)&nfcShadowI->nfdata, bytes_per_spare_ecc);
                         }
                         if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
 
-                        for (read_loop = 0; read_loop < (1024 - bytes_per_spare_ecc) / 4; read_loop++)
+                        for (read_loop = 0; read_loop < (bytes_per_spare_eccunit - bytes_per_spare_ecc) / 4; read_loop++)
                         {
                             NFC_PHY_tDelay(NfcTime.tRHW);
                             NFC_PHY_Cmd(NF_CMD_READ_RANDOM_1ST);
@@ -3553,9 +3535,9 @@ int NFC_PHY_2ndReadData(unsigned int _stage,
                             NFC_PHY_Cmd(NF_CMD_READ_RANDOM_2ND);
                             NFC_PHY_tDelay(NfcTime.tCCS2);
 
-#if (IOR_WIDTH == IO_WIDTH_X32)
+#if (IOR_WIDTH == IO_BURST_X4 || IOR_WIDTH == IO_BURST_X1)
                             *((unsigned int *)fake) = nfcShadowI32->nfdata; fake+=4;
-#elif (IOR_WIDTH == IO_WIDTH_X8)
+#else /* (IOR_WIDTH == IO_BURST_X0) */
                             *fake++ = nfcShadowI->nfdata;
                             *fake++ = nfcShadowI->nfdata;
                             *fake++ = nfcShadowI->nfdata;
@@ -3704,7 +3686,6 @@ int NFC_PHY_1stWriteLog(unsigned int _channel,
 
     /* MISC */
     char * parity = __NULL;
-    unsigned int write_loop = 0;
 
 #if defined (__COMPILE_MODE_READONLY__)
     Exchange.sys.fn.print("EWS.NFC: WriteSkip: Log\n");
@@ -3784,21 +3765,7 @@ int NFC_PHY_1stWriteLog(unsigned int _channel,
 
                 if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                 {
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                    for (write_loop = 0; write_loop < bytes_per_log_ecc/4; write_loop++)
-                    {
-                        nfcShadowI32->nfdata = *((unsigned int *)log); log+=4;
-                    }
-                    for (write_loop = 0; write_loop < bytes_per_log_ecc%4; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *log; log += 1;
-                    }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                    for (write_loop = 0; write_loop < bytes_per_log_ecc; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *log; log += 1;
-                    }
-#endif
+					log = nfc_io_write(log, (void *)&nfcShadowI->nfdata, bytes_per_log_ecc);
                 }
                 if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
 
@@ -3812,21 +3779,7 @@ int NFC_PHY_1stWriteLog(unsigned int _channel,
 
                 if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                 {
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                    for (write_loop = 0; write_loop < bytes_per_log_parity/4; write_loop++)
-                    {
-                        nfcShadowI32->nfdata = *((unsigned int *)parity); parity+=4;
-                    }
-                    for (write_loop = 0; write_loop < bytes_per_log_parity%4; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *parity; parity += 1;
-                    }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                    for (write_loop = 0; write_loop < bytes_per_log_parity; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *parity; parity += 1;
-                    }
-#endif
+					parity = nfc_io_write(parity, (void *)&nfcShadowI->nfdata, bytes_per_log_parity);
                     NFC_PHY_tDelay(NfcTime.tParity);
                 }
                 if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
@@ -3852,21 +3805,7 @@ int NFC_PHY_1stWriteLog(unsigned int _channel,
 
                 if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                 {
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                    for (write_loop = 0; write_loop < bytes_per_data_ecc/4; write_loop++)
-                    {
-                        nfcShadowI32->nfdata = *((unsigned int *)data); data+=4;
-                    }
-                    for (write_loop = 0; write_loop < bytes_per_data_ecc%4; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *data; data += 1;
-                    }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                    for (write_loop = 0; write_loop < bytes_per_data_ecc; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *data; data += 1;
-                    }
-#endif
+					data = nfc_io_write(data, (void *)&nfcShadowI->nfdata, bytes_per_data_ecc);
                 }
                 if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
 
@@ -3881,21 +3820,7 @@ int NFC_PHY_1stWriteLog(unsigned int _channel,
 
                 if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                 {
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                    for (write_loop = 0; write_loop < bytes_per_data_parity/4; write_loop++)
-                    {
-                        nfcShadowI32->nfdata = *((unsigned int *)parity); parity+=4;
-                    }
-                    for (write_loop = 0; write_loop < bytes_per_data_parity%4; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *parity; parity += 1;
-                    }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                    for (write_loop = 0; write_loop < bytes_per_data_parity; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *parity; parity += 1;
-                    }
-#endif
+					parity = nfc_io_write(parity, (void *)&nfcShadowI->nfdata, bytes_per_data_parity);
                     NFC_PHY_tDelay(NfcTime.tParity);
                 }
                 if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
@@ -3945,21 +3870,7 @@ int NFC_PHY_1stWriteLog(unsigned int _channel,
 
                 if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                 {
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                    for (write_loop = 0; write_loop < bytes_per_log_ecc/4; write_loop++)
-                    {
-                        nfcShadowI32->nfdata = *((unsigned int *)log); log+=4;
-                    }
-                    for (write_loop = 0; write_loop < bytes_per_log_ecc%4; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *log; log += 1;
-                    }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                    for (write_loop = 0; write_loop < bytes_per_log_ecc; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *log; log += 1;
-                    }
-#endif
+					log = nfc_io_write(log, (void *)&nfcShadowI->nfdata, bytes_per_log_ecc);
                 }
                 if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
 
@@ -3974,21 +3885,7 @@ int NFC_PHY_1stWriteLog(unsigned int _channel,
 
                 if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                 {
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                    for (write_loop = 0; write_loop < bytes_per_log_parity/4; write_loop++)
-                    {
-                        nfcShadowI32->nfdata = *((unsigned int *)parity); parity+=4;
-                    }
-                    for (write_loop = 0; write_loop < bytes_per_log_parity%4; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *parity; parity += 1;
-                    }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                    for (write_loop = 0; write_loop < bytes_per_log_parity; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *parity; parity += 1;
-                    }
-#endif
+					parity = nfc_io_write(parity, (void *)&nfcShadowI->nfdata, bytes_per_log_parity);
                     NFC_PHY_tDelay(NfcTime.tParity);
                 }
                 if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
@@ -4014,21 +3911,7 @@ int NFC_PHY_1stWriteLog(unsigned int _channel,
 
                 if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                 {
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                    for (write_loop = 0; write_loop < bytes_per_data_ecc/4; write_loop++)
-                    {
-                        nfcShadowI32->nfdata = *((unsigned int *)data); data+=4;
-                    }
-                    for (write_loop = 0; write_loop < bytes_per_data_ecc%4; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *data; data += 1;
-                    }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                    for (write_loop = 0; write_loop < bytes_per_data_ecc; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *data; data += 1;
-                    }
-#endif
+					data = nfc_io_write(data, (void *)&nfcShadowI->nfdata, bytes_per_data_ecc);
                 }
                 if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
 
@@ -4043,21 +3926,7 @@ int NFC_PHY_1stWriteLog(unsigned int _channel,
 
                 if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                 {
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                    for (write_loop = 0; write_loop < bytes_per_data_parity/4; write_loop++)
-                    {
-                        nfcShadowI32->nfdata = *((unsigned int *)parity); parity+=4;
-                    }
-                    for (write_loop = 0; write_loop < bytes_per_data_parity%4; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *parity; parity += 1;
-                    }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                    for (write_loop = 0; write_loop < bytes_per_data_parity; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *parity; parity += 1;
-                    }
-#endif
+					parity = nfc_io_write(parity, (void *)&nfcShadowI->nfdata, bytes_per_data_parity);
                     NFC_PHY_tDelay(NfcTime.tParity);
                 }
                 if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
@@ -4110,21 +3979,7 @@ int NFC_PHY_1stWriteLog(unsigned int _channel,
 
                 if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                 {
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                    for (write_loop = 0; write_loop < bytes_per_data_ecc/4; write_loop++)
-                    {
-                        nfcShadowI32->nfdata = *((unsigned int *)data); data+=4;
-                    }
-                    for (write_loop = 0; write_loop < bytes_per_data_ecc%4; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *data; data += 1;
-                    }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                    for (write_loop = 0; write_loop < bytes_per_data_ecc; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *data; data += 1;
-                    }
-#endif
+					data = nfc_io_write(data, (void *)&nfcShadowI->nfdata, bytes_per_data_ecc);
                 }
                 if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
 
@@ -4139,21 +3994,7 @@ int NFC_PHY_1stWriteLog(unsigned int _channel,
 
                 if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                 {
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                    for (write_loop = 0; write_loop < bytes_per_data_parity/4; write_loop++)
-                    {
-                        nfcShadowI32->nfdata = *((unsigned int *)parity); parity+=4;
-                    }
-                    for (write_loop = 0; write_loop < bytes_per_data_parity%4; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *parity; parity += 1;
-                    }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                    for (write_loop = 0; write_loop < bytes_per_data_parity; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *parity; parity += 1;
-                    }
-#endif
+					parity = nfc_io_write(parity, (void *)&nfcShadowI->nfdata, bytes_per_data_parity);
                     NFC_PHY_tDelay(NfcTime.tParity);
                 }
                 if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
@@ -4206,7 +4047,6 @@ int NFC_PHY_1stWriteRoot(unsigned int _channel,
 
     /* MISC */
     char * parity = __NULL;
-    unsigned int write_loop = 0;
 
 #if defined (__COMPILE_MODE_READONLY__)
     Exchange.sys.fn.print("EWS.NFC: WriteSkip: Root\n");
@@ -4279,21 +4119,7 @@ int NFC_PHY_1stWriteRoot(unsigned int _channel,
 
             if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
             {
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                for (write_loop = 0; write_loop < bytes_per_root_ecc/4; write_loop++)
-                {
-                    nfcShadowI32->nfdata = *((unsigned int *)root); root+=4;
-                }
-                for (write_loop = 0; write_loop < bytes_per_root_ecc%4; write_loop++)
-                {
-                    nfcShadowI->nfdata = *root; root += 1;
-                }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                for (write_loop = 0; write_loop < bytes_per_root_ecc; write_loop++)
-                {
-                    nfcShadowI->nfdata = *root; root += 1;
-                }
-#endif
+				root = nfc_io_write(root, (void *)&nfcShadowI->nfdata, bytes_per_root_ecc);
             }
             if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
 
@@ -4308,21 +4134,7 @@ int NFC_PHY_1stWriteRoot(unsigned int _channel,
 
             if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
             {
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                for (write_loop = 0; write_loop < bytes_per_root_parity/4; write_loop++)
-                {
-                    nfcShadowI32->nfdata = *((unsigned int *)parity); parity+=4;
-                }
-                for (write_loop = 0; write_loop < bytes_per_root_parity%4; write_loop++)
-                {
-                    nfcShadowI->nfdata = *parity; parity += 1;
-                }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                for (write_loop = 0; write_loop < bytes_per_root_parity; write_loop++)
-                {
-                    nfcShadowI->nfdata = *parity; parity += 1;
-                }
-#endif
+				parity = nfc_io_write(parity, (void *)&nfcShadowI->nfdata, bytes_per_root_parity);
                 NFC_PHY_tDelay(NfcTime.tParity);
             }
             if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
@@ -4390,6 +4202,7 @@ int NFC_PHY_1stWriteData(unsigned int _channel,
     char * data_parity_buffer = (char *)__parity_buffer0;
 
     /* SPARE */
+    unsigned int bytes_per_spare_eccunit = (_spare_ecc_bits <= 16)? 512: 1024;
     unsigned int bytes_per_spare_ecc = _bytes_per_spare_ecc;
     unsigned int bytes_per_spare_parity = _bytes_per_spare_parity;
     unsigned int spare_ecc_bits = _spare_ecc_bits;
@@ -4401,7 +4214,6 @@ int NFC_PHY_1stWriteData(unsigned int _channel,
     /* MISC */
     char * parity = __NULL;
 
-    unsigned int write_loop = 0;
     char * cur_write = __NULL;
 
 #if defined (__COMPILE_MODE_READONLY__)
@@ -4448,7 +4260,7 @@ int NFC_PHY_1stWriteData(unsigned int _channel,
      **************************************************************************/
     if (spare_buffer)
     {
-        NFC_PHY_EccEncoderSetup(1024, spare_ecc_bits);
+        NFC_PHY_EccEncoderSetup(bytes_per_spare_eccunit, spare_ecc_bits);
 
         spare = spare_buffer;
         cur_write = spare;
@@ -4456,28 +4268,14 @@ int NFC_PHY_1stWriteData(unsigned int _channel,
         NFC_PHY_EccEncoderEnable();
 
         // Program Spare
-        if (Exchange.sys.fn._memset) { Exchange.sys.fn._memset((void *)dummy_buffer, 0xff, 1024); }
-        else                         {                  memset((void *)dummy_buffer, 0xff, 1024); }
+        if (Exchange.sys.fn._memset) { Exchange.sys.fn._memset((void *)dummy_buffer, 0xff, bytes_per_spare_eccunit); }
+        else                         {                  memset((void *)dummy_buffer, 0xff, bytes_per_spare_eccunit); }
         if (Exchange.sys.fn._memcpy) { Exchange.sys.fn._memcpy((void *)dummy_buffer, (const void *)spare, bytes_per_spare_ecc); }
         else                         {                  memcpy((void *)dummy_buffer, (const void *)spare, bytes_per_spare_ecc); }
 
         if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
         {
-#if (IOW_WIDTH == IO_WIDTH_X32)
-            for (write_loop = 0; write_loop < 1024/4; write_loop++)
-            {
-                nfcShadowI32->nfdata = *((unsigned int *)dummy_buffer); dummy_buffer+=4;
-            }
-            for (write_loop = 0; write_loop < 1024%4; write_loop++)
-            {
-                nfcShadowI->nfdata = *dummy_buffer; dummy_buffer += 1;
-            }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-            for (write_loop = 0; write_loop < 1024; write_loop++)
-            {
-                nfcShadowI->nfdata = *dummy_buffer; dummy_buffer += 1;
-            }
-#endif
+			dummy_buffer = nfc_io_write(dummy_buffer, (void *)&nfcShadowI->nfdata, bytes_per_spare_eccunit);
         }
         if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
 
@@ -4553,20 +4351,11 @@ int NFC_PHY_1stWriteData(unsigned int _channel,
 
                 if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                 {
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                    for (write_loop = 0; write_loop < bytes_per_data_ecc/4; write_loop++)
-                    {
-                        nfcShadowI32->nfdata = *((unsigned int *)data); data+=4;
-                    }
-                    for (write_loop = 0; write_loop < bytes_per_data_ecc%4; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *data; data += 1;
-                    }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                    for (write_loop = 0; write_loop < bytes_per_data_ecc; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *data; data += 1;
-                    }
+#if (IOR_WIDTH == IO_BURST_X4)
+					iow_burst(data, (void __iomem *)&nfcShadowI->nfdata, bytes_per_data_ecc);
+					data += bytes_per_data_ecc;
+#else
+					data = nfc_io_write(data, (void *)&nfcShadowI->nfdata, bytes_per_data_ecc);
 #endif
                 }
                 if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
@@ -4596,21 +4385,7 @@ int NFC_PHY_1stWriteData(unsigned int _channel,
 
                 if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                 {
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                    for (write_loop = 0; write_loop < bytes_per_data_parity/4; write_loop++)
-                    {
-                        nfcShadowI32->nfdata = *((unsigned int *)parity); parity+=4;
-                    }
-                    for (write_loop = 0; write_loop < bytes_per_data_parity%4; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *parity; parity += 1;
-                    }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                    for (write_loop = 0; write_loop < bytes_per_data_parity; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *parity; parity += 1;
-                    }
-#endif
+					parity = nfc_io_write(parity, (void *)&nfcShadowI->nfdata, bytes_per_data_parity);
                     NFC_PHY_tDelay(NfcTime.tParity);
                 }
                 if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
@@ -4641,21 +4416,7 @@ int NFC_PHY_1stWriteData(unsigned int _channel,
                     cur_write = spare;
 
                     // Program Spare
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                    for (write_loop = 0; write_loop < bytes_per_spare_ecc/4; write_loop++)
-                    {
-                        nfcShadowI32->nfdata = *((unsigned int *)spare); spare+=4;
-                    }
-                    for (write_loop = 0; write_loop < bytes_per_spare_ecc%4; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *spare; spare += 1;
-                    }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                    for (write_loop = 0; write_loop < bytes_per_spare_ecc; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *spare; spare += 1;
-                    }
-#endif
+					spare = nfc_io_write(spare, (void *)&nfcShadowI->nfdata, bytes_per_spare_ecc);
                     col0 += bytes_per_spare_ecc;
 
                     // Program Parity
@@ -4664,21 +4425,7 @@ int NFC_PHY_1stWriteData(unsigned int _channel,
                     NFC_PHY_RAND_SetPageSeed(row0&0x000000FF);
                     parity = (char *)NFC_PHY_RAND_Randomize((void *)parity, bytes_per_spare_parity, 1);
 #endif
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                    for (write_loop = 0; write_loop < bytes_per_spare_parity/4; write_loop++)
-                    {
-                        nfcShadowI32->nfdata = *((unsigned int *)parity); parity+=4;
-                    }
-                    for (write_loop = 0; write_loop < bytes_per_spare_parity%4; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *parity; parity += 1;
-                    }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                    for (write_loop = 0; write_loop < bytes_per_spare_parity; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *parity; parity += 1;
-                    }
-#endif
+					parity = nfc_io_write(parity, (void *)&nfcShadowI->nfdata, bytes_per_spare_parity);
                     NFC_PHY_tDelay(NfcTime.tParity);
 
                     col0 += bytes_per_spare_parity;
@@ -4742,21 +4489,7 @@ int NFC_PHY_1stWriteData(unsigned int _channel,
 
                 if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                 {
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                    for (write_loop = 0; write_loop < bytes_per_data_ecc; write_loop++)
-                    {
-                        nfcShadowI32->nfdata = *((unsigned int *)data); data+=4;
-                    }
-                    for (write_loop = 0; write_loop < bytes_per_data_ecc; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *data; data += 1;
-                    }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                    for (write_loop = 0; write_loop < bytes_per_data_ecc; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *data; data += 1;
-                    }
-#endif
+					data = nfc_io_write(data, (void *)&nfcShadowI->nfdata, bytes_per_data_ecc);
                 }
                 if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
 
@@ -4785,21 +4518,7 @@ int NFC_PHY_1stWriteData(unsigned int _channel,
 
                 if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                 {
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                    for (write_loop = 0; write_loop < bytes_per_data_parity/4; write_loop++)
-                    {
-                        nfcShadowI32->nfdata = *((unsigned int *)parity); parity+=4;
-                    }
-                    for (write_loop = 0; write_loop < bytes_per_data_parity%4; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *parity; parity += 1;
-                    }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                    for (write_loop = 0; write_loop < bytes_per_data_parity; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *parity; parity += 1;
-                    }
-#endif
+					parity = nfc_io_write(parity, (void *)&nfcShadowI->nfdata, bytes_per_data_parity);
                     NFC_PHY_tDelay(NfcTime.tParity);
                 }
                 if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
@@ -4830,21 +4549,7 @@ int NFC_PHY_1stWriteData(unsigned int _channel,
                     cur_write = spare;
 
                     // Program Spare
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                    for (write_loop = 0; write_loop < bytes_per_spare_ecc/4; write_loop++)
-                    {
-                        nfcShadowI32->nfdata = *((unsigned int *)spare); spare+=4;
-                    }
-                    for (write_loop = 0; write_loop < bytes_per_spare_ecc%4; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *spare; spare += 1;
-                    }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                    for (write_loop = 0; write_loop < bytes_per_spare_ecc; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *spare; spare += 1;
-                    }
-#endif
+					spare = nfc_io_write(spare, (void *)&nfcShadowI->nfdata, bytes_per_spare_ecc);
                     col0 += bytes_per_spare_ecc;
 
                     // Program Parity
@@ -4853,21 +4558,7 @@ int NFC_PHY_1stWriteData(unsigned int _channel,
                     NFC_PHY_RAND_SetPageSeed(row0&0x000000FF);
                     parity = (char *)NFC_PHY_RAND_Randomize((void *)parity, bytes_per_spare_parity, 1);
 #endif
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                    for (write_loop = 0; write_loop < bytes_per_spare_parity/4; write_loop++)
-                    {
-                        nfcShadowI32->nfdata = *((unsigned int *)parity); parity+=4;
-                    }
-                    for (write_loop = 0; write_loop < bytes_per_spare_parity%4; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *parity; parity += 1;
-                    }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                    for (write_loop = 0; write_loop < bytes_per_spare_parity; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *parity; parity += 1;
-                    }
-#endif
+					parity = nfc_io_write(parity, (void *)&nfcShadowI->nfdata, bytes_per_spare_parity);
                     NFC_PHY_tDelay(NfcTime.tParity);
 
                     col0 += bytes_per_spare_parity;
@@ -4922,21 +4613,7 @@ int NFC_PHY_1stWriteData(unsigned int _channel,
 
                 if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                 {
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                    for (write_loop = 0; write_loop < bytes_per_data_ecc/4; write_loop++)
-                    {
-                        nfcShadowI32->nfdata = *((unsigned int *)data); data+=4;
-                    }
-                    for (write_loop = 0; write_loop < bytes_per_data_ecc%4; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *data; data += 1;
-                    }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                    for (write_loop = 0; write_loop < bytes_per_data_ecc; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *data; data += 1;
-                    }
-#endif
+					data = nfc_io_write(data, (void *)&nfcShadowI->nfdata, bytes_per_data_ecc);
                 }
                 if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
 
@@ -4965,21 +4642,7 @@ int NFC_PHY_1stWriteData(unsigned int _channel,
 
                 if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                 {
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                    for (write_loop = 0; write_loop < bytes_per_data_parity; write_loop++)
-                    {
-                        nfcShadowI32->nfdata = *((unsigned int *)parity); parity+=4;
-                    }
-                    for (write_loop = 0; write_loop < bytes_per_data_parity; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *parity; parity += 1;
-                    }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                    for (write_loop = 0; write_loop < bytes_per_data_parity; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *parity; parity += 1;
-                    }
-#endif
+					parity = nfc_io_write(parity, (void *)&nfcShadowI->nfdata, bytes_per_data_parity);
                     NFC_PHY_tDelay(NfcTime.tParity);
                 }
                 if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
@@ -5010,21 +4673,7 @@ int NFC_PHY_1stWriteData(unsigned int _channel,
                     cur_write = spare;
 
                     // Program Spare
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                    for (write_loop = 0; write_loop < bytes_per_spare_ecc/4; write_loop++)
-                    {
-                        nfcShadowI32->nfdata = *((unsigned int *)spare); spare+=4;
-                    }
-                    for (write_loop = 0; write_loop < bytes_per_spare_ecc%4; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *spare; spare += 1;
-                    }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                    for (write_loop = 0; write_loop < bytes_per_spare_ecc; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *spare; spare += 1;
-                    }
-#endif
+					spare = nfc_io_write(spare, (void *)&nfcShadowI->nfdata, bytes_per_spare_ecc);
                     col1 += bytes_per_spare_ecc;
 
                     // Program Parity
@@ -5033,21 +4682,7 @@ int NFC_PHY_1stWriteData(unsigned int _channel,
                     NFC_PHY_RAND_SetPageSeed(row1&0x000000FF);
                     parity = (char *)NFC_PHY_RAND_Randomize((void *)parity, bytes_per_spare_parity, 1);
 #endif
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                    for (write_loop = 0; write_loop < bytes_per_spare_parity/4; write_loop++)
-                    {
-                        nfcShadowI32->nfdata = *((unsigned int *)parity); parity+=4;
-                    }
-                    for (write_loop = 0; write_loop < bytes_per_spare_parity%4; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *parity; parity += 1;
-                    }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                    for (write_loop = 0; write_loop < bytes_per_spare_parity; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *parity; parity += 1;
-                    }
-#endif
+					parity = nfc_io_write(parity, (void *)&nfcShadowI->nfdata, bytes_per_spare_parity);
                     NFC_PHY_tDelay(NfcTime.tParity);
 
                     col1 += bytes_per_spare_parity;
@@ -5106,8 +4741,6 @@ int NFC_PHY_1stWriteDataNoEcc(unsigned int _channel,
     char * spare_buffer = _spare_buffer;
     char * spare = spare_buffer;
 
-    unsigned int write_loop = 0;
-
 #if defined (__COMPILE_MODE_READONLY__)
     Exchange.sys.fn.print("EWS.NFC: WriteSkip: DataNoEcc\n");
     return 0;
@@ -5138,21 +4771,7 @@ int NFC_PHY_1stWriteDataNoEcc(unsigned int _channel,
             {
                 if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
                 {
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                    for (write_loop = 0; write_loop < bytes_per_data_ecc/4; write_loop++)
-                    {
-                        nfcShadowI32->nfdata = *((unsigned int *)data); data+=4;
-                    }
-                    for (write_loop = 0; write_loop < bytes_per_data_ecc%4; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *data; data += 1;
-                    }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                    for (write_loop = 0; write_loop < bytes_per_data_ecc; write_loop++)
-                    {
-                        nfcShadowI->nfdata = *data; data += 1;
-                    }
-#endif
+					data = nfc_io_write(data, (void *)&nfcShadowI->nfdata, bytes_per_data_ecc);
                 }
                 if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
             }
@@ -5165,21 +4784,7 @@ int NFC_PHY_1stWriteDataNoEcc(unsigned int _channel,
         {
             if (Exchange.nfc.fnBoostOn) { Exchange.nfc.fnBoostOn(); }
             {
-#if (IOW_WIDTH == IO_WIDTH_X32)
-                for (write_loop = 0; write_loop < bytes_spare/4; write_loop++)
-                {
-                    nfcShadowI32->nfdata = *((unsigned int *)spare); spare+=4;
-                }
-                for (write_loop = 0; write_loop < bytes_spare%4; write_loop++)
-                {
-                    nfcShadowI->nfdata = *spare; spare += 1;
-                }
-#elif (IOW_WIDTH == IO_WIDTH_X8)
-                for (write_loop = 0; write_loop < bytes_spare; write_loop++)
-                {
-                    nfcShadowI->nfdata = *spare; spare += 1;
-                }
-#endif
+				spare = nfc_io_write(spare, (void *)&nfcShadowI->nfdata, bytes_spare);
             }
             if (Exchange.nfc.fnBoostOff) { Exchange.nfc.fnBoostOff(); }
         }

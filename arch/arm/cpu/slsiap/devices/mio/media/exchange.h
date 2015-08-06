@@ -295,27 +295,44 @@ typedef struct __WARN__
 
 #endif
 
-#if   defined (__SUPPORT_MIO_CHIP_NXP4330__)
-#define CHIP_NAME           "NXP4330"
-#define CHIP_ID_BASE        0xF0067000
-#define CHIP_ID_PHY_BASE    0xC0067000
-#elif defined (__SUPPORT_MIO_CHIP_S5P4418__)
-#define CHIP_NAME           "S5P4418"
-#define CHIP_ID_BASE        0xF0067000
-#define CHIP_ID_PHY_BASE    0xC0067000
-#elif defined (__SUPPORT_MIO_CHIP_NXP5430__)
-#define CHIP_NAME           "NXP5430"
-#define CHIP_ID_BASE        0xF0067000
-#define CHIP_ID_PHY_BASE    0xC0067000
-#elif defined (__SUPPORT_MIO_CHIP_S5P6818__)
-#define CHIP_NAME           "S5P6818"
-#define CHIP_ID_BASE        0xF0067000
-#define CHIP_ID_PHY_BASE    0xC0067000
+#if defined (__COMPILE_MODE_X64__)
+    #if   defined (__SUPPORT_MIO_CHIP_NXP5430__)
+    #define CHIP_NAME           "NXP5430"
+    #define CHIP_ID_BASE        (0xFFFFFF80000E7000L)
+    #define CHIP_ID_PHY_BASE    (0xC0067000)
+    #elif defined (__SUPPORT_MIO_CHIP_S5P6818__)
+    #define CHIP_NAME           "S5P6818"
+    #define CHIP_ID_BASE        (0xFFFFFF80000E7000)
+    #define CHIP_ID_PHY_BASE    (0xC0067000)
+    #else
+    #define CHIP_NAME           "UNKNOWN"
+    #define CHIP_ID_BASE        (0x0000000000000000)
+    #define CHIP_ID_PHY_BASE    (0x00000000)
+    #error "EWS.FTL Warn : Can't Find Proper CPU"
+    #endif
 #else
-#define CHIP_NAME           "UNKNOWN"
-#define CHIP_ID_BASE        0x00000000
-#define CHIP_ID_PHY_BASE    0x00000000
-#error "EWS.FTL Warn : Can't Find Proper CPU"
+    #if   defined (__SUPPORT_MIO_CHIP_NXP4330__)
+    #define CHIP_NAME           "NXP4330"
+    #define CHIP_ID_BASE        (0xF0067000)
+    #define CHIP_ID_PHY_BASE    (0xC0067000)
+    #elif defined (__SUPPORT_MIO_CHIP_S5P4418__)
+    #define CHIP_NAME           "S5P4418"
+    #define CHIP_ID_BASE        (0xF0067000)
+    #define CHIP_ID_PHY_BASE    (0xC0067000)
+    #elif defined (__SUPPORT_MIO_CHIP_NXP5430__)
+    #define CHIP_NAME           "NXP5430"
+    #define CHIP_ID_BASE        (0xF0067000)
+    #define CHIP_ID_PHY_BASE    (0xC0067000)
+    #elif defined (__SUPPORT_MIO_CHIP_S5P6818__)
+    #define CHIP_NAME           "S5P6818"
+    #define CHIP_ID_BASE        (0xF0067000)
+    #define CHIP_ID_PHY_BASE    (0xC0067000)
+    #else
+    #define CHIP_NAME           "UNKNOWN"
+    #define CHIP_ID_BASE        (0x00000000)
+    #define CHIP_ID_PHY_BASE    (0x00000000)
+    #error "EWS.FTL Warn : Can't Find Proper CPU"
+    #endif
 #endif
 
 /******************************************************************************
@@ -327,8 +344,8 @@ typedef struct __ExFTL__
 {
     // Main Method
     void (*fnConfig)(void * _config);
-    int (*fnFormat)(unsigned char * _chip_name, unsigned int _chip_id_base, unsigned char _option);
-    int (*fnOpen)(unsigned char * _chip_name, unsigned int _chip_id_base, unsigned int _format_open);
+    int (*fnFormat)(unsigned char * _chip_name, unsigned long _chip_id_base, unsigned char _option);
+    int (*fnOpen)(unsigned char * _chip_name, unsigned long _chip_id_base, unsigned int _format_open);
     int (*fnClose)(void);
     int (*fnBoot)(unsigned char _mode);
     int (*fnMain)(void);
@@ -351,8 +368,8 @@ typedef struct __ExFTL__
 #define IO_CMD_FEATURE_WRITE_CONTINUE               (0x01)
 #define IO_CMD_MAX_READ_SECTORS                     (0x10000)   //  32 MB
 #define IO_CMD_MAX_WRITE_SECTORS                    (0x100)     // 128 KB
-    int (*fnPrePutCommand)(unsigned short _command, unsigned char _feature, unsigned int _address, unsigned int _length);
-    int (*fnPutCommand)(unsigned short _command, unsigned char _feature, unsigned int _address, unsigned int _length);
+    int (*fnPrePutCommand)(unsigned short _command, unsigned char _feature, unsigned long _address, unsigned int _length);
+    int (*fnPutCommand)(unsigned short _command, unsigned char _feature, unsigned long _address, unsigned int _length);
     void (*fnCancelCommand)(unsigned char _slot, unsigned int _length);
     void (*fnAdjustCommand)(unsigned char _slot, unsigned int _length);
 
@@ -368,6 +385,7 @@ typedef struct __ExFTL__
     WARN * (*fnGetWarnList)(void);
     int (*fnGetNandInfo)(NAND *info);
     int (*fnGetWearLevelData)(unsigned char _channel, unsigned char _way, void *buff, unsigned int buff_size);
+    void (*fnPrintInfo)(const char * token, unsigned int uiTokenLen);
 
 #define BLOCK_TYPE_MAPLOG           (0x8)
 #define BLOCK_TYPE_FREE             (0x9)
@@ -407,21 +425,21 @@ typedef struct __ExBUFFER__
     unsigned int (*fnGetRequestReadSeccnt)(void);
 
     // Read Buffer
-    unsigned int * BaseOfReadBuffer;
+    unsigned long * BaseOfReadBuffer;
     unsigned int * SectorsOfReadBuffer;
     unsigned int * ReadNfcIdx;
     unsigned int * ReadBlkIdx;
 
     // Write Cache
-    unsigned int * BaseOfWriteCache;
+    unsigned long * BaseOfWriteCache;
     unsigned int * SectorsOfWriteCache;
     unsigned int * WriteNfcIdx;
     unsigned int * WriteBlkIdx;
 
     // Direct Read/Write Cache
-    unsigned int * BaseOfDirectReadCache;
+    unsigned long * BaseOfDirectReadCache;
     unsigned int * SectorsOfDirectReadCache;
-    unsigned int * BaseOfDirectWriteCache;
+    unsigned long * BaseOfDirectWriteCache;
     unsigned int * SectorsOfDirectWriteCache;
 
     // Admin buffer
@@ -639,7 +657,11 @@ typedef struct __ExSYS__
 
         int (*print)(const char *, ...);
         int (*sprint)(char *, const char *, ...);
+#if defined (__COMPILE_MODE_X64__)
+        unsigned long (*strlen)(const char *);
+#else
         unsigned int (*strlen)(const char *);
+#endif
 
         void * (*_memset)(void *, int, unsigned int);
         void * (*_memcpy)(void *, const void *, unsigned int);
@@ -755,17 +777,19 @@ typedef struct __ExDEBUG__
         unsigned int block_background  : 1;
         unsigned int _rsvd0            : (8-3);
 
-        unsigned int media_open   : 1;
-        unsigned int media_format : 1;
-        unsigned int media_close  : 1;
-        unsigned int _rsvd1       : (8-3);
+        unsigned int media_open      : 1;
+        unsigned int media_format    : 1;
+        unsigned int media_close     : 1;
+        unsigned int media_rw_memcpy : 1;
+        unsigned int _rsvd1          : (8-4);
 
         unsigned int smart_store : 1;
         unsigned int _rsvd2      : (8-1);
 
-        unsigned int uboot_format : 1;
-        unsigned int uboot_init   : 1;
-        unsigned int _rsvd3       : (8-2);
+        unsigned int uboot_format    : 1;
+        unsigned int uboot_init      : 1;
+        unsigned int uboot_rw_memcpy : 1;
+        unsigned int _rsvd3          : (8-3);
 
     } misc;
 

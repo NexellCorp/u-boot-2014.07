@@ -123,10 +123,7 @@ static void _hw_set_addr(int module, struct nxp_vip_param *param, u32 lu_addr, u
 
 static void _hw_run(int module)
 {
-		U32 CAPTURE_CLIPPER_INT = (2UL);
-
     NX_VIP_SetVIPEnable(module, CTRUE, CTRUE, CTRUE, CFALSE);
-		NX_VIP_SetInterruptEnable(module, CAPTURE_CLIPPER_INT, CTRUE);
 }
 
 void dump_register(int module)

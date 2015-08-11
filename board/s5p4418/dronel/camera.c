@@ -676,9 +676,11 @@ static struct reg_val tw9992_sensor_init_data[] =
 };
 #endif
 
-#define CAMERA_POWER_EN			((PAD_GPIO_C + 4) | PAD_FUNC_ALT0)
-#define CAMERA_RESET       	((PAD_GPIO_C + 5) | PAD_FUNC_ALT0)
-#define CAMERA_POWER_PD			((PAD_GPIO_C + 6) | PAD_FUNC_ALT0)
+#define CAMERA_POWER_EN			((PAD_GPIO_C +  4) | PAD_FUNC_ALT0)
+#define CAMERA_RESET       	((PAD_GPIO_C +  5) | PAD_FUNC_ALT0)
+#define CAMERA_POWER_PD			((PAD_GPIO_C +  6) | PAD_FUNC_ALT0)
+
+#define	BACK_GEAR						((PAD_GPIO_B + 26) | PAD_FUNC_ALT1)
 
 static int _sensor_set_clock(ulong clk_rate)
 {
@@ -747,7 +749,7 @@ static void io_status(const char *io_name, int io, int cnt)
 
 static int _sensor_power_enable(bool enable)
 {
-    u32 io	 			= CAMERA_POWER_EN;
+    u32 io	 		= CAMERA_POWER_EN;
     u32 reset_io 	= CAMERA_RESET;
     u32 io_pd 		= CAMERA_POWER_PD;
 
@@ -927,8 +929,6 @@ static struct nxp_vip_param tw9992_vip_param = {
 };
 #endif
 
-
-
 int module_id = VIP_MODULE_NUM;
 
 void camera_run(void)
@@ -951,7 +951,7 @@ void camera_run(void)
 	}
 
 	module_id = 1;
-    nxp_vip_register_param(module_id, &tw9992_vip_param);
+  nxp_vip_register_param(module_id, &tw9992_vip_param);
 #endif
 
     nxp_vip_set_addr(module_id, CONFIG_VIP_LU_ADDR, CONFIG_VIP_CB_ADDR, CONFIG_VIP_CR_ADDR);
@@ -965,23 +965,24 @@ void camera_run(void)
     /*printf("%s exit\n", __func__);*/
 }
 
-//#define CAMERA_ACTIVE_DETECT (PAD_GPIO_A + 3)
-//#define CAMERA_DETECT_ACTIVE_VALUE 0
 void camera_preview(void)
 {
-  //  int io = CAMERA_ACTIVE_DETECT;
-  //  int val;
+	int back_gear_io = BACK_GEAR;
+	
+	gpio_set_value(back_gear_io, 0);
+	gpio_direction_output(back_gear_io, 1);
+	gpio_set_alt(back_gear_io, 1);
+	gpio_set_value(back_gear_io, 1);
 
-    //gpio_direction_input(io);
-    //gpio_set_alt(io, 0);
-    //val = gpio_get_value(io);
+    gpio_direction_input(back_gear_io);
+    gpio_set_alt(back_gear_io, 0);
 
     printf("run vip\n");
     nxp_vip_run(module_id);
 
-    //if (val == CAMERA_DETECT_ACTIVE_VALUE) {
+    //if (gpio_get_value(back_gear_io)) {
         printf("run mlc\n");
         nxp_mlc_video_run(0);
     //}
-    /*printf("%s exit\n", __func__);*/
+    printf("%s exit\n", __func__);
 }

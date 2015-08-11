@@ -95,7 +95,7 @@ int camera_sensor_run(int id)
     while (reg_val->reg != 0xff) {
        ret =  i2c_write(sensor->chip, reg_val->reg, 1, &reg_val->val, 1);
 			 //printf("Write Register : 0x%02X = Value : W[0x%02X], return : %d\n", reg_val->reg, reg_val->val, ret);
-			 mdelay(10);
+			 //mdelay(10);
        reg_val++;
     }
 

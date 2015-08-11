@@ -51,6 +51,9 @@
 #endif
 #endif
 
+#define CONFIG_ARM_S5P4418_CPUFREQ
+#define	CONFIG_S5P4418_CPUFREQ_PLLDEV	1
+
 /*
  * clock generator macros
  */

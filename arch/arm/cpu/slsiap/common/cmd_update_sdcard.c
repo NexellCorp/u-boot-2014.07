@@ -388,7 +388,7 @@ static int update_sd_fdisk(int dev, struct update_sdcard_part *fp)
     int i=0,p=0,j=0,l=0, cnt=0;
     uint64_t part_start[UPDATE_SDCARD_DEV_PART_MAX];
     uint64_t part_length[UPDATE_SDCARD_DEV_PART_MAX];
-    char args[256];
+    char args[1024];
 
     printf("Warn  : make new partitions ....\n");
 
@@ -413,7 +413,7 @@ static int update_sd_fdisk(int dev, struct update_sdcard_part *fp)
     else
         printf("fdisk : %s\n", "DONE");
 
-
+	return 0;
 }
 
 static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])

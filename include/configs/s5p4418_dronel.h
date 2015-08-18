@@ -54,7 +54,7 @@
 #define CONFIG_MEM_MALLOC_LENGTH		32*1024*1024							/* more than 2M for ubifs: MAX 16M */
 
 /* when CONFIG_LCD */
-#define CONFIG_FB_ADDR					0x46000000
+#define CONFIG_FB_ADDR					0x58000000
 #define CONFIG_BMP_ADDR					0x47000000
 
 /* Download OFFSET */
@@ -85,9 +85,9 @@
 #define CONFIG_ARCH_CPU_INIT													/* board_init_f->init_sequence, call arch_cpu_init */
 #define	CONFIG_BOARD_EARLY_INIT_F												/* board_init_f->init_sequence, call board_early_init_f */
 #define	CONFIG_BOARD_LATE_INIT													/* board_init_r, call board_early_init_f */
-#define	CONFIG_DISPLAY_CPUINFO													/* board_init_f->init_sequence, call print_cpuinfo */
+//#define	CONFIG_DISPLAY_CPUINFO													[> board_init_f->init_sequence, call print_cpuinfo <]
 #define	CONFIG_SYS_DCACHE_OFF													/* board_init_f, CONFIG_SYS_ICACHE_OFF */
-#define	CONFIG_ARCH_MISC_INIT													/* board_init_r, call arch_misc_init */
+//#define	CONFIG_ARCH_MISC_INIT													[> board_init_r, call arch_misc_init <]
 //#define	CONFIG_SYS_ICACHE_OFF
 
 #define CONFIG_MMU_ENABLE
@@ -98,11 +98,11 @@
 /*-----------------------------------------------------------------------
  *	U-Boot default cmd
  */
-#define CONFIG_CMD_MEMORY   /* md mm nm mw cp cmp crc base loop mtest */
-#define CONFIG_CMD_NET      /* bootp, tftpboot, rarpboot    */
-#define CONFIG_CMD_RUN      /* run command in env variable  */
+//#define CONFIG_CMD_MEMORY   [> md mm nm mw cp cmp crc base loop mtest <]
+//#define CONFIG_CMD_NET      [> bootp, tftpboot, rarpboot    <]
+//#define CONFIG_CMD_RUN      [> run command in env variable  <]
 #define CONFIG_CMD_SAVEENV  /* saveenv          */
-#define CONFIG_CMD_SOURCE   /* "source" command support */
+//#define CONFIG_CMD_SOURCE   [> "source" command support <]
 #define CONFIG_CMD_BOOTD	/* "boot" command support */
 
 /*-----------------------------------------------------------------------
@@ -111,14 +111,15 @@
 /* refer to common/env_common.c	*/
 #define CONFIG_BOOTDELAY	   			0
 #define CONFIG_ZERO_BOOTDELAY_CHECK
-#define CONFIG_ETHADDR		   			00:e2:1c:ba:e8:60
-#define CONFIG_NETMASK		   			255.255.255.0
-#define CONFIG_IPADDR					192.168.1.165
-#define CONFIG_SERVERIP					192.168.1.164
-#define CONFIG_GATEWAYIP				192.168.1.254
-#define CONFIG_BOOTFILE					"uImage"  		/* File to load	*/
+//#define CONFIG_ETHADDR		   			00:e2:1c:ba:e8:60
+//#define CONFIG_NETMASK		   			255.255.255.0
+//#define CONFIG_IPADDR					192.168.1.165
+//#define CONFIG_SERVERIP					192.168.1.164
+//#define CONFIG_GATEWAYIP				192.168.1.254
+//#define CONFIG_BOOTFILE					"uImage"  		[> File to load	<]
 
-#define CONFIG_BOOTCOMMAND "ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 root.img.gz;bootm 0x48000000"
+//#define CONFIG_BOOTCOMMAND "ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 root.img.gz;bootm 0x48000000"
+#define CONFIG_BOOTCOMMAND "ext4load mmc 2:1 0x40008000 Image;goimage 0x40008000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -134,7 +135,7 @@
  * allow to overwrite serial and ethaddr
  */
 #define CONFIG_ENV_OVERWRITE
-#define CONFIG_SYS_HUSH_PARSER			/* use "hush" command parser	*/
+//#define CONFIG_SYS_HUSH_PARSER			[> use "hush" command parser	<]
 #ifdef 	CONFIG_SYS_HUSH_PARSER
 #define CONFIG_SYS_PROMPT_HUSH_PS2	"> "
 #endif
@@ -142,9 +143,9 @@
 /*-----------------------------------------------------------------------
  * Etc Command definition
  */
-#define	CONFIG_CMD_BDI					/* board info	*/
-#define	CONFIG_CMD_IMI					/* image info	*/
-#define	CONFIG_CMD_MEMORY
+//#define	CONFIG_CMD_BDI					[> board info	<]
+//#define	CONFIG_CMD_IMI					[> image info	<]
+//#define	CONFIG_CMD_MEMORY
 #define	CONFIG_CMD_RUN					/* run commands in an environment variable	*/
 #define CONFIG_CMDLINE_EDITING			/* add command line history	*/
 #define	CONFIG_CMDLINE_TAG				/* use bootargs commandline */
@@ -155,6 +156,9 @@
 
 #undef	CONFIG_BOOTM_NETBSD
 #undef	CONFIG_BOOTM_RTEMS
+#undef  CONFIG_BOOTM_VXWORKS
+#undef  CONFIG_CMD_IMPORTENV
+#undef  CONFIG_CMD_EXPORTENV
 // #undef	CONFIG_GZIP
 
 /*-----------------------------------------------------------------------
@@ -174,7 +178,7 @@
  * Ethernet configuration
  * depend on CONFIG_CMD_NET
  */
-#define CONFIG_DRIVER_DM9000			1
+//#define CONFIG_DRIVER_DM9000			1
 
 #if defined(CONFIG_CMD_NET)
 	/* DM9000 Ethernet device */
@@ -495,8 +499,8 @@
 
 	#define CONFIG_MMC2_CLOCK			50000000
 	#define CONFIG_MMC2_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(1)
-	#define CONFIG_MMC2_BUS_WIDTH       4 
-    #define CONFIG_MMC2_TRANS_MODE      0 //1 : DDR_MODE, 0: SDR_MODE 
+	#define CONFIG_MMC2_BUS_WIDTH       4
+    #define CONFIG_MMC2_TRANS_MODE      0 //1 : DDR_MODE, 0: SDR_MODE
 
 	#define CONFIG_DWMMC
 	#define CONFIG_NXP_DWMMC
@@ -627,6 +631,9 @@
 #if defined (CONFIG_RECOVERY_BOOT)
 	#define CONFIG_CMD_RECOVERY_BOOT "ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
 #endif
+
+#define CONFIG_SILENT_CONSOLE
+#define CONFIG_SYS_CONSOLE_INFO_QUIET
 
 /*-----------------------------------------------------------------------
  * Debug message

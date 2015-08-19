@@ -620,7 +620,7 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 		}
 	}
 
-	//fboot_lcd_stop();
+	fboot_lcd_stop();
 	//do_reset (NULL, 0, 0, NULL);
 
 	return res; 

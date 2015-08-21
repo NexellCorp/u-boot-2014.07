@@ -418,7 +418,7 @@
 
 	#if defined(CONFIG_REGULATOR_MP8845C)
 		#define CONFIG_PMIC_I2C_BUSA				I2C_1
-		#define CONFIG_PMIC_I2C_BUSB				I2C_2
+		//#define CONFIG_PMIC_I2C_BUSB				I2C_2
 
 		#define	CFG_IO_I2C1_SCL						((PAD_GPIO_D + 2) | PAD_FUNC_ALT0)
 		#define	CFG_IO_I2C1_SDA						((PAD_GPIO_D + 3) | PAD_FUNC_ALT0)

@@ -49,6 +49,8 @@ DECLARE_GLOBAL_DATA_PTR;
 #define DBGOUT(msg...)		do {} while (0)
 #endif
 
+#define FASTBOOT_SIGNATURE		0x46415354 /* (ASCII) : FAST  */
+
 /*------------------------------------------------------------------------------
  * BUS Configure
  */
@@ -361,6 +363,17 @@ int board_late_init(void)
 	char boot[16];
 	sprintf(boot, "mmc dev %d", CONFIG_SYS_MMC_BOOT_DEV);
 	run_command(boot, 0);
+#endif
+
+#if 1 // reboot bootloader -> fastboot(download)
+	if (FASTBOOT_SIGNATURE == readl(SCR_USER_SIG6_READ)) {
+		writel((-1UL), SCR_USER_SIG6_RESET); /* clear */
+		printf("\nuser reset : fastboot\n");
+		run_command ("fastboot", 0);	/* fastboot */
+		writel((-1UL), SCR_USER_SIG6_RESET);
+		return 0;
+	}
+	writel((-1UL), SCR_USER_SIG6_RESET);
 #endif
 
 #if defined CONFIG_RECOVERY_BOOT

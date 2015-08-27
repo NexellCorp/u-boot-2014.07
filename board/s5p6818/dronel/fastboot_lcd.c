@@ -26,6 +26,7 @@
 #include <platform.h>
 #include <draw_lcd.h>
 #include <asm/arch/fastboot.h>
+#include <asm/arch/display.h>
 
 #define	LOGO_BGCOLOR	(0xffffff)
 static int _logo_left   = CFG_DISP_PRI_RESOL_WIDTH /2 +  50;
@@ -36,7 +37,7 @@ static int _logo_height = 16;
 void fboot_lcd_start(void)
 {
 	lcd_info lcd = {
-		.fb_base		= CONFIG_FB_ADDR,
+		.fb_base		= CONFIG_FB_ADDR_FASTBOOT,
 		.bit_per_pixel	= CFG_DISP_PRI_SCREEN_PIXEL_BYTE * 8,
 		.lcd_width		= CFG_DISP_PRI_RESOL_WIDTH,
 		.lcd_height		= CFG_DISP_PRI_RESOL_HEIGHT,
@@ -47,9 +48,11 @@ void fboot_lcd_start(void)
 	lcd_debug_init(&lcd);
 
 	/* clear FB */
-	memset((void*)CONFIG_FB_ADDR, 0xFF,
-		CFG_DISP_PRI_RESOL_WIDTH * CFG_DISP_PRI_RESOL_HEIGHT *
-		CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
+    memset((void*)CONFIG_FB_ADDR_FASTBOOT, 0xFF,
+        CFG_DISP_PRI_RESOL_WIDTH * CFG_DISP_PRI_RESOL_HEIGHT *
+        CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
+
+    disp_mlc_set_address(CFG_DISP_OUTPUT_MODOLE, CFG_DISP_PRI_SCREEN_LAYER, CONFIG_FB_ADDR_FASTBOOT);
 
 	run_command(CONFIG_CMD_LOGO_UPDATE, 0);
 	lcd_draw_text("wait for update", _logo_left, _logo_top, 2, 2, 0);
@@ -58,6 +61,9 @@ void fboot_lcd_start(void)
 void fboot_lcd_stop(void)
 {
 	run_command(CONFIG_CMD_LOGO_WALLPAPERS, 0);
+    lcd_draw_boot_logo(CONFIG_FB_ADDR, CFG_DISP_PRI_RESOL_WIDTH,
+            CFG_DISP_PRI_RESOL_HEIGHT, CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
+    disp_mlc_set_address(CFG_DISP_OUTPUT_MODOLE, CFG_DISP_PRI_SCREEN_LAYER, CONFIG_FB_ADDR);
 }
 
 void fboot_lcd_part(char *part, char *stat)

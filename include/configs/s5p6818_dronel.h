@@ -68,6 +68,7 @@
 
 /* when CONFIG_LCD */
 #define CONFIG_FB_ADDR					0x65e45000
+#define CONFIG_FB_ADDR_FASTBOOT			0x46000000
 #define CONFIG_BMP_ADDR					0x47000000
 
 /* Download OFFSET */

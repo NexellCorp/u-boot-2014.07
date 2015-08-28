@@ -38,7 +38,7 @@
 #define	UPDATE_SDCARD_NAND_MAX		1
 #define	UPDATE_SDCARD_MEM_MAX		1
 
-#define	UPDATE_SDCARD_DEV_PART_MAX	(10)				/* each device max partition max num */
+#define	UPDATE_SDCARD_DEV_PART_MAX	(16)				/* each device max partition max num */
 
 /* device types */
 #define	UPDATE_SDCARD_DEV_EEPROM	(1<<0)	/*  name "eeprom" */
@@ -56,7 +56,7 @@
 #define	UPDATE_SDCARD_FS_UBIFS		(1<<7)	/*  name "ubifs" */
 #define	UPDATE_SDCARD_FS_RAW_PART	(1<<8)	/*  name "emmc" */
 
-#define	UPDATE_SDCARD_FS_MASK		(UPDATE_SDCARD_FS_RAW | UPDATE_SDCARD_FS_FAT | UPDATE_SDCARD_FS_EXT4 | UPDATE_SDCARD_FS_UBI | UPDATE_SDCARD_FS_UBIFS | UPDATE_SDCARD_FS_RAW_PART)
+#define UPDATE_SDCARD_FS_MASK        (UPDATE_SDCARD_FS_EXT4 | UPDATE_SDCARD_FS_FAT | UPDATE_SDCARD_FS_UBI | UPDATE_SDCARD_FS_UBIFS | UPDATE_SDCARD_FS_RAW_PART)
 
 #define	TCLK_TICK_HZ				(1000000)
 
@@ -256,10 +256,10 @@ static int update_sdcard_part_lists_make(const char *ptable_str, int ptable_str_
 		}
 
 		p = update_sdcard_get_string(p, ',', str, sizeof(str));
-		fp->start = simple_strtoul(str, NULL, 16);
+		fp->start = simple_strtoull(str, NULL, 16);
 
 		p = update_sdcard_get_string(p, ':', str, sizeof(str));
-		fp->length = simple_strtoul(str, NULL, 16);
+		fp->length = simple_strtoull(str, NULL, 16);
 
 		p = update_sdcard_get_string(p, ';', str, sizeof(str));
 		strcpy(fp->file_name, str);
@@ -521,13 +521,16 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 						memset(cmd, 0x0, sizeof(cmd));
 
 						if (fs_type == UPDATE_SDCARD_FS_2NDBOOT ||
-							fs_type == UPDATE_SDCARD_FS_BOOT) {
+							fs_type == UPDATE_SDCARD_FS_BOOT ||  
+							fs_type == UPDATE_SDCARD_FS_RAW) {
 
 
 							if (fs_type == UPDATE_SDCARD_FS_2NDBOOT)
 								p = sprintf(cmd, "update_mmc %d 2ndboot", dev);
-							else
+							else if(fs_type == UPDATE_SDCARD_FS_BOOT)
 								p = sprintf(cmd, "update_mmc %d boot", dev);
+							else if(fs_type == UPDATE_SDCARD_FS_RAW)
+								p = sprintf(cmd, "update_mmc %d raw", dev);
 
 							l = sprintf(&cmd[p], " 0x%x 0x%llx 0x%llx", (unsigned int)addr, start, length);
 							p += l;

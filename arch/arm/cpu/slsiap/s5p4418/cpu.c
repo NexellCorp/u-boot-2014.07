@@ -120,6 +120,10 @@ int arch_cpu_init (void)
 	gd->mon_len = (ulong)&__bss_end - CONFIG_SYS_TEXT_BASE;
 	gd->irq_sp = (unsigned long)stack->abt;	/* Abort stack */
 
+#if defined(CONFIG_SILENT_CONSOLE)
+	gd->flags |= GD_FLG_SILENT;
+#endif
+
 	_IRQ_STACK_START_IN_ = gd->irq_sp + 8;
 #ifdef CONFIG_USE_IRQ
 	_IRQ_STACK_START_ = gd->irq_sp - 4;

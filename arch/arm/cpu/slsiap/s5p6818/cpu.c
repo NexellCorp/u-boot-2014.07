@@ -125,6 +125,10 @@ int arch_cpu_init (void)
 	gd->irq_sp = (unsigned long)stack->abt;	/* Abort stack */
 	gd->start_addr_sp = CONFIG_SYS_INIT_SP_ADDR;
 
+#if defined(CONFIG_SILENT_CONSOLE)
+	gd->flags |= GD_FLG_SILENT;
+#endif
+
 #ifdef CONFIG_USE_IRQ
 	_IRQ_STACK_START_IN_ = gd->irq_sp + 16;
 	_IRQ_STACK_START_ = gd->irq_sp - 8;

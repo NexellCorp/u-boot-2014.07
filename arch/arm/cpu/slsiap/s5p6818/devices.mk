@@ -4,6 +4,11 @@ obj-$(CONFIG_PWM)					+= ../devices/pwm.o
 #ifdef CONFIG_NAND_MTD
 obj-$(CONFIG_MTD_NAND_NXP)			+= ../devices/nand.o
 obj-$(CONFIG_MTD_NAND_ECC_HW)		+= ../devices/nand_ecc.o
+ifeq ($(CONFIG_ARM64), y)
+obj-$(CONFIG_MTD_NAND_NXP)			+= ../devices/mtd.lib64.o
+else
+obj-$(CONFIG_MTD_NAND_NXP)			+= ../devices/mtd.lib.o
+endif
 #else
 obj-$(CONFIG_NAND_FTL)				+= ../devices/nand_ftl.o
 #endif

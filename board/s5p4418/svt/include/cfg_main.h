@@ -35,10 +35,13 @@
 /*------------------------------------------------------------------------------
  * 	BUS config
  */
-#define CFG_BUS_RECONFIG_ENB					1		/* if want bus reconfig, select this first */
+#define CFG_DREX_PORT0_QOS_ENB					0
+#define CFG_DREX_PORT1_QOS_ENB					1
+#define CFG_BUS_RECONFIG_ENB					1       /* if want bus reconfig, select this first */
 
-#define CFG_BUS_RECONFIG_DREXQOS				0
+#define CFG_BUS_RECONFIG_DREXQOS				1
 #define CFG_BUS_RECONFIG_TOPBUSSI				0
+#define CFG_BUS_RECONFIG_TOPBUSQOS				0
 #define CFG_BUS_RECONFIG_BOTTOMBUSSI			0
 #define CFG_BUS_RECONFIG_BOTTOMBUSQOS			0
 #define CFG_BUS_RECONFIG_DISPBUSSI				1

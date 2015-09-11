@@ -68,7 +68,7 @@
 /*------------------------------------------------------------------------------
  * 	GMAC PHY
  */
-#define	CFG_ETHER_GMAC_PHY_IRQ_NUM				(PAD_GPIO_A + 9)
+#define	CFG_ETHER_GMAC_PHY_IRQ_NUM				(IRQ_GPIO_A_START + 9)
 #define	CFG_ETHER_GMAC_PHY_RST_NUM				(PAD_GPIO_A + 10)
 
 /*------------------------------------------------------------------------------

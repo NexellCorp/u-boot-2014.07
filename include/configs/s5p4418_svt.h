@@ -174,8 +174,8 @@
  * Ethernet configuration
  * depend on CONFIG_CMD_NET
  */
-#define CONFIG_DRIVER_DM9000
-//#define CONFIG_DESIGNWARE_ETH
+//#define CONFIG_DRIVER_DM9000			1
+#define CONFIG_DESIGNWARE_ETH			1
 
 #if defined(CONFIG_CMD_NET)
 	/*
@@ -201,9 +201,9 @@
 		#define CONFIG_PHY_RESET_DELAY		10000       /* in usec */
 		#define CONFIG_DW_ALTDESCRIPTOR
 		#define CONFIG_DW_SEARCH_PHY
-	//	#define CONFIG_DW_AUTONEG
+	    #define CONFIG_DW_AUTONEG
 	//	#define CONFIG_DW_SPEED1000M		/* #ifndef CONFIG_DW_AUTONEG */
-	//	#define CONFIG_DW_SPEED100M			/* #ifndef CONFIG_DW_AUTONEG */
+	//  #define CONFIG_DW_SPEED100M			/* #ifndef CONFIG_DW_AUTONEG */
 	//	#define CONFIG_DW_SPEED10M			/* #ifndef CONFIG_DW_AUTONEG */
 	//	#define CONFIG_DW_DUPLEXHALF		/* #ifndef CONFIG_DW_AUTONEG */
 

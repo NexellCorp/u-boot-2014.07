@@ -193,15 +193,51 @@
  * Ethernet configuration
  * depend on CONFIG_CMD_NET
  */
-#define CONFIG_DRIVER_DM9000			1
+//#define CONFIG_DRIVER_DM9000			1
+//#define CONFIG_DESIGNWARE_ETH			1
 
 #if defined(CONFIG_CMD_NET)
-	/* DM9000 Ethernet device */
-	#if defined(CONFIG_DRIVER_DM9000)
-	#define CONFIG_DM9000_BASE	   		CFG_ETHER_EXT_PHY_BASEADDR		/* DM9000: 0x04000000(CS1) */
-	#define DM9000_IO	   				CONFIG_DM9000_BASE
-	#define DM9000_DATA	   				(CONFIG_DM9000_BASE + 0x4)
-//	#define CONFIG_DM9000_DEBUG
+	/*
+	 * DWC Ethernet driver configuration
+	 */
+	#if defined(CONFIG_DESIGNWARE_ETH)
+		#define CONFIG_PHY_REALTEK
+		//#define CONFIG_PHY_MICREL
+		//#define CONFIG_PHY_MICREL_KSZ9031
+
+		#define CONFIG_DWCGMAC_BASE			IO_ADDRESS(PHY_BASEADDR_GMAC)
+
+		#if defined(CONFIG_PHY_REALTEK)
+			#define CONFIG_ETHPRIME				"RTL8211"
+			#define CONFIG_PHY_ADDR				3           /* RTL8211 PHY address */
+		#endif
+		#if defined(CONFIG_PHY_MICREL)
+			#define CONFIG_ETHPRIME				"KSZ9031"
+			#define CONFIG_PHY_ADDR				7           /* KSZ9031 PHY address */
+		#endif
+
+		#define CONFIG_PHYLIB
+		#define CONFIG_PHY_RESET_DELAY		10000       /* in usec */
+		#define CONFIG_DW_ALTDESCRIPTOR
+		#define CONFIG_DW_SEARCH_PHY
+	    #define CONFIG_DW_AUTONEG
+	//	#define CONFIG_DW_SPEED1000M		/* #ifndef CONFIG_DW_AUTONEG */
+	//  #define CONFIG_DW_SPEED100M			/* #ifndef CONFIG_DW_AUTONEG */
+	//	#define CONFIG_DW_SPEED10M			/* #ifndef CONFIG_DW_AUTONEG */
+	//	#define CONFIG_DW_DUPLEXHALF		/* #ifndef CONFIG_DW_AUTONEG */
+
+		#define CONFIG_PHY_GIGE			/* Include GbE speed/duplex detection */
+		#define CONFIG_PHY_DYNAMIC_ANEG		1
+		#define CONFIG_MII
+		#define CONFIG_CMD_MII
+	/*
+	 * DM90000
+	 */
+	#elif defined(CONFIG_DRIVER_DM9000)
+		#define CONFIG_DM9000_BASE	   		CFG_ETHER_EXT_PHY_BASEADDR		/* DM9000: 0x04000000(CS1) */
+		#define DM9000_IO	   				CONFIG_DM9000_BASE
+		#define DM9000_DATA	   				(CONFIG_DM9000_BASE + 0x4)
+	//	#define CONFIG_DM9000_DEBUG
 	#endif
 
 	/*
@@ -552,7 +588,7 @@
 /*-----------------------------------------------------------------------
  * FAT Partition
  */
-#if defined(CONFIG_MMC) || defined(CONFIG_CMD_USB)
+#if defined(CONFIG_MMC) || defined(CONFIG_CMD_USB) || defined(CONFIG_NAND_FTL)
 	#define CONFIG_DOS_PARTITION
 
 	#define CONFIG_CMD_FAT
@@ -614,7 +650,7 @@
 #define CONFIG_LOGO_DEVICE_MMC
 
 #if defined(CONFIG_LOGO_DEVICE_MMC) && defined(CONFIG_LOGO_DEVICE_NAND)
-#error "Duplicated config for logo device!!!"
+#error "Select one LOGO DEVICE!"
 #endif
 
 #if	defined(CONFIG_DISPLAY_OUT)

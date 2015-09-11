@@ -587,7 +587,7 @@
 /*-----------------------------------------------------------------------
  * FAT Partition
  */
-#if defined(CONFIG_MMC) || defined(CONFIG_CMD_USB)
+#if defined(CONFIG_MMC) || defined(CONFIG_CMD_USB) || defined(CONFIG_NAND_FTL)
 	#define CONFIG_DOS_PARTITION
 
 	#define CONFIG_CMD_FAT
@@ -649,7 +649,7 @@
 #define CONFIG_LOGO_DEVICE_MMC
 
 #if defined(CONFIG_LOGO_DEVICE_MMC) && defined(CONFIG_LOGO_DEVICE_NAND)
-#error "Duplicated config for logo device!!!"
+#error "Select one LOGO DEVICE!"
 #endif
 
 #if	defined(CONFIG_DISPLAY_OUT)

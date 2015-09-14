@@ -53,7 +53,7 @@
 /*------------------------------------------------------------------------------
  * 	GMAC PHY
  */
-#define	CFG_ETHER_GMAC_PHY_IRQ_NUM				(PAD_GPIO_A + 9)
+#define	CFG_ETHER_GMAC_PHY_IRQ_NUM				(IRQ_GPIO_A_START + 9)
 #define	CFG_ETHER_GMAC_PHY_RST_NUM				(PAD_GPIO_A + 10)
 
 /*------------------------------------------------------------------------------
@@ -61,6 +61,11 @@
  */
 #define CFG_NAND_ECC_BYTES                      1024            /* 512 - 4,8,16,24  1024 - 24,40,60  */
 #define CFG_NAND_ECC_BITS                       40
+
+/* FTL */
+#define CFG_NAND_FTL_START_BLOCK				0x6000000	/* byte address, Must Be Multiple of 8MB */
+#define CFG_BOOTIMG_OFFSET						0x100000	/* uboot.ecc */
+#define CFG_BOOTIMG_REPEAT						32
 
 /*------------------------------------------------------------------------------
  *	Nand (GPIO)

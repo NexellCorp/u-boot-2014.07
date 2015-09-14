@@ -1,8 +1,17 @@
 
 obj-$(CONFIG_S5P_SERIAL)			+= ../devices/serial_s5p.o
 obj-$(CONFIG_PWM)					+= ../devices/pwm.o
-obj-$(CONFIG_MTD_NAND_NXP)		+= ../devices/nand.o
+#ifdef CONFIG_NAND_MTD
+obj-$(CONFIG_MTD_NAND_NXP)			+= ../devices/nand.o
 obj-$(CONFIG_MTD_NAND_ECC_HW)		+= ../devices/nand_ecc.o
+ifeq ($(CONFIG_ARM64), y)
+obj-$(CONFIG_MTD_NAND_NXP)			+= ../devices/mtd.lib64.o
+else
+obj-$(CONFIG_MTD_NAND_NXP)			+= ../devices/mtd.lib.o
+endif
+#else
+obj-$(CONFIG_NAND_FTL)				+= ../devices/nand_ftl.o
+#endif
 obj-$(CONFIG_CMD_I2C)				+= ../devices/i2c_gpio.o
 obj-$(CONFIG_LCD)					+= ../devices/lcd.o
 obj-$(CONFIG_SPI)					+= ../devices/spi_slsi.o

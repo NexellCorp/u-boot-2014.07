@@ -29,7 +29,7 @@
  * 	System Name
  */
 #define	CFG_SYS_CPU_NAME						"s5p6818"
-#define	CFG_SYS_BOARD_NAME						"s5p6818-pavo"
+#define	CFG_SYS_BOARD_NAME						"s5p6818-avn_ref"
 
 /*------------------------------------------------------------------------------
  * 	Debug Uart

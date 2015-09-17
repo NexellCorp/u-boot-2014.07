@@ -40,7 +40,7 @@
 #include "mp8845c_regulator.h"
 
 #if defined(CONFIG_ASV_CORE_TABLE)
-#define FEATURE_ASV_CORE_TABLE
+//#define FEATURE_ASV_CORE_TABLE
 #endif
 
 #ifdef FEATURE_ASV_CORE_TABLE

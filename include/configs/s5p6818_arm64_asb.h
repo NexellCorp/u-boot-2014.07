@@ -679,8 +679,7 @@
  * Extra Default ENV
  */
 #define	CONFIG_EXTRA_ENV_SETTINGS		\
-								"boot0=fatload mmc 0:1 0x48000000 uImage;fatload mmc 0:1 0x49000000 root.img.gz;bootm 0x48000000\0"	\
-
+				"boot0=fatload mmc 0:1 0x40080000 Image;fatload mmc 0:1 48000000 s5p6818-asb.dtb;fatload mmc 0:1 0x49000000 root.img.gz;goimage 0x40080000 0x48000000\0" \
 /*-----------------------------------------------------------------------
  * Recover boot
  */

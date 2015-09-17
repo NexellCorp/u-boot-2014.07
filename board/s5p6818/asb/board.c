@@ -191,10 +191,10 @@ int board_early_init_f(void)
 
 #if defined(CONFIG_REGULATOR_MP8845C) && !defined(CONFIG_PMIC_REG_DUMP)
 #if defined(CONFIG_PMIC_I2C_BUSA)
-	bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSA, 1200000, 0);
+	bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSA, 1200000, 0);	//ARM 1.2V
 #endif
 #if defined(CONFIG_PMIC_I2C_BUSB)
-	bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSB, 1100000, 1);
+	bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSB, 1100000, 1);	//CORE 1.1V
 #endif
 #endif
 

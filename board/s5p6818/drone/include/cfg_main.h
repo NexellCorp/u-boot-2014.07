@@ -29,7 +29,7 @@
  * 	System Name
  */
 #define	CFG_SYS_CPU_NAME						"s5p6818"
-#define	CFG_SYS_BOARD_NAME						"s5p6818-drone"
+#define	CFG_SYS_BOARD_NAME						"s5p6818-dronel"
 
 /*------------------------------------------------------------------------------
  * 	Debug Uart
@@ -93,8 +93,8 @@
 #define CFG_DISP_PRI_VSYNC_FRONT_PORCH          12
 #define CFG_DISP_PRI_VSYNC_ACTIVE_HIGH 	        CTRUE
 
-#define CFG_DISP_PRI_CLKGEN0_SOURCE             DPC_VCLK_SRC_PLL0
-#define CFG_DISP_PRI_CLKGEN0_DIV                15 //20
+#define CFG_DISP_PRI_CLKGEN0_SOURCE             DPC_VCLK_SRC_PLL2
+#define CFG_DISP_PRI_CLKGEN0_DIV                14 //20
 #define CFG_DISP_PRI_CLKGEN0_DELAY              0
 #define CFG_DISP_PRI_CLKGEN0_INVERT				0
 #define CFG_DISP_PRI_CLKGEN1_SOURCE             DPC_VCLK_SRC_VCLK2

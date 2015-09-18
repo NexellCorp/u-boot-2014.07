@@ -35,9 +35,16 @@
 
 #include <draw_lcd.h>
 
-#if defined(CONFIG_PMIC_NXE2000)
+#if defined(CONFIG_PMIC)
 #include <power/pmic.h>
+#endif
+
+#if defined(CONFIG_PMIC_NXE2000)
 #include <nxe2000-private.h>
+#endif
+
+#if defined(CONFIG_PMIC_AXP228)
+#include <power/axp228.h>
 #endif
 
 DECLARE_GLOBAL_DATA_PTR;

@@ -13,6 +13,7 @@ obj-$(CONFIG_MMC_PARTITIONS)		+= cmd_mmcparts.o
 obj-$(CONFIG_FASTBOOT)				+= cmd_fastboot.o otg_bind_chk.o
 obj-$(CONFIG_CMD_MMC_UPDATE)		+= cmd_mmc_update.o
 obj-$(CONFIG_CMD_UPDATE_SDCARD)		+= cmd_update_sdcard.o
+obj-$(CONFIG_CMD_UPDATE_USBHOST)	+= cmd_update_usbhost.o
 obj-$(CONFIG_CMD_EXT4) 				+= decompress_ext4.o
 obj-$(CONFIG_VIP)					+= camera.o
 obj-$(CONFIG_NAND_FTL)				+= cmd_mio.o cmd_nandparts.o

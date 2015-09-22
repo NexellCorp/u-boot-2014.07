@@ -52,6 +52,9 @@
 #include <mp8845c_regulator.h>
 #endif
 
+#if defined (CONFIG_USB_HUB_USB2514)
+#include <usb2514.h>
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -205,6 +208,10 @@ int board_early_init_f(void)
     bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSB, 1135000);
 #endif
 #endif
+#if defined(CONFIG_USB_HUB_USB2514)
+	bd_usb_hub_init_usb2514(CONFIG_USB2414_HUB_BUS, 1);
+#endif
+
 #if defined(CONFIG_NXP_RTC_USE)
 	nxp_rtc_init();
 #endif

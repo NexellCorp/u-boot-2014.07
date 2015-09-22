@@ -350,13 +350,20 @@
  * #> fatls   usb 0 "directory"
  * #> fatload usb 0  0x.....	"file"
  */
-//#define CONFIG_CMD_USB
+#define CONFIG_CMD_USB
 #if defined(CONFIG_CMD_USB)
+	#define CONFIG_USB_HUB_USB2514
+	#define USB2514_I2C_ADDR			(0x58 >> 1)
+	#define CONFIG_USB2414_HUB_BUS			I2C_4
+	#define USB_HUB_RESET_PIN           (PAD_GPIO_E+7)
+	#define USB_HUB_PORT1_PWR_EN        (PAD_GPIO_E+14)
+	#define USB_HUB_PORT2_PWR_EN        (PAD_GPIO_E+15)
+	#define USB_HUB_PORT3_PWR_EN        (PAD_GPIO_E+19)
 	#define CONFIG_USB_EHCI_SYNOPSYS
 	#define CONFIG_USB_EHCI_MODE
-	//#define CONFIG_USB_HSIC_MODE
+	#define CONFIG_CMD_UPDATE_USBHOST
 	#define CONFIG_USB_STORAGE
-	#define CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS 2
+	#define CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS 3
 
 	#undef  CONFIG_PREBOOT
 	#define CONFIG_PREBOOT						"usb start"
@@ -438,6 +445,14 @@
     #define CONFIG_I2C6_NEXELL                              /* 1 = i2c 1 */
     #define CONFIG_I2C6_NO_STOP             0               /* when tx end, 0= generate stop signal , 1: skip stop signal */
 
+	#define CONFIG_I2C7_NEXELL                              /* 1 = i2c 1 */
+    #define CONFIG_I2C7_NO_STOP             0               /* when tx end, 0= generate stop signal , 1: skip stop signal */
+
+	#define CONFIG_I2C8_NEXELL                              /* 1 = i2c 1 */
+    #define CONFIG_I2C8_NO_STOP             0               /* when tx end, 0= generate stop signal , 1: skip stop signal */
+
+
+
 
 	#define	CONFIG_I2C3_NEXELL
 	#define	CONFIG_I2C3_NO_STOP				0
@@ -451,17 +466,23 @@
     #define CFG_IO_I2C2_SCL             ((PAD_GPIO_D + 6) | PAD_FUNC_ALT0)
     #define CFG_IO_I2C2_SDA             ((PAD_GPIO_D + 7) | PAD_FUNC_ALT0)
 
-    #define CFG_IO_I2C3_SCL             ((PAD_GPIO_C + 10) | PAD_FUNC_ALT1)
-    #define CFG_IO_I2C3_SDA             ((PAD_GPIO_C +  9) | PAD_FUNC_ALT1)
+    #define CFG_IO_I2C3_SCL             ((PAD_GPIO_B + 18) | PAD_FUNC_ALT1)
+    #define CFG_IO_I2C3_SDA             ((PAD_GPIO_B + 16) | PAD_FUNC_ALT1)
 
-    #define CFG_IO_I2C4_SCL             ((PAD_GPIO_C + 11) | PAD_FUNC_ALT1)
-    #define CFG_IO_I2C4_SDA             ((PAD_GPIO_C + 12) | PAD_FUNC_ALT1)
+    #define CFG_IO_I2C4_SCL             ((PAD_GPIO_C + 25) | PAD_FUNC_ALT1)
+    #define CFG_IO_I2C4_SDA             ((PAD_GPIO_C + 27) | PAD_FUNC_ALT1)
 
-    #define CFG_IO_I2C5_SCL             ((PAD_GPIO_E + 9) | PAD_FUNC_ALT0)
-    #define CFG_IO_I2C5_SDA             ((PAD_GPIO_E + 8) | PAD_FUNC_ALT0)
+    #define CFG_IO_I2C5_SCL             ((PAD_GPIO_D + 22) | PAD_FUNC_ALT0)
+    #define CFG_IO_I2C5_SDA             ((PAD_GPIO_D + 23) | PAD_FUNC_ALT0)
 
-    #define CFG_IO_I2C6_SCL             ((PAD_GPIO_E + 11) | PAD_FUNC_ALT0)
-    #define CFG_IO_I2C6_SDA             ((PAD_GPIO_E + 10) | PAD_FUNC_ALT0)
+    #define CFG_IO_I2C6_SCL             ((PAD_GPIO_D + 26) | PAD_FUNC_ALT0)
+    #define CFG_IO_I2C6_SDA             ((PAD_GPIO_D + 27) | PAD_FUNC_ALT0)
+    
+	#define CFG_IO_I2C7_SCL             ((PAD_GPIO_E + 8) | PAD_FUNC_ALT0)
+    #define CFG_IO_I2C7_SDA             ((PAD_GPIO_E + 9) | PAD_FUNC_ALT0)
+
+    #define CFG_IO_I2C8_SCL             ((PAD_GPIO_E + 10) | PAD_FUNC_ALT0)
+    #define CFG_IO_I2C8_SDA             ((PAD_GPIO_E + 11) | PAD_FUNC_ALT0)
 
 #endif
 

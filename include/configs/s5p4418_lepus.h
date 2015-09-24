@@ -123,7 +123,7 @@
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
  */
-#define CONFIG_SYS_PROMPT				"s5p4418# "     										/* Monitor Command Prompt   */
+#define CONFIG_SYS_PROMPT				"lepus# "     										/* Monitor Command Prompt   */
 #define CONFIG_SYS_LONGHELP				       												/* undef to save memory	   */
 #define CONFIG_SYS_CBSIZE		   		1024		   											/* Console I/O Buffer Size  */
 #define CONFIG_SYS_PBSIZE		   		(CONFIG_SYS_CBSIZE+sizeof(CONFIG_SYS_PROMPT)+16) 	/* Print Buffer Size */

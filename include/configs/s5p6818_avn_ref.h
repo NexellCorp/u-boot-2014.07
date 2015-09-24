@@ -353,20 +353,11 @@
 #define CONFIG_CMD_USB
 #if defined(CONFIG_CMD_USB)
 	#define CONFIG_USB_HUB_USB2514
-	#define USB2514_I2C_ADDR			(0x58 >> 1)
-	#define CONFIG_USB2414_HUB_BUS			I2C_4
-	#define USB_HUB_RESET_PIN           (PAD_GPIO_E+7)
-	#define USB_HUB_PORT1_PWR_EN        (PAD_GPIO_E+14)
-	#define USB_HUB_PORT2_PWR_EN        (PAD_GPIO_E+15)
-	#define USB_HUB_PORT3_PWR_EN        (PAD_GPIO_E+19)
 	#define CONFIG_USB_EHCI_SYNOPSYS
 	#define CONFIG_USB_EHCI_MODE
 	#define CONFIG_CMD_UPDATE_USBHOST
 	#define CONFIG_USB_STORAGE
 	#define CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS 3
-
-	#undef  CONFIG_PREBOOT
-	#define CONFIG_PREBOOT						"usb start"
 #endif
 
 /* Gadget */
@@ -375,8 +366,13 @@
 	#define CONFIG_NXP_USBDOWN
 	#define CONFIG_NXP_DWC_OTG
 	#define CONFIG_NXP_DWC_OTG_PHY
+	//#define CONFIG_NXP_DWC_OTG_HCD
+	//#define CONFIG_CMD_UPDATE_OTGHOST
 #endif
 
+#if defined(CONFIG_USB_EHCI_SYNOPSYS) && (defined(CONFIG_NXP_DWC_OTG_HCD))
+#error Disable 'CONFIG_NXP_DWC_OTG_HCD', if 'CONFIG_USB_EHCI_SYNOPSYS' is enabled
+#endif
 /*-----------------------------------------------------------------------
  * PMIC
  */

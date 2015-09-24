@@ -132,6 +132,11 @@
 #define CFG_LCD_PRI_PWM_FREQ                    10000
 #define CFG_LCD_PRI_PWM_DUTYCYCLE               50      /* (%) */
 
+
+#define USB2514_I2C_ADDR            (0x58 >> 1)
+#define CONFIG_USB2414_HUB_BUS          I2C_4
+
+
 //------------------------------------------------------------------------------
 // Static Bus #0 ~ #9, NAND, IDE configuration
 //------------------------------------------------------------------------------

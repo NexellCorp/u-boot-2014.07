@@ -242,5 +242,12 @@
  */
 #define CFG_IO_SPI_EEPROM_WP				((PAD_GPIO_C + 27) | PAD_FUNC_ALT1)		/* GPIO */
 
+
+#define USB_HUB_RESET_PIN           (PAD_GPIO_E+7)
+#define USB_HUB_PORT1_PWR_EN        (PAD_GPIO_E+14)
+#define USB_HUB_PORT2_PWR_EN        (PAD_GPIO_E+15)
+#define USB_HUB_PORT3_PWR_EN        (PAD_GPIO_E+19)
+
+
 #endif	/* __CFG_GPIO_H__ */
 

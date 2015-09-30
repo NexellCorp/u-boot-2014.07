@@ -29,7 +29,7 @@
  * 	System Name
  */
 #define	CFG_SYS_CPU_NAME						"s5p4418"
-#define	CFG_SYS_BOARD_NAME						"s5p4418-drone"
+#define	CFG_SYS_BOARD_NAME						"s5p4418-dronel"
 
 /*------------------------------------------------------------------------------
  * 	BUS config
@@ -51,7 +51,7 @@
 #define CFG_UART_DEBUG_CH						0
 #define CFG_UART_DEBUG_BAUDRATE					115200
 #define CFG_UART_DEBUG_USE_UART					CTRUE
-#define	CFG_UART_CLKGEN_CLOCK_HZ				14750000	// 50000000
+#define	CFG_UART_CLKGEN_CLOCK_HZ				50000000	// 50000000
 
 /*------------------------------------------------------------------------------
  * 	Timer List
@@ -67,8 +67,10 @@
 /*------------------------------------------------------------------------------
  * 	Nand (HWECC)
  */
-#define CFG_NAND_ECC_BYTES                      1024            /* 512 - 4,8,16,24  1024 - 24,40,60  */
-#define CFG_NAND_ECC_BITS                       40
+/* MTD */
+#define CFG_NAND_ECC_BYTES 						1024
+#define CFG_NAND_ECC_BITS               		40			/* 512 - 4,8,16,24 1024 - 24,40,60 */
+//#define CFG_NAND_ECCIRQ_MODE
 
 /* FTL */
 #define CFG_NAND_FTL_START_BLOCK				0x6000000	/* byte address, Must Be Multiple of 8MB */

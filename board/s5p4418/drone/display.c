@@ -22,6 +22,7 @@
  */
 #include <config.h>
 #include <common.h>
+#include <asm/arch/mach-api.h>
 #include <asm/arch/display.h>
 
 extern void display_rgb(int module, unsigned int fbbase,
@@ -93,6 +94,7 @@ int bd_display(void)
 
 	display_rgb(CFG_DISP_OUTPUT_MODOLE, CONFIG_FB_ADDR,
 		&vsync, &syncgen, &multily, &rgb);
+	mdelay(50);
 #endif
 	return 0;
 }

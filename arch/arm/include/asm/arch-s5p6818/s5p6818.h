@@ -287,6 +287,7 @@
 #include <nx_rtc.h>
 #include <nx_mpegtsi.h>
 #include <nx_vip.h>
+#include <nx_wdt.h>
 
 #endif /* 	__ASSEMBLY__ */
 #endif /*	__S5P6818_H__ */

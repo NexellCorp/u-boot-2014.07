@@ -652,6 +652,14 @@
 #endif
 
 /*-----------------------------------------------------------------------
+ * Watchdog
+ */
+
+/* Enable the HW watchdog, since we can use this with bootcount */
+#define CONFIG_HW_WATCHDOG
+#define CONFIG_WATCHDOG_TIMEOUT	10
+
+/*-----------------------------------------------------------------------
  * Debug message
  */
 //#define DEBUG							/* u-boot debug macro, nand, ethernet,... */

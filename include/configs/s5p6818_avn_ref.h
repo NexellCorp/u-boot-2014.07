@@ -98,9 +98,9 @@
 #define CONFIG_ARCH_CPU_INIT													/* board_init_f->init_sequence, call arch_cpu_init */
 #define	CONFIG_BOARD_EARLY_INIT_F												/* board_init_f->init_sequence, call board_early_init_f */
 #define	CONFIG_BOARD_LATE_INIT													/* board_init_r, call board_early_init_f */
-#define	CONFIG_DISPLAY_CPUINFO													/* board_init_f->init_sequence, call print_cpuinfo */
+//#define	CONFIG_DISPLAY_CPUINFO													[> board_init_f->init_sequence, call print_cpuinfo <]
 #define	CONFIG_SYS_DCACHE_OFF													/* board_init_f, CONFIG_SYS_ICACHE_OFF */
-#define	CONFIG_ARCH_MISC_INIT													/* board_init_r, call arch_misc_init */
+//#define	CONFIG_ARCH_MISC_INIT													[> board_init_r, call arch_misc_init <]
 //#define	CONFIG_SYS_ICACHE_OFF
 
 #define CONFIG_MMU_ENABLE
@@ -111,26 +111,26 @@
 /*-----------------------------------------------------------------------
  *	U-Boot default cmd
  */
-#define CONFIG_CMD_MEMORY   /* md mm nm mw cp cmp crc base loop mtest */
+//#define CONFIG_CMD_MEMORY   [> md mm nm mw cp cmp crc base loop mtest <]
 //#define CONFIG_CMD_NET      /* bootp, tftpboot, rarpboot    */
-#define CONFIG_CMD_RUN      /* run command in env variable  */
+//#define CONFIG_CMD_RUN      [> run command in env variable  <]
 #define CONFIG_CMD_SAVEENV  /* saveenv          */
-#define CONFIG_CMD_SOURCE   /* "source" command support */
+//#define CONFIG_CMD_SOURCE   [> "source" command support <]
 #define CONFIG_CMD_BOOTD	/* "boot" command support */
-#define	CONFIG_CMD_MEMTEST
+//#define	CONFIG_CMD_MEMTEST
 
 /*-----------------------------------------------------------------------
  *	U-Boot Environments
  */
 /* refer to common/env_common.c	*/
-#define CONFIG_BOOTDELAY	   			3
+#define CONFIG_BOOTDELAY	   			0
 #define CONFIG_ZERO_BOOTDELAY_CHECK
-#define CONFIG_ETHADDR		   			00:e2:1c:ba:e8:60
-#define CONFIG_NETMASK		   			255.255.255.0
-#define CONFIG_IPADDR					192.168.1.165
-#define CONFIG_SERVERIP					192.168.1.164
-#define CONFIG_GATEWAYIP				192.168.1.254
-#define CONFIG_BOOTFILE					"uImage"  		/* File to load	*/
+//#define CONFIG_ETHADDR		   			00:e2:1c:ba:e8:60
+//#define CONFIG_NETMASK		   			255.255.255.0
+//#define CONFIG_IPADDR					192.168.1.165
+//#define CONFIG_SERVERIP					192.168.1.164
+//#define CONFIG_GATEWAYIP				192.168.1.254
+//#define CONFIG_BOOTFILE					"uImage"  		[> File to load	<]
 
 //#define CONFIG_BOOTCOMMAND "ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 root.img.gz;bootm 0x48000000"
 #define CONFIG_BOOTCOMMAND "ext4load mmc 2:1 0x40008000 Image;goimage 0x40008000"
@@ -149,7 +149,7 @@
  * allow to overwrite serial and ethaddr
  */
 #define CONFIG_ENV_OVERWRITE
-#define CONFIG_SYS_HUSH_PARSER			/* use "hush" command parser	*/
+//#define CONFIG_SYS_HUSH_PARSER			[> use "hush" command parser	<]
 #ifdef 	CONFIG_SYS_HUSH_PARSER
 #define CONFIG_SYS_PROMPT_HUSH_PS2	"> "
 #endif
@@ -157,9 +157,9 @@
 /*-----------------------------------------------------------------------
  * Etc Command definition
  */
-#define	CONFIG_CMD_BDI					/* board info	*/
-#define	CONFIG_CMD_IMI					/* image info	*/
-#define	CONFIG_CMD_MEMORY
+//#define	CONFIG_CMD_BDI					[> board info	<]
+//#define	CONFIG_CMD_IMI					[> image info	<]
+//#define	CONFIG_CMD_MEMORY
 #define	CONFIG_CMD_RUN					/* run commands in an environment variable	*/
 #define CONFIG_CMDLINE_EDITING			/* add command line history	*/
 #define	CONFIG_CMDLINE_TAG				/* use bootargs commandline */
@@ -170,6 +170,9 @@
 
 #undef	CONFIG_BOOTM_NETBSD
 #undef	CONFIG_BOOTM_RTEMS
+#undef  CONFIG_BOOTM_VXWORKS
+#undef  CONFIG_CMD_IMPORTENV
+#undef  CONFIG_CMD_EXPORTENV
 // #undef	CONFIG_GZIP
 
 /*-----------------------------------------------------------------------
@@ -350,7 +353,7 @@
  * #> fatls   usb 0 "directory"
  * #> fatload usb 0  0x.....	"file"
  */
-#define CONFIG_CMD_USB
+//#define CONFIG_CMD_USB
 #if defined(CONFIG_CMD_USB)
 	#define CONFIG_USB_HUB_USB2514
 	#define CONFIG_USB_EHCI_SYNOPSYS
@@ -381,8 +384,8 @@
 	#if defined(CONFIG_PMIC)
 		#define CONFIG_CMD_I2C
 		#define CONFIG_PMIC_I2C
-		#define CONFIG_PMIC_I2C_BUSA							I2C_5
-		#define CONFIG_PMIC_I2C_BUSB							I2C_6
+		#define CONFIG_PMIC_I2C_BUSA							I2C_7
+		#define CONFIG_PMIC_I2C_BUSB							I2C_8
 
 		#define CONFIG_POWER
 		#define CONFIG_POWER_I2C
@@ -421,7 +424,7 @@
 	#define	CONFIG_SYS_I2C_SPEED		100000				/* default speed, 100 khz */
 
 	#define	CONFIG_I2C0_NEXELL								/* 0 = i2c 0 */
-	#define	CONFIG_I2C0_NO_STOP				1				/* when tx end, 0= generate stop signal , 1: skip stop signal */
+	#define	CONFIG_I2C0_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
 
 	#define	CONFIG_I2C1_NEXELL								/* 1 = i2c 1 */
 	#define	CONFIG_I2C1_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
@@ -453,20 +456,20 @@
 	#define	CONFIG_I2C3_NEXELL
 	#define	CONFIG_I2C3_NO_STOP				0
 
-    #define CFG_IO_I2C0_SCL             ((PAD_GPIO_D + 2) | PAD_FUNC_ALT0)
-    #define CFG_IO_I2C0_SDA             ((PAD_GPIO_D + 3) | PAD_FUNC_ALT0)
+    #define CFG_IO_I2C0_SCL					((PAD_GPIO_B + 18) | PAD_FUNC_ALT2)	//AP_GPB18_MDEC_HDCAM_HMRX_AUDIO2SCL
+    #define CFG_IO_I2C0_SDA					((PAD_GPIO_B + 16) | PAD_FUNC_ALT2)	//AP_GPB16_MDEC_HDCAM_HMRX_AUDIO2SDA
 
-    #define CFG_IO_I2C1_SCL             ((PAD_GPIO_D + 5) | PAD_FUNC_ALT0)
-    #define CFG_IO_I2C1_SDA             ((PAD_GPIO_D + 4) | PAD_FUNC_ALT0)
+    #define CFG_IO_I2C1_SCL					((PAD_GPIO_C + 1) | PAD_FUNC_ALT1)	//AP_GPC1_SECSCL
+    #define CFG_IO_I2C1_SDA					((PAD_GPIO_C + 2) | PAD_FUNC_ALT1)	//AP_GPC2_SECSDA
 
-    #define CFG_IO_I2C2_SCL             ((PAD_GPIO_D + 6) | PAD_FUNC_ALT0)
-    #define CFG_IO_I2C2_SDA             ((PAD_GPIO_D + 7) | PAD_FUNC_ALT0)
+    #define CFG_IO_I2C2_SCL					((PAD_GPIO_C + 25) | PAD_FUNC_ALT1)	// AP_GPC25_TW9900_CS4955_HUBSCL
+    #define CFG_IO_I2C2_SDA					((PAD_GPIO_C + 27) | PAD_FUNC_ALT1)	// AP_GPC27_TW9900_CS4955_HUBSDA
 
-    #define CFG_IO_I2C3_SCL             ((PAD_GPIO_B + 18) | PAD_FUNC_ALT1)
-    #define CFG_IO_I2C3_SDA             ((PAD_GPIO_B + 16) | PAD_FUNC_ALT1)
+    #define CFG_IO_I2C3_SCL					((PAD_GPIO_D + 4) | PAD_FUNC_ALT0)	// AP_GPD4_DMB_AUD1_APLSCL
+    #define CFG_IO_I2C3_SDA					((PAD_GPIO_D + 5) | PAD_FUNC_ALT0)	// AP_GPD5_DMB_AUD1_APLSDA
 
-    #define CFG_IO_I2C4_SCL             ((PAD_GPIO_C + 25) | PAD_FUNC_ALT1)
-    #define CFG_IO_I2C4_SDA             ((PAD_GPIO_C + 27) | PAD_FUNC_ALT1)
+    #define CFG_IO_I2C4_SCL					((PAD_GPIO_D + 6) | PAD_FUNC_ALT0)	// AP_GPD6_TOUCH_BTSCL
+    #define CFG_IO_I2C4_SDA					((PAD_GPIO_D + 7) | PAD_FUNC_ALT0)	// AP_GPD7_TOUCH_BTSDA
 
     #define CFG_IO_I2C5_SCL             ((PAD_GPIO_D + 22) | PAD_FUNC_ALT0)
     #define CFG_IO_I2C5_SDA             ((PAD_GPIO_D + 23) | PAD_FUNC_ALT0)
@@ -474,11 +477,11 @@
     #define CFG_IO_I2C6_SCL             ((PAD_GPIO_D + 26) | PAD_FUNC_ALT0)
     #define CFG_IO_I2C6_SDA             ((PAD_GPIO_D + 27) | PAD_FUNC_ALT0)
     
-	#define CFG_IO_I2C7_SCL             ((PAD_GPIO_E + 8) | PAD_FUNC_ALT0)
-    #define CFG_IO_I2C7_SDA             ((PAD_GPIO_E + 9) | PAD_FUNC_ALT0)
+	#define CFG_IO_I2C7_SCL             ((PAD_GPIO_E + 9) | PAD_FUNC_ALT0)
+    #define CFG_IO_I2C7_SDA             ((PAD_GPIO_E + 8) | PAD_FUNC_ALT0)
 
-    #define CFG_IO_I2C8_SCL             ((PAD_GPIO_E + 10) | PAD_FUNC_ALT0)
-    #define CFG_IO_I2C8_SDA             ((PAD_GPIO_E + 11) | PAD_FUNC_ALT0)
+    #define CFG_IO_I2C8_SCL             ((PAD_GPIO_E + 11) | PAD_FUNC_ALT0)
+    #define CFG_IO_I2C8_SDA             ((PAD_GPIO_E + 10) | PAD_FUNC_ALT0)
 
 #endif
 
@@ -518,7 +521,7 @@
 	#define CONFIG_NXP_DWMMC
 	#define CONFIG_MMC_PARTITIONS
 	#define CONFIG_CMD_MMC_UPDATE
-	#define CONFIG_CMD_UPDATE_SDCARD
+	//#define CONFIG_CMD_UPDATE_SDCARD
 	#define CONFIG_SYS_MMC_BOOT_DEV  	(2)		/* BOOT MMC DEVICE NUM */
 
 	#if defined(CONFIG_ENV_IS_IN_MMC)
@@ -617,7 +620,7 @@
 	#define	CONFIG_PWM			/* backlight */
 	/* display out device */
 	#define	CONFIG_DISPLAY_OUT_LVDS
-    #define	CONFIG_DISPLAY_OUT_HDMI
+    //#define	CONFIG_DISPLAY_OUT_HDMI
 
 	/* display logo */
 	#define CONFIG_LOGO_NEXELL				/* Draw loaded bmp file to FB or fill FB */
@@ -646,8 +649,11 @@
 	#define CONFIG_CMD_RECOVERY_BOOT "ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
 #endif
 
-//#define CONFIG_SILENT_CONSOLE
-//#define CONFIG_SYS_CONSOLE_INFO_QUIET
+#define CONFIG_SILENT_CONSOLE
+#define CONFIG_SYS_CONSOLE_INFO_QUIET	/* print u-boot logo */
+#ifdef CONFIG_SILENT_CONSOLE
+#define CONFIG_SILENT_U_BOOT_ONLY		/* for bootm command, if not defined fail bootm command */
+#endif
 
 /*-----------------------------------------------------------------------
  * Watchdog

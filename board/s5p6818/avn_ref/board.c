@@ -202,10 +202,10 @@ int board_early_init_f(void)
 	bd_alive_init();
 #if defined(CONFIG_REGULATOR_MP8845C) && !defined(CONFIG_PMIC_REG_DUMP)
 #if defined(CONFIG_PMIC_I2C_BUSA)
-    bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSA, 1200000);
+    bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSA, 1200000, 0); // ARM
 #endif
 #if defined(CONFIG_PMIC_I2C_BUSB)
-    bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSB, 1100000);
+    bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSB, 1100000, 1); // CORE
 #endif
 #endif
 #if defined(CONFIG_USB_HUB_USB2514)
@@ -230,10 +230,10 @@ int power_init_board(void)
 	int ret = 0;
 #if defined(CONFIG_PMIC_REG_DUMP)
 #if defined(CONFIG_PMIC_I2C_BUSA)
-    bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSA, 1200000);
+    bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSA, 1200000, 0); // ARM
 #endif
 #if defined(CONFIG_PMIC_I2C_BUSB)
-    bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSB, 1100000);
+    bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSB, 1100000, 1); // CORE
 #endif
 #endif
 	return ret;

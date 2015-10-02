@@ -89,7 +89,7 @@ struct mp8845c_ocv_val {
     u32 val;
 };
 
-extern int bd_pmic_init_mp8845(int i2c_bus, int uVol);
+extern int bd_pmic_init_mp8845(int i2c_bus, int uVol, int asv);
 
 
 #if defined(CONFIG_PMIC_REG_DUMP)

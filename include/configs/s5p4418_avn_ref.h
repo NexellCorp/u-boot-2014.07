@@ -388,7 +388,7 @@
 		#define CONFIG_CMD_I2C
 		#define CONFIG_PMIC_I2C
 		#define CONFIG_PMIC_I2C_BUSA							I2C_7
-		//#define CONFIG_PMIC_I2C_BUSB							I2C_8
+		#define CONFIG_PMIC_I2C_BUSB							I2C_8
 
 		#define CONFIG_POWER
 		#define CONFIG_POWER_I2C

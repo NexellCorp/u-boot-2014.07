@@ -1022,7 +1022,7 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 		if(!p_chrg->chrg->chrg_bat_present(p_chrg))
 		{
 			printf("## No Battery \n");
-			show_bat_state = 3;
+			// show_bat_state = 3;
 		}
 
 		lcd_debug_init(&lcd);

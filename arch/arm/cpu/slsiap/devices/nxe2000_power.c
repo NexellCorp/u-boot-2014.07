@@ -851,14 +851,14 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 			&& (temp_ccaverage <= 15))
 		{
 			printf("No Battery 0. chgstate : 0x%02x, cc_average : %dmA \n", temp_chgstate, temp_ccaverage);
-			show_bat_state = 3;
+			//show_bat_state = 3;
 		}
 		else if(((temp_chgstate & 0x1F) == NXE2000_VAL_CHGSTATE_BATT_OVV)
 			&& (temp_ccaverage >= -4)
 			&& (temp_ccaverage <= 15))
 		{
 			printf("No Battery 1. chgstate : 0x%02x, cc_average : %dmA \n", temp_chgstate, temp_ccaverage);
-			show_bat_state = 3;
+			//show_bat_state = 3;
 		}
 
 		pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, back_reg);

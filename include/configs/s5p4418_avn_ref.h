@@ -110,7 +110,7 @@
  *	U-Boot Environments
  */
 /* refer to common/env_common.c	*/
-#define CONFIG_BOOTDELAY	   			0
+#define CONFIG_BOOTDELAY	   			10
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 //#define CONFIG_ETHADDR		   			00:e2:1c:ba:e8:60
 //#define CONFIG_NETMASK		   			255.255.255.0
@@ -169,7 +169,9 @@
 #define CONFIG_CONS_INDEX				CFG_UART_DEBUG_CH
 #define CONFIG_PL011_CLOCK				CFG_UART_CLKGEN_CLOCK_HZ
 #define CONFIG_PL01x_PORTS				{ (void *)IO_ADDRESS(PHY_BASEADDR_UART0), 	\
-										  (void *)IO_ADDRESS(PHY_BASEADDR_UART1) }
+										  (void *)IO_ADDRESS(PHY_BASEADDR_UART1), 	\
+										  (void *)IO_ADDRESS(PHY_BASEADDR_UART2), 	\
+										  (void *)IO_ADDRESS(PHY_BASEADDR_UART3) }
 
 #define CONFIG_BAUDRATE		   			CFG_UART_DEBUG_BAUDRATE
 #define CONFIG_SYS_BAUDRATE_TABLE	   	{ 9600, 19200, 38400, 57600, 115200 }

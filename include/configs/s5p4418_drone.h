@@ -402,7 +402,6 @@
 		#define CONFIG_POWER_BATTERY_AXP228
 		#define CONFIG_POWER_MUIC_AXP228
 		#define CONFIG_POWER_FG_AXP228
-		//#define CONFIG_POWER_REGU_AXP228
 
 		#define	CFG_IO_I2C3_SCL	((PAD_GPIO_D + 20) | PAD_FUNC_ALT0)
 		#define	CFG_IO_I2C3_SDA	((PAD_GPIO_D + 16) | PAD_FUNC_ALT0)
@@ -410,6 +409,8 @@
 		#define CONFIG_SW_UBC_DETECT							/* need with CONFIG_FASTBOOT. */
 
 		#define CONFIG_HAVE_BATTERY
+
+		//#define CONFIG_ENABLE_CORE_DDR							/* enable set voltage(CORE, DDR)  */
 
 		//#define CONFIG_PMIC_REG_DUMP
 	#endif

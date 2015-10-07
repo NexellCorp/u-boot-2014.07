@@ -465,6 +465,8 @@
 
 		#define CONFIG_HAVE_BATTERY
 
+		//#define CONFIG_ENABLE_CORE_DDR							/* enable set voltage(CORE, DDR)  */
+
 		//#define CONFIG_PMIC_REG_DUMP
 	#endif
 

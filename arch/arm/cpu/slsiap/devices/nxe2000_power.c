@@ -491,9 +491,13 @@ static int nxe2000_device_setup(struct nxe2000_power *power)
 
 	/* Set DCDC voltage register */
 	nxe2000_i2c_write(NXE2000_REG_DC1VOL	, cache[NXE2000_REG_DC1VOL]		, power);
+#ifdef CONFIG_ENABLE_CORE_DDR
 	nxe2000_i2c_write(NXE2000_REG_DC2VOL	, cache[NXE2000_REG_DC2VOL]		, power);
+#endif
 	nxe2000_i2c_write(NXE2000_REG_DC3VOL	, cache[NXE2000_REG_DC3VOL]		, power);
+#ifdef CONFIG_ENABLE_CORE_DDR
 	nxe2000_i2c_write(NXE2000_REG_DC4VOL	, cache[NXE2000_REG_DC4VOL]		, power);
+#endif
 	nxe2000_i2c_write(NXE2000_REG_DC5VOL	, cache[NXE2000_REG_DC5VOL]		, power);
 
 	nxe2000_i2c_write(NXE2000_REG_DC1VOL_SLP, cache[NXE2000_REG_DC1VOL_SLP]	, power);

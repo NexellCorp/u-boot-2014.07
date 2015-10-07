@@ -18,6 +18,19 @@
 DECLARE_GLOBAL_DATA_PTR;
 
 #define CONSOLE_PORT CONFIG_S5P_SERIAL_INDEX
+#if (0 == CONSOLE_PORT )
+#define CONFIG_S5P_SERIAL_PORT          (void *)IO_ADDRESS(PHY_BASEADDR_UART0)
+#elif (1 == CONSOLE_PORT )
+#define CONFIG_S5P_SERIAL_PORT          (void *)IO_ADDRESS(PHY_BASEADDR_UART1)
+#elif (2 == CONSOLE_PORT )
+#define CONFIG_S5P_SERIAL_PORT          (void *)IO_ADDRESS(PHY_BASEADDR_UART2)
+#elif (3 == CONSOLE_PORT )
+#define CONFIG_S5P_SERIAL_PORT          (void *)IO_ADDRESS(PHY_BASEADDR_UART3)
+#elif (4 == CONSOLE_PORT )
+#define CONFIG_S5P_SERIAL_PORT          (void *)IO_ADDRESS(PHY_BASEADDR_UART4)
+#elif (5 == CONSOLE_PORT )
+#define CONFIG_S5P_SERIAL_PORT          (void *)IO_ADDRESS(PHY_BASEADDR_UART5)
+#endif
 static volatile unsigned char *const port = CONFIG_S5P_SERIAL_PORT;
 static volatile unsigned int   const clock_in = CONFIG_S5P_SERIAL_CLOCK;
 

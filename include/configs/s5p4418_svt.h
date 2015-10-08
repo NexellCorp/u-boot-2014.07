@@ -451,7 +451,7 @@
 
 		// #define CONFIG_HAVE_BATTERY
 
-		//#define CONFIG_ENABLE_INIT_VOLTAGE							/* enable set voltage(ARM, CORE, DDR)  */
+		#define CONFIG_ENABLE_INIT_VOLTAGE							/* enable set voltage(ARM, CORE, DDR)  */
 
 		//#define CONFIG_PMIC_REG_DUMP
 	#endif

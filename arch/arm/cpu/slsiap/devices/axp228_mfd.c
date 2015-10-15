@@ -294,11 +294,9 @@ static int axp228_param_setup(struct axp228_power *power)
 	val = axp228_get_vol_step(AXP_DCDC4_VALUE, AXP22_DCDC4_STEP, AXP22_DCDC4_MIN, AXP22_DCDC4_MAX);
 	axp228_i2c_write(power, AXP22_DC4OUT_VOL, val);
 
-#if defined(CONFIG_ENABLE_INIT_VOLTAGE)
 	/* REG 25H:DCDC5 Output Voltage Set */
 	val = axp228_get_vol_step(AXP_DCDC5_VALUE, AXP22_DCDC5_STEP, AXP22_DCDC5_MIN, AXP22_DCDC5_MAX);
 	axp228_i2c_write(power, AXP22_DC5OUT_VOL, val);
-#endif
 
 	/* REG 15H:DLDO1 Output Voltage Set */
 	val = axp228_get_vol_step(AXP_DLDO1_VALUE, AXP22_DLDO1_STEP, AXP22_DLDO1_MIN, AXP22_DLDO1_MAX);

@@ -308,7 +308,8 @@
 
 
 /* charge current */
-#define CHARGE_CURRENT				1050*1000
+#define CHARGE_CURRENT_500			500*1000
+#define CHARGE_CURRENT				1500*1000
 #define POWEROFF_CHARGE_CURRENT		1500*1000
 
 /* limit charge current */

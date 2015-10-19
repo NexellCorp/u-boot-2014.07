@@ -77,7 +77,7 @@ static int axp228_power_update_battery(struct pmic *p, struct pmic *bat)
 
 	pmic_reg_read(p, AXP22_VBATH_RES, &tmp[0]);
 	pmic_reg_read(p, AXP22_VBATL_RES, &tmp[1]);
-	pb->bat->voltage_uV = axp22_vbat_to_mV(((u16) tmp[0] << 8 )| tmp[1]);
+	pb->bat->voltage_uV = (axp22_vbat_to_mV(((u16) tmp[0] << 8 )| tmp[1])) * 1000;
 
 
 	pmic_reg_read(p, AXP22_CAP, &tmp[0]);
@@ -123,7 +123,7 @@ static int axp228_power_check_battery(struct pmic *p, struct pmic *bat)
 
 		sum_tmp += vbat_res;
 	}
-	pb->bat->voltage_uV = sum_tmp/5;
+	pb->bat->voltage_uV = (sum_tmp/5) * 1000;
 
 
 	pmic_reg_read(p, AXP22_CAP, &tmp[0]);

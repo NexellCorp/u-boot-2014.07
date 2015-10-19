@@ -40,6 +40,12 @@
 #define AXP228_USB_LIMIT_500				0x01		/* USB2.0 : 500mA */
 #define AXP228_USB_LIMIT_NO					0x03		/* No limit current */
 
+#define	BAT_CUTOFF_VOL						3300000	/* VAL(uV), No Charger */		/* Refer form ADC	*/
+#define	BAT_LOWBAT_BATTERY_VOL				3500000	/* VAL(uV), No Charger */		/* Refer form ADC	*/
+#define	BAT_LOWBAT_USB_PC_VOL				3600000	/* VAL(uV), USB Charger */		/* Refer form ADC	*/
+#define	BAT_LOWBAT_USB_ADP_VOL				3660000	/* VAL(uV), USB Charger  */	/* Refer form ADC	*/
+#define	BAT_LOWBAT_ADP_VOL					3660000	/* VAL(uV), ADP Charger  */	/* Refer form ADC	*/
+
 
 /* DC-DC 2&3 Poly-phase function enable/disable,   0: disable   1: enable */
 #define CFG_POLY_PHASE_FUNCTION				(1)

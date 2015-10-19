@@ -429,8 +429,20 @@ static int axp228_param_setup(struct axp228_power *power)
     else
         axp228_i2c_set_bits(power,AXP22_CHARGE1,0x80);
 
-	axp228_set_charging_current(CHARGE_CURRENT);
+#if 1
+	axp228_i2c_read(power, AXP22_STATUS,&val);
+	axp228_i2c_read(power, AXP22_MODE_CHGSTATUS,&val2);
 
+	tmp = (val2 << 8 )+ val;
+	val = (tmp & AXP22_STATUS_ACVA)?1:0;
+
+	if(val)
+		axp228_set_charging_current(CHARGE_CURRENT);
+	else
+		axp228_set_charging_current(CHARGE_CURRENT_500);
+#else
+	axp228_set_charging_current(CHARGE_CURRENT);
+#endif
 
 	// set lowe power warning/shutdown level
 	axp228_i2c_write(power, AXP22_WARNING_LEVEL,((BATLOWLV1-5) << 4)+BATLOWLV2);
@@ -731,6 +743,7 @@ static char *color1 =
 	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	"";
 
+#if 0
 static char *color2 =
 	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
@@ -766,6 +779,7 @@ static char *color3 =
 	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	"";
+#endif
 
 #define	AXP228_RGB888TO565(c)		((((c>>16)&0xFF)&0xF8)<<8) | ((((c>>8)&0xFF)&0xFC)<<3) | ((((c>>0 )&0xFF)&0xF8)>>3)
 
@@ -831,7 +845,7 @@ static int skip_check(struct power_battery *pb, int bat_state)
 		else
 			skip_bat_ani = 0;
 
-		if ((skip_bat_ani > 20) && (pb->bat->capacity > BATLOW_ANIMATION_CAP))
+		if ((skip_bat_ani > 20) && (pb->bat->voltage_uV > BAT_CUTOFF_VOL))
 		{
 			printf("\n");
 			ret = 1;
@@ -878,6 +892,7 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 
 	int ret=0, i=0;
 	int chrg;
+	int shutdown_ilim_uV = BAT_LOWBAT_BATTERY_VOL;
 	int bl_duty = CFG_LCD_PRI_PWM_DUTYCYCLE;
 	int show_bat_state = 0;
 	int skip_bat_ani = 0;
@@ -946,13 +961,50 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 	}
 	printf("\n");
 	printf("## CHG_TYPE       : %s\n", chrg == CHARGER_USB ? "USB" : (chrg == CHARGER_TA ? (((chg_state>>6) & 0x2) ? "ADP(USB)" : "ADP"): "NONE"));
-
-	pmic_reg_read(p_chrg, AXP22_VBATH_RES, &val);
-	tmp = (val<< 8);
-	pmic_reg_read(p_chrg, AXP22_VBATL_RES, &val);
-	tmp |= val;
-	printf("## BAT_VOL        : %dmV \n", axp22_vbat_to_mV(tmp));
+	printf("## BAT_VOL        : %dmV \n", pb->bat->voltage_uV/1000);
 	printf("## BAT_CAP        : %d%%\n", pb->bat->capacity);
+
+#if 1
+	if(chrg == CHARGER_USB)
+	{
+		shutdown_ilim_uV = BAT_LOWBAT_USB_PC_VOL;
+	}
+	else if(chrg == CHARGER_TA)
+	{
+		shutdown_ilim_uV = BAT_LOWBAT_ADP_VOL;
+	}
+	else
+	{
+		shutdown_ilim_uV = BAT_LOWBAT_BATTERY_VOL;
+	}
+
+
+	if(pb->bat->voltage_uV < BAT_CUTOFF_VOL)
+	{
+		goto enter_shutdown;
+	}
+	else if(pb->bat->voltage_uV < shutdown_ilim_uV)
+	{
+		show_bat_state = 2;
+		skip_bat_ani = 0;
+		if(chrg == CHARGER_NO || chrg == CHARGER_UNKNOWN)
+		{
+			bl_duty = (CFG_LCD_PRI_PWM_DUTYCYCLE / 25);
+			power_depth = 3;
+		}
+	}
+	else if((poweron & AXP22_IRQ_ACIN) || (poweron & AXP22_IRQ_USBIN))
+	{
+		show_bat_state = 1;
+		skip_bat_ani = 0;
+	}
+	else
+	{
+		show_bat_state = 0;
+		skip_bat_ani = 2;
+	}
+
+#else
 
 	if(pb->bat->capacity <= BATLOW_ANIMATION_CAP)
 	{
@@ -974,6 +1026,7 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 		show_bat_state = 0;
 		skip_bat_ani = 2;
 	}
+#endif
 
 	/*===========================================================*/
 	if(skip)
@@ -1071,11 +1124,13 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 				else
 					frame_time = 5000;
 
+#if 0 
 				if(pb->bat->capacity < 20)
 					org_image = color3;
 				else if(pb->bat->capacity < 50)
 					org_image = color2;
 				else
+#endif 
 					org_image = color1;
 
 				for(j=0; j<IMAGE_WIDTH; j++)
@@ -1142,9 +1197,16 @@ skip_bat_animation:
 	tmp = (val<< 8);
 	pmic_reg_read(p_chrg, AXP22_VBATL_RES, &val);
 	tmp |= val;
-	printf("## battery_vol : %dmV \n", axp22_vbat_to_mV(tmp));
+	printf("## battery_vol : %dmV \n", pb->bat->voltage_uV/1000);
 	printf("## battery_cap : %d%%\n", pb->bat->capacity);
 	printf("## Booting \n");
+
+#if 1
+	if(chrg == CHARGER_USB)
+		axp228_set_charging_current(CHARGE_CURRENT_500);
+	else
+#endif
+		axp228_set_charging_current(POWEROFF_CHARGE_CURRENT);
 
 	//chrg = p_muic->chrg->chrg_type(p_muic, 1);
 	if (chrg == CHARGER_USB)
@@ -1173,13 +1235,18 @@ enter_shutdown:
 	tmp = (val<< 8);
 	pmic_reg_read(p_chrg, AXP22_VBATL_RES, &val);
 	tmp |= val;
-	printf("## battery_vol : %dmV \n", axp22_vbat_to_mV(tmp));
+	printf("## battery_vol : %dmV \n", pb->bat->voltage_uV/1000);
 	printf("## battery_cap : %d%%\n", pb->bat->capacity);
 	printf("## Power Off\n");
 
 	mdelay(500);
 
-	axp228_set_charging_current(POWEROFF_CHARGE_CURRENT);
+#if 1
+	if(chrg == CHARGER_USB)
+		axp228_set_charging_current(CHARGE_CURRENT_500);
+	else
+#endif
+		axp228_set_charging_current(POWEROFF_CHARGE_CURRENT);
 
 	pmic_reg_write(p_chrg, AXP22_BUFFERC, 0x00);
 	mdelay(20);

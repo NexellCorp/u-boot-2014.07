@@ -645,7 +645,7 @@
  */
 #define	CONFIG_RECOVERY_BOOT
 #if defined (CONFIG_RECOVERY_BOOT)
-	#define CONFIG_CMD_RECOVERY_BOOT "setenv bootargs console=ttySAC0,115200n8 androidboot.hardware=s5p6818_avn_ref androidboot.console=ttySAC0 androidboot.serialno=12345 initrd=0x49000000,0x200000 init=/init;ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
+	#define CONFIG_CMD_RECOVERY_BOOT "setenv bootargs console=ttySAC3,115200n8 androidboot.hardware=s5p6818_avn_ref androidboot.console=ttySAC3 androidboot.serialno=12345 initrd=0x49000000,0x200000 init=/init;ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
 #endif
 
 #define CONFIG_SILENT_CONSOLE

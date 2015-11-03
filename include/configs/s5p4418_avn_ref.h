@@ -99,7 +99,7 @@
 /*-----------------------------------------------------------------------
  *	U-Boot default cmd
  */
-//#define CONFIG_CMD_MEMORY   [> md mm nm mw cp cmp crc base loop mtest <]
+#define CONFIG_CMD_MEMORY   [> md mm nm mw cp cmp crc base loop mtest <]
 //#define CONFIG_CMD_NET      [> bootp, tftpboot, rarpboot    <]
 //#define CONFIG_CMD_RUN      [> run command in env variable  <]
 #define CONFIG_CMD_SAVEENV  /* saveenv          */
@@ -146,7 +146,7 @@
  */
 //#define	CONFIG_CMD_BDI					[> board info	<]
 //#define	CONFIG_CMD_IMI					[> image info	<]
-//#define	CONFIG_CMD_MEMORY
+#define	CONFIG_CMD_MEMORY
 #define	CONFIG_CMD_RUN					/* run commands in an environment variable	*/
 #define CONFIG_CMDLINE_EDITING			/* add command line history	*/
 #define	CONFIG_CMDLINE_TAG				/* use bootargs commandline */
@@ -658,8 +658,8 @@
  */
 
 /* Enable the HW watchdog, since we can use this with bootcount */
-#define CONFIG_HW_WATCHDOG
-#define CONFIG_WATCHDOG_TIMEOUT	10
+//#define CONFIG_HW_WATCHDOG
+//#define CONFIG_WATCHDOG_TIMEOUT	10
 
 /*-----------------------------------------------------------------------
  * Debug message

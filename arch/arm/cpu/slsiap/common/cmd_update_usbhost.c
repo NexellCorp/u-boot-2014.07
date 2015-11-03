@@ -1,6 +1,6 @@
 /*
- * (C) Copyright 2009 Nexell Co.,
- * jung hyun kim<jhkim@nexell.co.kr>
+ * (C) Copyright 2015 Nexell Co.,
+ * park jin ho<allan.park@nexell.co.kr>
  *
  * Configuation settings for the Nexell board.
  *
@@ -621,9 +621,9 @@ U_BOOT_CMD(
 	update_usbhost,	5,	1,	do_update_usbhost,
 	"update_usbhost - Image Update from SDCard \n",
 	"update_usbhost <interface> [<dev[:part]>] <addr> <filename> \n"
-	"  ex> update_usbhost mmc 0:1 48000000 partmap.txt\n"
-	"    - interface : mmc \n"
-	"    - dev       : mmc channel \n"
+	"  ex> update_usbhost usb 0:1 48000000 partmap_burning.txt\n"
+	"    - interface : usb \n"
+	"    - dev       : usb channel \n"
 	"    - part      : partition number \n"
 	"    - addr      : image load address \n"
 	"    - filename  : partition map file \n"

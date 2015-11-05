@@ -379,7 +379,7 @@
  * PMIC
  */
 
-#define CONFIG_PMIC
+//#define CONFIG_PMIC
 	#if defined(CONFIG_PMIC)
 		#define CONFIG_CMD_I2C
 		#define CONFIG_PMIC_I2C

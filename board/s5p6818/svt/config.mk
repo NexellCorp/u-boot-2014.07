@@ -25,10 +25,21 @@
 #	Cross compiler
 # =========================================================================
 ifneq ($(CONFIG_ARM64), y)
-CROSS_COMPILE ?= arm-eabi-
+# CROSS_COMPILE ?= arm-eabi-
+ifeq ($(origin CROSS_COMPILE), undefined)
+CROSS_COMPILE := arm-eabi-
+endif
+ifeq ($(strip $(CROSS_COMPILE)),)
+CROSS_COMPILE := arm-eabi-
+endif
 else
-CROSS_COMPILE ?= aarch64-linux-android-
-#CROSS_COMPILE := aarch64-linux-gnu-
+#CROSS_COMPILE := aarch64-linux-android-
+ifeq ($(origin CROSS_COMPILE), undefined)
+CROSS_COMPILE := aarch64-linux-android-
+endif
+ifeq ($(strip $(CROSS_COMPILE)),)
+CROSS_COMPILE := aarch64-linux-android-
+endif
 endif
 
 # =========================================================================

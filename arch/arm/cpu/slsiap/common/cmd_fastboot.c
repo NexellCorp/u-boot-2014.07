@@ -43,6 +43,8 @@
 
 extern void CalUSBID(U16 *VID, U16 *PID, U32 ECID);
 extern void GetUSBID(U16 *VID, U16 *PID);
+extern void GetREG(uint32_t addr, uint32_t *buf);
+extern unsigned int GetADDR(const char *a);
 
 #ifdef CONFIG_ENV_IS_NOWHERE
 #define saveenv()		0
@@ -1493,6 +1495,16 @@ static int fboot_cmd_getvar(const char *cmd, f_cmd_inf *inf, struct f_trans_stat
 
 	if (!strncmp(cmd, "chip", strlen("chip"))) {
 		strncpy(p, CONFIG_SYS_PROMPT, 7);
+		goto done_getvar;
+	}
+
+	if (!strncmp(cmd, "0x", strlen("0x"))) {
+		uint32_t addr, buf;
+	
+		addr = GetADDR(cmd+sizeof(char)*2);	
+		GetREG(addr, &buf);
+		debug("reg value : 0x%x(%x)\n", addr, buf);
+		sprintf(p, "%x", buf);
 		goto done_getvar;
 	}
 

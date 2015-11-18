@@ -46,6 +46,8 @@
 #define DEVICE_STRING_MAX_INDEX           DEVICE_STRING_INTERFACE_INDEX
 #define DEVICE_STRING_LANGUAGE_ID         0x0409 /* English (United States) */
 
+#define	MAX_TRANSFER_SIZE				(64)
+
 static char *device_strings[DEVICE_STRING_MAX_INDEX+1];
 static struct cmd_fastboot_interface *fastboot_interface = NULL;
 /* The packet size is dependend of the speed mode
@@ -362,7 +364,9 @@ int fastboot_poll(void)
 int fastboot_tx_status(const char *buffer, unsigned int buffer_size, const u32 need_sync_flag)
 {
 	/* fastboot client only reads back at most 64 */
-	transfer_size = MIN(64, buffer_size);
+	if (buffer_size > MAX_TRANSFER_SIZE)
+		printf("warning: over max transfer size %d (max: %d)", buffer_size, MAX_TRANSFER_SIZE);
+	transfer_size = MIN(MAX_TRANSFER_SIZE, buffer_size);
 
 //------------------------------ kdj
 	//printf("    Response - \"%s\" (%d bytes)\n", buffer, buffer_size);

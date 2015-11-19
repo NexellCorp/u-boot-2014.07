@@ -99,18 +99,18 @@
 /*-----------------------------------------------------------------------
  *	U-Boot default cmd
  */
-#define CONFIG_CMD_MEMORY   [> md mm nm mw cp cmp crc base loop mtest <]
-//#define CONFIG_CMD_NET      [> bootp, tftpboot, rarpboot    <]
-//#define CONFIG_CMD_RUN      [> run command in env variable  <]
+#define CONFIG_CMD_MEMORY   /* md mm nm mw cp cmp crc base loop mtest */
+//#define CONFIG_CMD_NET      /* bootp, tftpboot, rarpboot   */ 
+//#define CONFIG_CMD_RUN      /* run command in env variable */ 
 #define CONFIG_CMD_SAVEENV  /* saveenv          */
-//#define CONFIG_CMD_SOURCE   [> "source" command support <]
+//#define CONFIG_CMD_SOURCE   /* "source" command support */
 #define CONFIG_CMD_BOOTD	/* "boot" command support */
 
 /*-----------------------------------------------------------------------
  *	U-Boot Environments
  */
 /* refer to common/env_common.c	*/
-#define CONFIG_BOOTDELAY	   			10
+#define CONFIG_BOOTDELAY	   			0
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 //#define CONFIG_ETHADDR		   			00:e2:1c:ba:e8:60
 //#define CONFIG_NETMASK		   			255.255.255.0

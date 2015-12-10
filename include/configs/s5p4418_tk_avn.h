@@ -633,6 +633,12 @@
 //	#define CONFIG_CMD_RECOVERY_BOOT "ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
 #endif
 
+#define        CONFIG_UPDATE_BOOT
+#if defined (CONFIG_UPDATE_BOOT)
+    #define CONFIG_CMD_UPDATE_BOOT "setenv bootargs console=ttyAMA0,115200n8 root=/dev/ram0 rw initrd=0x49000000,32M ramdisk=32768;ext4load mmc 1:1 0x48000000 uImage_update;ext4load mmc 1:1 0x49000000 ramdisk_update.gz;bootm 0x48000000"
+#endif
+
+
 #define CONFIG_SILENT_CONSOLE
 #define CONFIG_SYS_CONSOLE_INFO_QUIET
 

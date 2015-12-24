@@ -174,8 +174,8 @@
  * Ethernet configuration
  * depend on CONFIG_CMD_NET
  */
-#define CONFIG_DRIVER_DM9000
-//#define CONFIG_DESIGNWARE_ETH
+//#define CONFIG_DRIVER_DM9000			1
+#define CONFIG_DESIGNWARE_ETH			1
 
 #if defined(CONFIG_CMD_NET)
 	/*
@@ -201,7 +201,7 @@
 		#define CONFIG_PHY_RESET_DELAY		10000       /* in usec */
 		#define CONFIG_DW_ALTDESCRIPTOR
 		#define CONFIG_DW_SEARCH_PHY
-	//	#define CONFIG_DW_AUTONEG
+	    #define CONFIG_DW_AUTONEG
 	//	#define CONFIG_DW_SPEED1000M		/* #ifndef CONFIG_DW_AUTONEG */
 	//	#define CONFIG_DW_SPEED100M			/* #ifndef CONFIG_DW_AUTONEG */
 	//	#define CONFIG_DW_SPEED10M			/* #ifndef CONFIG_DW_AUTONEG */
@@ -305,15 +305,16 @@
  * EEPROM
  */
 
-//#define CONFIG_CMD_EEPROM
-//#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
-//#define CONFIG_ENV_IS_IN_EEPROM
+#define CONFIG_CMD_EEPROM
+#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
+#define CONFIG_ENV_IS_IN_EEPROM
 
 #if defined(CONFIG_CMD_EEPROM)
 
 	#if defined(CONFIG_SPI)
  		#define CONFIG_SPI_MODULE_0
  		#define CONFIG_SPI0_TYPE				1 /* 1: EEPROM, 0: SPI device */
+		 #define CONFIG_EEPROM_SPI_MODULE_NUM    0
 
 		#define CONFIG_EEPROM_ERASE_SIZE		32*1024
 		#define CONFIG_EEPROM_WRITE_PAGE_SIZE	256
@@ -451,6 +452,8 @@
 
 		// #define CONFIG_HAVE_BATTERY
 
+		#define CONFIG_ENABLE_INIT_VOLTAGE							/* enable set voltage(ARM, CORE)  */
+
 		//#define CONFIG_PMIC_REG_DUMP
 	#endif
 
@@ -516,7 +519,7 @@
  *
  */
 #define	CONFIG_CMD_MMC
-#define CONFIG_ENV_IS_IN_MMC
+//#define CONFIG_ENV_IS_IN_MMC
 
 #if defined(CONFIG_CMD_MMC)
 
@@ -639,6 +642,7 @@
 	#define	CONFIG_PWM			/* backlight */
 	/* display out device */
 	#define	CONFIG_DISPLAY_OUT_LVDS
+	// #define	CONFIG_DISPLAY_OUT_MIPI
     #define	CONFIG_DISPLAY_OUT_HDMI
 
 	/* display logo */

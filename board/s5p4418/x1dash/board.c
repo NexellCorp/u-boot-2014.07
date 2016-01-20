@@ -358,7 +358,6 @@ void bd_display_run(char *cmd, int bl_duty, int bl_on)
 {
 	static int display_init = 0;
 
-	printf("%s Enter +++ \n",__FUNCTION__);
 	//Add init the LCD PWR 
 	//NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENB), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), TRUE);
 	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_RESET), PAD_GET_BITNO(CFG_IO_LCD_RESET), TRUE);

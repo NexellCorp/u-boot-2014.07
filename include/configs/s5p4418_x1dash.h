@@ -109,7 +109,7 @@
  *	U-Boot Environments
  */
 /* refer to common/env_common.c	*/
-#define CONFIG_BOOTDELAY	   			3
+#define CONFIG_BOOTDELAY	   			0
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 //#define CONFIG_ETHADDR		   			00:e2:1c:ba:e8:60
 //#define CONFIG_NETMASK		   			255.255.255.0
@@ -118,8 +118,8 @@
 //#define CONFIG_GATEWAYIP				192.168.1.254
 //#define CONFIG_BOOTFILE					"uImage"  		/* File to load	*/
 
-//#define CONFIG_BOOTCOMMAND "ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 root.img.gz;bootm 0x48000000"
-#define CONFIG_BOOTCOMMAND "ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 root.img.gz;bootm 0x48000000"
+//#define CONFIG_BOOTCOMMAND "ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 root.img.gz;bootm 0x48000000"
+#define CONFIG_BOOTCOMMAND "ext4load mmc 0:1 0x40008000 Image;goimage 0x40008000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -482,8 +482,8 @@
  */
 //#define DEBUG							/* u-boot debug macro, nand, ethernet,... */
 //#define CONFIG_PROTOTYPE_DEBUG		/* prototype debug mode */
-//#define CONFIG_SILENT_CONSOLE
-//#define CONFIG_SYS_CONSOLE_INFO_QUIET
+#define CONFIG_SILENT_CONSOLE
+#define CONFIG_SYS_CONSOLE_INFO_QUIET
 #ifdef CONFIG_SILENT_CONSOLE
 #define CONFIG_SILENT_U_BOOT_ONLY       /* for bootm command, if not defined fail bootm command */
 #endif

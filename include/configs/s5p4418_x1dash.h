@@ -171,157 +171,7 @@
 #define CONFIG_SYS_BAUDRATE_TABLE	   	{ 9600, 19200, 38400, 57600, 115200 }
 #define CONFIG_PL011_SERIAL_FLUSH_ON_INIT
 
-/*-----------------------------------------------------------------------
- * Ethernet configuration
- * depend on CONFIG_CMD_NET
- */
-//#define CONFIG_DRIVER_DM9000			1
-
-#if defined(CONFIG_CMD_NET)
-	/* DM9000 Ethernet device */
-	#if defined(CONFIG_DRIVER_DM9000)
-	#define CONFIG_DM9000_BASE	   		CFG_ETHER_EXT_PHY_BASEADDR		/* DM9000: 0x04000000(CS1) */
-	#define DM9000_IO	   				CONFIG_DM9000_BASE
-	#define DM9000_DATA	   				(CONFIG_DM9000_BASE + 0x4)
-//	#define CONFIG_DM9000_DEBUG
-	#endif
-#endif
-
-/*-----------------------------------------------------------------------
- * NAND FLASH
- */
-//#define CONFIG_CMD_NAND
-//#define CONFIG_NAND_FTL
-//#define CONFIG_NAND_MTD
-//#define CONFIG_ENV_IS_IN_NAND
-
-#if defined(CONFIG_NAND_FTL) && defined(CONFIG_NAND_MTD)
-#error "Duplicated config for NAND Driver!!!"
-#endif
-
-#if defined(CONFIG_NAND_FTL)
-#define HAVE_BLOCK_DEVICE
-#endif
-
-#if defined(CONFIG_CMD_NAND)
-	#if !defined(CONFIG_NAND_FTL) && !defined(CONFIG_NAND_MTD)
-	#error "Select FTL or MTD for NAND Driver!!!"
-	#endif
-
-	#define CONFIG_SYS_MAX_NAND_DEVICE		(1)
-	#define CONFIG_SYS_NAND_MAX_CHIPS   	(1)
-	#define CONFIG_SYS_NAND_BASE		   	PHY_BASEADDR_CS_NAND							/* Nand data register, nand->IO_ADDR_R/_W */
-
-	#if defined(CONFIG_ENV_IS_IN_NAND)
-		#define	CONFIG_ENV_OFFSET			(0x1000000)									/* 4MB */
-		#define CONFIG_ENV_SIZE           	(0x100000)									/* 1 block size */
-		#define CONFIG_ENV_RANGE			(0x400000)		 							/* avoid bad block */
-	#endif
-#endif
-
-#if defined(CONFIG_NAND_MTD)
-	#define CONFIG_SYS_NAND_ONFI_DETECTION
-	#define CONFIG_CMD_NAND_TRIMFFS
-
-	#define	CONFIG_MTD_NAND_NXP
-//	#define	CONFIG_MTD_NAND_ECC_BCH															/* sync kernel config */
-	#define	CONFIG_MTD_NAND_ECC_HW
-//	#define	CONFIG_MTD_NAND_VERIFY_WRITE
-//	#define	CONFIG_MTD_NAND_BMT_FIRST_LAST													/* Samsumg 8192 page nand write bad mark on 1st and last block */
-
-	#define CONFIG_CMD_UPDATE_NAND
-
-	#if defined (CONFIG_MTD_NAND_ECC_BCH)
-		#define	CONFIG_BCH
-		#define	CONFIG_NAND_ECC_BCH
-	#endif
-
-
-	#undef  CONFIG_CMD_IMLS
-
-	#define	CONFIG_CMD_MTDPARTS
-	#if defined(CONFIG_CMD_MTDPARTS)
-		#define	CONFIG_MTD_DEVICE
-		#define	CONFIG_MTD_PARTITIONS
-		#define MTDIDS_DEFAULT				"nand0=mtd-nand"
-		#define MTDPARTS_DEFAULT			"mtdparts=mtd-nand:2m(u-boot),4m(kernel),8m(ramdisk),-(extra)"
-	#endif
-
-//	#define CONFIG_MTD_DEBUG
-	#ifdef  CONFIG_MTD_DEBUG
-		#define CONFIG_MTD_DEBUG_VERBOSE	0	/* For nand debug message = 0 ~ 3 *//* list all images found in flash	*/
-	#endif
-#endif	/* CONFIG_CMD_NAND */
-
-/*-----------------------------------------------------------------------
- * NOR FLASH
- */
 #define	CONFIG_SYS_NO_FLASH
-
-
-/*-----------------------------------------------------------------------
- * EEPROM
- */
-
-//#define CONFIG_CMD_EEPROM
-//#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
-//#define CONFIG_ENV_IS_IN_EEPROM
-
-#if defined(CONFIG_CMD_EEPROM)
-
-	#if defined(CONFIG_SPI)
- 		#define CONFIG_SPI_MODULE_0
- 		#define CONFIG_SPI0_TYPE				1 /* 1: EEPROM, 0: SPI device */
-// 		#define CONFIG_EEPROM_SPI_MODULE_NUM	0
-
-		#define CONFIG_EEPROM_ERASE_SIZE		32*1024
-		#define CONFIG_EEPROM_WRITE_PAGE_SIZE	256
-		#define CONFIG_EEPROM_ADDRESS_STEP		3
-
-		#define CMD_SPI_WREN			0x06		// Set Write Enable Latch
-		#define CMD_SPI_WRDI			0x04		// Reset Write Enable Latch
-		#define CMD_SPI_RDSR			0x05		// Read Status Register
-		#define CMD_SPI_WRSR			0x01		// Write Status Register
-		#define CMD_SPI_READ			0x03		// Read Data from Memory Array
-		#define CMD_SPI_WRITE			0x02		// Write Data to Memory Array
-
-		#define CMD_SPI_SE				0x52		// Sector Erase
-		#define CMD_SPI_BE				0xC7		// Bulk Erase
-		#define CMD_SPI_DP				0xB9		// Deep Power-down
-		#define CMD_SPI_RES				0xAB		// Release from Deep Power-down
-
-		#define CONFIG_SPI_EEPROM_WRITE_PROTECT
-		#if defined(CONFIG_SPI_EEPROM_WRITE_PROTECT)
-			#define	CONFIG_SPI_EEPROM_WP_PAD 			CFG_IO_SPI_EEPROM_WP
-			#define	CONFIG_SPI_EEPROM_WP_ALT			CFG_IO_SPI_EEPROM_WP_ALT
-		#endif
-
- 	 	#define CONFIG_CMD_SPI_EEPROM_UPDATE
- 	 	#if defined (CONFIG_CMD_SPI_EEPROM_UPDATE)
- 		/*
- 	  	 *	EEPROM Environment Organization
- 	 	 *	[Note R/W unit 64K]
- 	 	 *
-		 *    0 ~   16K Second Boot [NSIH + Sencond boot]
-		 *   16 ~   32K Reserved
-		 *   32 ~   64K Enviroment
-		 *   64 ~  512K U-Boot
- 	 	 */
-			#define	CONFIG_2STBOOT_OFFSET			   	0
-			#define	CONFIG_2STBOOT_SIZE				   	16*1024
-			#define	CONFIG_UBOOT_OFFSET				   	64*1024
-			#define	CONFIG_UBOOT_SIZE				   (512-64)*1024
- 	 	#endif
-		#if defined(CONFIG_ENV_IS_IN_EEPROM)
-			#define	CONFIG_ENV_OFFSET					32*1024	/* 248 ~ 256K Environment */
-			#define CONFIG_ENV_SIZE						32*1024
-			#define CONFIG_ENV_RANGE					CONFIG_ENV_SIZE
-			#define CONFIG_SYS_DEF_EEPROM_ADDR			0					/* Need 0, when SPI */
-			#define CONFIG_SYS_I2C_FRAM									/* To avoid max length limit when spi write */
-			//#define DEBUG_ENV
-		#endif
-	#endif
-#endif
 
 /*-----------------------------------------------------------------------
  * SPI
@@ -382,7 +232,7 @@
 	#if defined(CONFIG_PMIC)
 		#define CONFIG_CMD_I2C
 		#define CONFIG_PMIC_I2C
-		#define CONFIG_PMIC_I2C_BUS							I2C_0
+		#define CONFIG_PMIC_I2C_BUS							I2C_3
 
 		#define CONFIG_PMIC_CHARGING_PATH_ADP               (0) // Support only VADP. Do not supported USB ADP.
 		#define CONFIG_PMIC_CHARGING_PATH_UBC               (1) // Support only VUSB. (USB connector - USB ADP & PC)
@@ -463,9 +313,11 @@
 	#define	CONFIG_I2C1_NEXELL								/* 1 = i2c 1 */
 	#define	CONFIG_I2C1_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
 
-	#define	CONFIG_I2C2_NEXELL								/* 1 = i2c 1 */
+	#define	CONFIG_I2C2_NEXELL								/* 2 = i2c 2 */
 	#define	CONFIG_I2C2_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
 
+	#define	CONFIG_I2C3_NEXELL								/* 3 = i2c 3 */
+	#define	CONFIG_I2C3_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
 #endif
 
 /*-----------------------------------------------------------------------

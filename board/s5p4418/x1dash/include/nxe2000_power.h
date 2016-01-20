@@ -71,7 +71,7 @@
 #define	NXE2000_DEF_LDO2_ON					0		/* VAL = 0: Off, 1: On */	/* 1.8V CAM1	*/
 #define	NXE2000_DEF_LDO3_ON					1		/* VAL = 0: Off, 1: On */	/* 1.8V SYS1,	Boot On	*/
 #define	NXE2000_DEF_LDO4_ON					1		/* VAL = 0: Off, 1: On */	/* 1.9V SYS,		Boot On	*/
-#define	NXE2000_DEF_LDO5_ON					0		/* VAL = 0: Off, 1: On */	/* 2.8V CAM		*/
+#define	NXE2000_DEF_LDO5_ON					1		/* VAL = 0: Off, 1: On */	/* 2.8V CAM		*/
 #define	NXE2000_DEF_LDO6_ON					1		/* VAL = 0: Off, 1: On */	/* 3.3V ALIVE,	Boot On	*/
 #define	NXE2000_DEF_LDO7_ON					1		/* VAL = 0: Off, 1: On */	/* 2.8V VID,		Boot On	*/
 #define	NXE2000_DEF_LDO8_ON					0		/* VAL = 0: Off, 1: On */	/* 3.3V none,	Not Use	*/
@@ -95,12 +95,12 @@
 #define	NXE2000_DEF_LDO1_VOL				3300000	/* VAL(uV) = 0: 0.90 ~ 3.5V, Step = 25mV, default(OTP) = 3.30V */
 #define	NXE2000_DEF_LDO2_VOL				1800000	/* VAL(uV) = 0: 0.90 ~ 3.5V, Step = 25mV, default(OTP) = 1.80V */
 #define	NXE2000_DEF_LDO3_VOL				1800000	/* VAL(uV) = 0: 0.90 ~ 3.5V, Step = 25mV, default(OTP) = 1.80V */
-#define	NXE2000_DEF_LDO4_VOL				1900000	/* VAL(uV) = 0: 0.90 ~ 3.5V, Step = 25mV, default(OTP) = 1.90V */
-#define	NXE2000_DEF_LDO5_VOL				2800000	/* VAL(uV) = 0: 0.60 ~ 3.5V, Step = 25mV, default(OTP) = 2.80V */
+#define	NXE2000_DEF_LDO4_VOL				1800000	/* VAL(uV) = 0: 0.90 ~ 3.5V, Step = 25mV, default(OTP) = 1.90V */
+#define	NXE2000_DEF_LDO5_VOL				3300000	/* VAL(uV) = 0: 0.60 ~ 3.5V, Step = 25mV, default(OTP) = 2.80V */
 #define	NXE2000_DEF_LDO6_VOL				3300000	/* VAL(uV) = 0: 0.60 ~ 3.5V, Step = 25mV, default(OTP) = 3.30V */
-#define	NXE2000_DEF_LDO7_VOL				2800000	/* VAL(uV) = 0: 0.90 ~ 3.5V, Step = 25mV, default(OTP) = 2.80V */
+#define	NXE2000_DEF_LDO7_VOL				3300000	/* VAL(uV) = 0: 0.90 ~ 3.5V, Step = 25mV, default(OTP) = 2.80V */
 #define	NXE2000_DEF_LDO8_VOL				3300000	/* VAL(uV) = 0: 0.90 ~ 3.5V, Step = 25mV, default(OTP) = 3.30V */
-#define	NXE2000_DEF_LDO9_VOL				3300000	/* VAL(uV) = 0: 0.90 ~ 3.5V, Step = 25mV, default(OTP) = 3.30V */
+#define	NXE2000_DEF_LDO9_VOL				1800000	/* VAL(uV) = 0: 0.90 ~ 3.5V, Step = 25mV, default(OTP) = 3.30V */
 #define	NXE2000_DEF_LDO10_VOL				1200000	/* VAL(uV) = 0: 0.90 ~ 3.5V, Step = 25mV, default(OTP) = 1.20V */
 #define	NXE2000_DEF_LDORTC1_VOL				1800000	/* VAL(uV) = 0: 0.90 ~ 3.5V, Step = 25mV, default(OTP) = 3.30V */
 #define	NXE2000_DEF_LDORTC2_VOL				1000000	/* VAL(uV) = 0: 0.90 ~ 3.5V, Step = 25mV, default(OTP) = 1.20V */

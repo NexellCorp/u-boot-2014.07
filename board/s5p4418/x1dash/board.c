@@ -358,6 +358,16 @@ void bd_display_run(char *cmd, int bl_duty, int bl_on)
 {
 	static int display_init = 0;
 
+	printf("%s Enter +++ \n",__FUNCTION__);
+	//Add init the LCD PWR 
+	//NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENB), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), TRUE);
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_RESET), PAD_GET_BITNO(CFG_IO_LCD_RESET), TRUE);
+	mdelay(20);
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_DR_PWR_ON), PAD_GET_BITNO(CFG_IO_LCD_DR_PWR_ON), TRUE);
+	mdelay(20);
+	mdelay(10);
+	
+
 	if (cmd) {
 		run_command(cmd, 0);
 		lcd_draw_boot_logo(CONFIG_FB_ADDR, CFG_DISP_PRI_RESOL_WIDTH,

@@ -58,29 +58,6 @@
  */
 #define	CFG_TIMER_SYS_TICK_CH					0
 
-/*------------------------------------------------------------------------------
- * 	Extern Ethernet
- */
-#define CFG_ETHER_EXT_PHY_BASEADDR          	0x04000000	// DM9000: CS1
-#define	CFG_ETHER_EXT_IRQ_NUM					(IRQ_GPIO_C_START + 26)
-
-/*------------------------------------------------------------------------------
- * 	Nand (HWECC)
- */
-/* MTD */
-#define CFG_NAND_ECC_BYTES 						1024
-#define CFG_NAND_ECC_BITS               		40			/* 512 - 4,8,16,24 1024 - 24,40,60 */
-//#define CFG_NAND_ECCIRQ_MODE
-
-/* FTL */
-#define CFG_NAND_FTL_START_BLOCK				0x6000000	/* byte address, Must Be Multiple of 8MB */
-#define CFG_BOOTIMG_OFFSET						0x100000	/* uboot.ecc */
-#define CFG_BOOTIMG_REPEAT						32
-
-/*------------------------------------------------------------------------------
- *	Nand (GPIO)
- */
-#define CFG_IO_NAND_nWP							(PAD_GPIO_C + 27)		/* GPIO */
 
 /*------------------------------------------------------------------------------
  * 	Display (DPC and MLC)
@@ -97,20 +74,20 @@
 
 #define CFG_DISP_PRI_MLC_INTERLACE              CFALSE
 
-#define CFG_DISP_PRI_RESOL_WIDTH          	1024	// X Resolution
-#define CFG_DISP_PRI_RESOL_HEIGHT		600	// Y Resolution
+#define CFG_DISP_PRI_RESOL_WIDTH          	800	// X Resolution
+#define CFG_DISP_PRI_RESOL_HEIGHT			480	// Y Resolution
 
 #define CFG_DISP_PRI_HSYNC_SYNC_WIDTH           20
-#define CFG_DISP_PRI_HSYNC_BACK_PORCH           160
-#define CFG_DISP_PRI_HSYNC_FRONT_PORCH          160
-#define CFG_DISP_PRI_HSYNC_ACTIVE_HIGH          CTRUE
-#define CFG_DISP_PRI_VSYNC_SYNC_WIDTH           3
+#define CFG_DISP_PRI_HSYNC_BACK_PORCH           46
+#define CFG_DISP_PRI_HSYNC_FRONT_PORCH          210
+#define CFG_DISP_PRI_HSYNC_ACTIVE_HIGH          CFALSE
+#define CFG_DISP_PRI_VSYNC_SYNC_WIDTH           10
 #define CFG_DISP_PRI_VSYNC_BACK_PORCH           23
-#define CFG_DISP_PRI_VSYNC_FRONT_PORCH          12
-#define CFG_DISP_PRI_VSYNC_ACTIVE_HIGH 	        CTRUE
+#define CFG_DISP_PRI_VSYNC_FRONT_PORCH          22
+#define CFG_DISP_PRI_VSYNC_ACTIVE_HIGH 	        CFALSE
 
 #define CFG_DISP_PRI_CLKGEN0_SOURCE             DPC_VCLK_SRC_PLL2
-#define CFG_DISP_PRI_CLKGEN0_DIV                12 // even divide
+#define CFG_DISP_PRI_CLKGEN0_DIV                18// even divide
 #define CFG_DISP_PRI_CLKGEN0_DELAY              0
 #define CFG_DISP_PRI_CLKGEN0_INVERT				0
 #define CFG_DISP_PRI_CLKGEN1_SOURCE             DPC_VCLK_SRC_VCLK2
@@ -120,10 +97,11 @@
 #define CFG_DISP_PRI_CLKSEL1_SELECT		0
 #define CFG_DISP_PRI_PADCLKSEL                  DPC_PADCLKSEL_VCLK	/* VCLK=CLKGEN1, VCLK12=CLKGEN0 */
 
-#define	CFG_DISP_PRI_PIXEL_CLOCK		800000000/CFG_DISP_PRI_CLKGEN0_DIV
+//#define	CFG_DISP_PRI_PIXEL_CLOCK		800000000/CFG_DISP_PRI_CLKGEN0_DIV
+#define	CFG_DISP_PRI_PIXEL_CLOCK		614400000/CFG_DISP_PRI_CLKGEN0_DIV
 
 #define	CFG_DISP_PRI_OUT_SWAPRB 		CFALSE
-#define CFG_DISP_PRI_OUT_FORMAT                 DPC_FORMAT_RGB666
+#define CFG_DISP_PRI_OUT_FORMAT                 DPC_FORMAT_RGB888
 #define CFG_DISP_PRI_OUT_YCORDER                DPC_YCORDER_CbYCrY
 #define CFG_DISP_PRI_OUT_INTERLACE              CFALSE
 #define CFG_DISP_PRI_OUT_INVERT_FIELD           CFALSE

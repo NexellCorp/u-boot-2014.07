@@ -29,7 +29,6 @@ void	gpio_set_int_clear(int gpio);
 
 /* GPIO pins per group */
 #define GPIO_PER_GROUP  32
-
 #endif
 
 /* Pin configurations */

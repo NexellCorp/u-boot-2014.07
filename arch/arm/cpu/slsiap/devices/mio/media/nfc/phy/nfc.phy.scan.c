@@ -40,16 +40,24 @@
 #include <linux/clk.h>
 #include <asm/io.h>
 #include <asm/sizes.h>
-#include <asm/mach-types.h>
+//#include <asm/mach-types.h>
 #include <linux/bitops.h>
+#include <linux/log2.h>
 
 #include <linux/sched.h>
 #include <asm/stacktrace.h>
 #include <asm/traps.h>
-#include <asm/unwind.h>
+//#include <asm/unwind.h>
 
-#include <mach/devices.h>
-#include <mach/soc.h>
+#if defined (__COMPILE_MODE_X64__)
+    /* nexell soc headers */
+    #include <nexell/platform.h>
+    #include <nexell/soc-s5pxx18.h>
+#else
+    #include <mach/platform.h>
+    #include <mach/devices.h>
+    #include <mach/soc.h>
+#endif
 
 #elif defined (__BUILD_MODE_ARM_UBOOT_DEVICE_DRIVER__)
 #include <common.h>
@@ -57,13 +65,15 @@
 
 #endif
 
+static unsigned int NFC_PHY_GetEccBitsOfMainData(unsigned int _data_bytes_per_page, unsigned int _spare_bytes_per_page, unsigned int _ecc_codeword_size);
+static unsigned int NFC_PHY_GetEccBitsOfBlockInformation(unsigned int _data_bytes_per_page, unsigned int _spare_bytes_per_page, unsigned int _ecc_codeword_size, unsigned int _ecc_bits_correctability);
 /******************************************************************************
  *
  ******************************************************************************/
 unsigned int NFC_PHY_GetEccBitsOfMainData(unsigned int _data_bytes_per_page, unsigned int _spare_bytes_per_page, unsigned int _ecc_codeword_size)
 {
     unsigned int eccbits_per_maindata = 0;
-    unsigned char valid_ecc_list[] = {4,8,16,24,40,60};
+    unsigned char valid_ecc_list[] = {4,8,12,16,24,40,60};
 	unsigned int spare_bytes_per_page = _spare_bytes_per_page;
     unsigned int ecc_units = _data_bytes_per_page / _ecc_codeword_size;
     unsigned int ecc_data_parity_size = 0;
@@ -71,7 +81,7 @@ unsigned int NFC_PHY_GetEccBitsOfMainData(unsigned int _data_bytes_per_page, uns
 
     for (i = sizeof(valid_ecc_list)/sizeof(valid_ecc_list[0]) - 1; i >= 0; i--)
     {
-		ecc_data_parity_size = NFC_PHY_GetEccParitySize(valid_ecc_list[i]) * ecc_units + 60;
+		ecc_data_parity_size = NFC_PHY_GetEccParitySize(_ecc_codeword_size, valid_ecc_list[i]) * ecc_units + NFC_PHY_GetEccBitsOfBlockInformation(_data_bytes_per_page, _spare_bytes_per_page, _ecc_codeword_size, valid_ecc_list[i]);
 		if (spare_bytes_per_page > ecc_data_parity_size)
         {
             // Get MainData's ECC bit
@@ -89,11 +99,12 @@ unsigned int NFC_PHY_GetEccBitsOfMainData(unsigned int _data_bytes_per_page, uns
 unsigned int NFC_PHY_GetEccBitsOfBlockInformation(unsigned int _data_bytes_per_page, unsigned int _spare_bytes_per_page, unsigned int _ecc_codeword_size, unsigned int _ecc_bits_correctability)
 {
     unsigned int eccbits_per_blockinformation = 0;
-    unsigned char valid_ecc_list[] = {4,8,16,24,40,60};
+    unsigned char valid_ecc_list[] = {4,8,12,16,24,40,60};
     unsigned int entire_page_size = _data_bytes_per_page + _spare_bytes_per_page;
     unsigned int ecc_codeword_size = _ecc_codeword_size;
+    unsigned int parity_ecc_codeword_size = 0;
     unsigned int ecc_units = _data_bytes_per_page / _ecc_codeword_size;
-    unsigned int ecc_data_parity_size = NFC_PHY_GetEccParitySize(_ecc_bits_correctability);
+    unsigned int ecc_data_parity_size = NFC_PHY_GetEccParitySize(_ecc_codeword_size, _ecc_bits_correctability);
     int i = 0;
 
     // FTL Data & Block Information
@@ -101,7 +112,8 @@ unsigned int NFC_PHY_GetEccBitsOfBlockInformation(unsigned int _data_bytes_per_p
 
     for (i = sizeof(valid_ecc_list)/sizeof(valid_ecc_list[0]) - 1; i >= 0; i--)
     {
-        if (entire_page_size > NFC_PHY_GetEccParitySize(valid_ecc_list[i]))
+        parity_ecc_codeword_size = (valid_ecc_list[i] <= 16)? 512: 1024;
+        if (entire_page_size > NFC_PHY_GetEccParitySize(parity_ecc_codeword_size, valid_ecc_list[i]))
         {
             // Get Block Information's ECC bit
             eccbits_per_blockinformation = valid_ecc_list[i];
@@ -174,6 +186,18 @@ unsigned int NFC_PHY_ConfigOnfi(unsigned char * _id, unsigned int _nand, void * 
         {
             switch (__NROOT(nand&NAND_MASK_GENERATION,NAND_FIELD_GENERATION))
             {
+				case 0x09:
+				{
+                    memcpy((void *)nand_config->_f.generation, (const void *)"L73A", strlen("L73A"));
+
+                    paired_page_mapping = 0;
+                    block_indicator = 2;
+                    multiplane_erase_type = 2;
+                    read_retry_type = 0;
+                    support_randomize = 0;
+
+				} break;
+
                 case 0x01:
                 {
                     memcpy((void *)nand_config->_f.generation, (const void *)"L74A", strlen("L74A"));
@@ -677,6 +701,22 @@ unsigned int NFC_PHY_ConfigJedec(unsigned char * _id, unsigned int _nand, void *
                     support_randomize = 1;
 
                 } break;
+
+				case 0x02:
+                {
+                    memcpy((void *)nand_config->_f.generation, (const void *)"19nm", strlen("19nm"));
+
+                    tADL = 300;
+                    tCCS = 300;
+
+                    paired_page_mapping = 1;
+                    block_indicator = 1;
+                    multiplane_erase_type = 1;
+                    read_retry_type = NAND_READRETRY_TYPE_TOSHIBA_A19NM;
+                    support_randomize = 1;
+
+                } break;
+
 
                 default:
                 {
@@ -1232,6 +1272,8 @@ unsigned int NFC_PHY_ScanToshiba(unsigned char * _id, unsigned char * _jedec_id,
         ('E' == jedec_id[3]) &&
         ('C' == jedec_id[4]))
     {
+		int using_jedec_param = 1;
+
         /**********************************************************************
          * JEDEC standard formatted Parameter
          **********************************************************************/
@@ -1253,25 +1295,264 @@ unsigned int NFC_PHY_ScanToshiba(unsigned char * _id, unsigned char * _jedec_id,
         else if (!memcmp((const void *)device_model, (const void *)"TC58TEG5DCKTAI0", strlen("TC58TEG5DCKTAI0"))) { nand = NAND_TOSHIBA_TC58TEG5DCKTAI0; }
 
         /**********************************************************************
+         * Generation : 19nm (1Xnm)
+         **********************************************************************/
+        else if (!memcmp((const void *)device_model, (const void *)"TC58TEG5DCJTA00", strlen("TC58TEG5DCJTA00"))) { nand = NAND_TOSHIBA_TC58TEG5DCJTA00; }
+        else if (!memcmp((const void *)device_model, (const void *)"TC58TEG6DCJTA00", strlen("TC58TEG6DCJTA00"))) { nand = NAND_TOSHIBA_TC58TEG6DCJTA00; }
+
+        /**********************************************************************
          * Generation : Unknown !
          **********************************************************************/
         else
         {
-            NFC_PHY_ScanToshibaHelp(id);
+			using_jedec_param = 0;
+
+             if ((0xD7 == id[1]) && (0x84 == id[2]) && (0x93 == id[3]) && (0x72 == id[4]) && (0x57 == id[5])) { nand = NAND_TOSHIBA_TC58TEG5DCJTA00; }
+		else if ((0xDE == id[1]) && (0x84 == id[2]) && (0x93 == id[3]) && (0x72 == id[4]) && (0x57 == id[5])) { nand = NAND_TOSHIBA_TC58TEG6DCJTA00; }
+
+            //NFC_PHY_ScanToshibaHelp(id);
         }
 
         /**********************************************************************
          * Start Configuration !
          **********************************************************************/
-        if (scan_format)
-        {
-            bytes_per_page = NFC_PHY_ConfigJedec(id, nand, (void *)&phy_features.nand_config, (void *)&phy_features.jedec_param);
-            if (Exchange.ftl.fnConfig) { Exchange.ftl.fnConfig((void *)&phy_features.nand_config); }
-        }
-        else
-        {
-            bytes_per_page = phy_features.jedec_param._f.memory_organization.number_of_data_bytes_per_page;
-        }
+		if (using_jedec_param)
+		{
+			if (scan_format)
+			{
+				bytes_per_page = NFC_PHY_ConfigJedec(id, nand, (void *)&phy_features.nand_config, (void *)&phy_features.jedec_param);
+				if (Exchange.ftl.fnConfig) { Exchange.ftl.fnConfig((void *)&phy_features.nand_config); }
+			}
+			else
+			{
+				bytes_per_page = phy_features.jedec_param._f.memory_organization.number_of_data_bytes_per_page;
+			}
+		}
+		else
+		{
+			NAND * nand_config = (NAND *)&phy_features.nand_config;
+
+			switch (nand)
+			{
+#if 0
+				case NAND_TOSHIBA_TC58TEG5DCJTA00:
+				{
+					if (scan_format)
+					{
+						/**********************************************************
+						 * manufacturer
+						 **********************************************************/
+						memcpy((void *)nand_config->_f.manufacturer, (const void *)"TOSHIBA", strlen("TOSHIBA"));
+						memcpy((void *)nand_config->_f.modelname, (const void *)"TC58TEG5DCJTA00", strlen("TC58TEG5DCJTA00"));
+						memcpy((void *)nand_config->_f.id, (const void *)id, sizeof(unsigned char) * 8);
+						memcpy((void *)nand_config->_f.generation, (const void *)"19nm", strlen("19nm"));
+
+
+						/**********************************************************
+						 * timing config
+						 **********************************************************/
+						nand_config->_f.interfacetype = NAND_INTERFACE_ASYNC;
+						nand_config->_f.onfi_detected = 0;
+						nand_config->_f.onfi_timing_mode = 0;
+						nand_config->_f.timing.async.tClk  = __MHZ(50);
+						nand_config->_f.timing.async.tRWC  = 20;
+						nand_config->_f.timing.async.tR    = 100000;
+						nand_config->_f.timing.async.tWB   = 100;
+						nand_config->_f.timing.async.tCCS  = 300;
+						nand_config->_f.timing.async.tADL  = 300;
+						nand_config->_f.timing.async.tRHW  = 100;
+						nand_config->_f.timing.async.tWHR  = 30;	/* 80 */
+						nand_config->_f.timing.async.tWW   = 100;
+						nand_config->_f.timing.async.tRR   = 20;
+						nand_config->_f.timing.async.tFEAT = 1000;
+
+						nand_config->_f.timing.async.tCS   = 20;
+						nand_config->_f.timing.async.tCH   = 5;
+						nand_config->_f.timing.async.tCLS  = 10;
+						nand_config->_f.timing.async.tALS  = 10;
+						nand_config->_f.timing.async.tCLH  = 5;
+						nand_config->_f.timing.async.tALH  = 5;
+						nand_config->_f.timing.async.tWP   = 10;
+						nand_config->_f.timing.async.tWH   = 7;
+						nand_config->_f.timing.async.tWC   = 20;
+						nand_config->_f.timing.async.tDS   = 7;
+						nand_config->_f.timing.async.tDH   = 5;
+
+						nand_config->_f.timing.async.tCEA  = 25;
+						nand_config->_f.timing.async.tREA  = 16;
+						nand_config->_f.timing.async.tRP   = 10;
+						nand_config->_f.timing.async.tREH  = 7;
+						nand_config->_f.timing.async.tRC   = 20;
+						nand_config->_f.timing.async.tCOH  = 15;
+
+						/**********************************************************
+						 * cell config
+						 **********************************************************/
+						nand_config->_f.luns_per_ce                       = 1;
+						nand_config->_f.databytes_per_page                = 16384;
+						nand_config->_f.sparebytes_per_page               = 1280;
+						nand_config->_f.number_of_planes                  = 1;
+						nand_config->_f.pages_per_block                   = 256;
+						nand_config->_f.mainblocks_per_lun                = 1024;
+						nand_config->_f.extendedblocks_per_lun            = 36;
+						nand_config->_f.next_lun_address                  = 0;
+						nand_config->_f.over_provisioning                 = NAND_OVER_PROVISIONING;
+						nand_config->_f.bits_per_cell                     = 2;
+						nand_config->_f.number_of_bits_ecc_correctability = 40;
+						nand_config->_f.maindatabytes_per_eccunit         = 1024;
+						nand_config->_f.eccbits_per_maindata              = 40;
+						nand_config->_f.eccbits_per_blockinformation      = NFC_PHY_GetEccBitsOfBlockInformation(nand_config->_f.databytes_per_page,
+								nand_config->_f.sparebytes_per_page,
+								nand_config->_f.maindatabytes_per_eccunit,
+								nand_config->_f.number_of_bits_ecc_correctability);
+						nand_config->_f.block_endurance                   = 1000; // Spec Does Not Described !!
+						nand_config->_f.factorybadblocks_per_nand         = 100;
+
+						/**********************************************************
+						 * operation config
+						 **********************************************************/
+						nand_config->_f.support_list.slc_mode            = 0;
+						nand_config->_f.support_list.multiplane_read     = 0;
+						nand_config->_f.support_list.multiplane_write    = 1;
+						nand_config->_f.support_list.cache_read          = 0;
+						nand_config->_f.support_list.cache_write         = 1;
+						nand_config->_f.support_list.interleave          = 0;
+						nand_config->_f.support_list.randomize           = 1;
+
+						nand_config->_f.support_type.multiplane_read     = 0;
+						nand_config->_f.support_type.multiplane_write    = 1;
+						nand_config->_f.support_type.cache_read          = 0;
+						nand_config->_f.support_type.cache_write         = 1;
+						nand_config->_f.support_type.interleave          = 0;
+						nand_config->_f.support_type.paired_page_mapping = 1;
+						nand_config->_f.support_type.block_indicator     = 1;
+						nand_config->_f.support_type.paired_plane        = 0;   // 0: match block & page address, 1: match page address
+						nand_config->_f.support_type.multiplane_erase    = 1;   // 1: CMD1(0x60)-ADDR-CMD1(0x60)-ADDR-CMD2(0xD0)-BSY, 2: CMD1(0x60)-ADDR-CMD2(0xD1)-BSY-CMD1(0x60)-ADDR-CMD2(0xD0)-BSY
+						nand_config->_f.support_type.read_retry          = NAND_READRETRY_TYPE_TOSHIBA_A19NM;	/* is compatible 19nm? */
+
+						nand_config->_f.step_of_static_wear_leveling     = (nand_config->_f.block_endurance * 20) / 100; // Endurance's 20%
+						//nand_config->_f.max_channel;
+						//nand_config->_f.max_way;
+
+						if (Exchange.ftl.fnConfig) { Exchange.ftl.fnConfig((void *)&phy_features.nand_config); }
+					}
+
+					bytes_per_page = 16384;
+
+				} break;
+
+				case NAND_TOSHIBA_TC58TEG6DCJTA00:
+				{
+					if (scan_format)
+					{
+						/**********************************************************
+						 * manufacturer
+						 **********************************************************/
+						memcpy((void *)nand_config->_f.manufacturer, (const void *)"TOSHIBA", strlen("TOSHIBA"));
+						memcpy((void *)nand_config->_f.modelname, (const void *)"TC58TEG6DCJTA00", strlen("TC58TEG6DCJTA00"));
+						memcpy((void *)nand_config->_f.id, (const void *)id, sizeof(unsigned char) * 8);
+						memcpy((void *)nand_config->_f.generation, (const void *)"19nm", strlen("19nm"));
+
+
+						/**********************************************************
+						 * timing config
+						 **********************************************************/
+						nand_config->_f.interfacetype = NAND_INTERFACE_ASYNC;
+						nand_config->_f.onfi_detected = 0;
+						nand_config->_f.onfi_timing_mode = 0;
+						nand_config->_f.timing.async.tClk  = __MHZ(50);
+						nand_config->_f.timing.async.tRWC  = 20;
+						nand_config->_f.timing.async.tR    = 100000;
+						nand_config->_f.timing.async.tWB   = 100;
+						nand_config->_f.timing.async.tCCS  = 300;
+						nand_config->_f.timing.async.tADL  = 300;
+						nand_config->_f.timing.async.tRHW  = 100;
+						nand_config->_f.timing.async.tWHR  = 30;	/* 80 */
+						nand_config->_f.timing.async.tWW   = 100;
+						nand_config->_f.timing.async.tRR   = 20;
+						nand_config->_f.timing.async.tFEAT = 1000;
+
+						nand_config->_f.timing.async.tCS   = 20;	
+						nand_config->_f.timing.async.tCH   = 5;
+						nand_config->_f.timing.async.tCLS  = 10;
+						nand_config->_f.timing.async.tALS  = 10;
+						nand_config->_f.timing.async.tCLH  = 5;
+						nand_config->_f.timing.async.tALH  = 5;
+						nand_config->_f.timing.async.tWP   = 10;
+						nand_config->_f.timing.async.tWH   = 7;
+						nand_config->_f.timing.async.tWC   = 20;
+						nand_config->_f.timing.async.tDS   = 7;
+						nand_config->_f.timing.async.tDH   = 5;
+
+						nand_config->_f.timing.async.tCEA  = 25;
+						nand_config->_f.timing.async.tREA  = 16;
+						nand_config->_f.timing.async.tRP   = 10;
+						nand_config->_f.timing.async.tREH  = 7;
+						nand_config->_f.timing.async.tRC   = 20;
+						nand_config->_f.timing.async.tCOH  = 15;
+
+						/**********************************************************
+						 * cell config
+						 **********************************************************/
+						nand_config->_f.luns_per_ce                       = 1;
+						nand_config->_f.databytes_per_page                = 16384;
+						nand_config->_f.sparebytes_per_page               = 1280;
+						nand_config->_f.number_of_planes                  = 1;
+						nand_config->_f.pages_per_block                   = 256;
+						nand_config->_f.mainblocks_per_lun                = 2048;
+						nand_config->_f.extendedblocks_per_lun            = 44;
+						nand_config->_f.next_lun_address                  = 0;
+						nand_config->_f.over_provisioning                 = NAND_OVER_PROVISIONING;
+						nand_config->_f.bits_per_cell                     = 2;
+						nand_config->_f.number_of_bits_ecc_correctability = 40;
+						nand_config->_f.maindatabytes_per_eccunit         = 1024;
+						nand_config->_f.eccbits_per_maindata              = 40;
+						nand_config->_f.eccbits_per_blockinformation      = NFC_PHY_GetEccBitsOfBlockInformation(nand_config->_f.databytes_per_page,
+								nand_config->_f.sparebytes_per_page,
+								nand_config->_f.maindatabytes_per_eccunit,
+								nand_config->_f.number_of_bits_ecc_correctability);
+						nand_config->_f.block_endurance                   = 1000; // Spec Does Not Described !!
+						nand_config->_f.factorybadblocks_per_nand         = 100;
+
+						/**********************************************************
+						 * operation config
+						 **********************************************************/
+						nand_config->_f.support_list.slc_mode            = 0;
+						nand_config->_f.support_list.multiplane_read     = 0;
+						nand_config->_f.support_list.multiplane_write    = 1;
+						nand_config->_f.support_list.cache_read          = 0;
+						nand_config->_f.support_list.cache_write         = 1;
+						nand_config->_f.support_list.interleave          = 0;
+						nand_config->_f.support_list.randomize           = 1;
+
+						nand_config->_f.support_type.multiplane_read     = 0;
+						nand_config->_f.support_type.multiplane_write    = 1;
+						nand_config->_f.support_type.cache_read          = 0;
+						nand_config->_f.support_type.cache_write         = 1;
+						nand_config->_f.support_type.interleave          = 0;
+						nand_config->_f.support_type.paired_page_mapping = 1;
+						nand_config->_f.support_type.block_indicator     = 1;
+						nand_config->_f.support_type.paired_plane        = 0;   // 0: match block & page address, 1: match page address
+						nand_config->_f.support_type.multiplane_erase    = 1;   // 1: CMD1(0x60)-ADDR-CMD1(0x60)-ADDR-CMD2(0xD0)-BSY, 2: CMD1(0x60)-ADDR-CMD2(0xD1)-BSY-CMD1(0x60)-ADDR-CMD2(0xD0)-BSY
+						nand_config->_f.support_type.read_retry          = NAND_READRETRY_TYPE_TOSHIBA_A19NM;	/* is compatible 19nm? */
+
+						nand_config->_f.step_of_static_wear_leveling     = (nand_config->_f.block_endurance * 20) / 100; // Endurance's 20%
+						//nand_config->_f.max_channel;
+						//nand_config->_f.max_way;
+
+						if (Exchange.ftl.fnConfig) { Exchange.ftl.fnConfig((void *)&phy_features.nand_config); }
+					}
+
+					bytes_per_page = 16384;
+
+				} break;
+#endif
+
+				default:
+				{
+				} break;
+			}
+		}
 
 #if 0
         {
@@ -1422,7 +1703,8 @@ unsigned int NFC_PHY_ScanSkhynix(unsigned char * _id, unsigned char * _onfi_id, 
          * Check NAND ID
          **********************************************************************/
              if ((0xDE == id[1]) && (0x94 == id[2]) && (0xDA == id[3]) && (0x74 == id[4]) && (0xC4 == id[5])) { nand = NAND_HYNIX_H27UCG8T2ATR; }
-        else if ((0xD7 == id[1]) && (0x94 == id[2]) && (0x91 == id[3]) && (0x60 == id[4]) && (0x44 == id[5])) { nand = NAND_HYNIX_H27UCG8T2CTR; }
+        else if ((0xDE == id[1]) && (0x94 == id[2]) && (0xEB == id[3]) && (0x74 == id[4]) && (0x44 == id[5])) { nand = NAND_HYNIX_H27UCG8T2BTR; }
+        else if ((0xD7 == id[1]) && (0x94 == id[2]) && (0x91 == id[3]) && (0x60 == id[4]) && (0x44 == id[5])) { nand = NAND_HYNIX_H27UBG8T2CTR; }
         else if ((0xD7 == id[1]) && (0x14 == id[2]) && (0x9E == id[3]) && (0x34 == id[4]) && (0x4A == id[5])) { nand = NAND_HYNIX_H27UBG8T2DTR; }
         else if ((0xDE == id[1]) && (0x14 == id[2]) && (0xA7 == id[3]) && (0x42 == id[4]) && (0x4A == id[5])) { nand = NAND_HYNIX_H27UCG8T2ETR; }
         // Add More NAND Here !!
@@ -1498,7 +1780,7 @@ unsigned int NFC_PHY_ScanSkhynix(unsigned char * _id, unsigned char * _onfi_id, 
                     nand_config->_f.timing.async.tRR   = 20;
                     nand_config->_f.timing.async.tFEAT = 1000;
 
-                    nand_config->_f.timing.async.tCS   = 15;
+                    nand_config->_f.timing.async.tCS   = 20;
                     nand_config->_f.timing.async.tCH   = 5;
                     nand_config->_f.timing.async.tCLS  = 10;
                     nand_config->_f.timing.async.tALS  = 10;
@@ -1573,7 +1855,7 @@ unsigned int NFC_PHY_ScanSkhynix(unsigned char * _id, unsigned char * _onfi_id, 
 
             } break;
 
-            case NAND_HYNIX_H27UCG8T2CTR:
+			case NAND_HYNIX_H27UCG8T2BTR:
             {
                 if (scan_format)
                 {
@@ -1581,7 +1863,114 @@ unsigned int NFC_PHY_ScanSkhynix(unsigned char * _id, unsigned char * _onfi_id, 
                      * manufacturer
                      **********************************************************/
                     memcpy((void *)nand_config->_f.manufacturer, (const void *)"HYNIX", strlen("HYNIX"));
-                    memcpy((void *)nand_config->_f.modelname, (const void *)"H27UCG8T2CTR", strlen("H27UCG8T2CTR"));
+                    memcpy((void *)nand_config->_f.modelname, (const void *)"H27UCG8T2BTR", strlen("H27UCG8T2BTR"));
+                    memcpy((void *)nand_config->_f.id, (const void *)id, sizeof(unsigned char) * 8);
+                    memcpy((void *)nand_config->_f.generation, (const void *)"20NM B-DIE", strlen("20NM B-DIE"));
+
+                    /**********************************************************
+                     * timing config
+                     **********************************************************/
+                    nand_config->_f.interfacetype = NAND_INTERFACE_ASYNC;
+                    nand_config->_f.onfi_detected = 0;
+                    nand_config->_f.onfi_timing_mode = 0;
+
+                    nand_config->_f.timing.async.tClk  = __MHZ(50);
+                    nand_config->_f.timing.async.tRWC  = 20;
+                    nand_config->_f.timing.async.tR    = 100000;
+                    nand_config->_f.timing.async.tWB   = 100;
+                    nand_config->_f.timing.async.tCCS  = 200;
+                    nand_config->_f.timing.async.tADL  = 400;
+                    nand_config->_f.timing.async.tRHW  = 100;
+                    nand_config->_f.timing.async.tWHR  = 80;
+                    nand_config->_f.timing.async.tWW   = 100;
+                    nand_config->_f.timing.async.tRR   = 20;
+                    nand_config->_f.timing.async.tFEAT = 1000;
+
+                    nand_config->_f.timing.async.tCS   = 20;
+                    nand_config->_f.timing.async.tCH   = 5;
+                    nand_config->_f.timing.async.tCLS  = 10;
+                    nand_config->_f.timing.async.tALS  = 10;
+                    nand_config->_f.timing.async.tCLH  = 5;
+                    nand_config->_f.timing.async.tALH  = 5;
+                    nand_config->_f.timing.async.tWP   = 10;
+                    nand_config->_f.timing.async.tWH   = 7;
+                    nand_config->_f.timing.async.tWC   = 20;
+                    nand_config->_f.timing.async.tDS   = 7;
+                    nand_config->_f.timing.async.tDH   = 5;
+
+                    nand_config->_f.timing.async.tCEA  = 25;
+                    nand_config->_f.timing.async.tREA  = 16;
+                    nand_config->_f.timing.async.tRP   = 10;
+                    nand_config->_f.timing.async.tREH  = 15;
+                    nand_config->_f.timing.async.tRC   = 20;
+                    nand_config->_f.timing.async.tCOH  = 15;
+
+                    /**********************************************************
+                     * cell config
+                     **********************************************************/
+                    nand_config->_f.luns_per_ce                       = 1;
+                    nand_config->_f.databytes_per_page                = 16384;
+                    nand_config->_f.sparebytes_per_page               = 1280;
+                    nand_config->_f.number_of_planes                  = 2;
+                    nand_config->_f.pages_per_block                   = 256;
+                    nand_config->_f.mainblocks_per_lun                = 2048;
+                    nand_config->_f.extendedblocks_per_lun            = 84;
+                    nand_config->_f.next_lun_address                  = 0;
+                    nand_config->_f.over_provisioning                 = NAND_OVER_PROVISIONING;
+                    nand_config->_f.bits_per_cell                     = 2;
+                    nand_config->_f.number_of_bits_ecc_correctability = 40;
+                    nand_config->_f.maindatabytes_per_eccunit         = 1024;
+                    nand_config->_f.eccbits_per_maindata              = 40;
+                    nand_config->_f.eccbits_per_blockinformation      = NFC_PHY_GetEccBitsOfBlockInformation(nand_config->_f.databytes_per_page,
+                                                                                                             nand_config->_f.sparebytes_per_page,
+                                                                                                             nand_config->_f.maindatabytes_per_eccunit,
+                                                                                                             nand_config->_f.number_of_bits_ecc_correctability);
+                    nand_config->_f.block_endurance                   = 1000; // Spec Does Not Described !!
+                    nand_config->_f.factorybadblocks_per_nand         = 100;
+
+                    /**********************************************************
+                     * operation config
+                     **********************************************************/
+                    nand_config->_f.support_list.slc_mode            = 0;
+                    nand_config->_f.support_list.multiplane_read     = 0;
+                    nand_config->_f.support_list.multiplane_write    = 1;
+                    nand_config->_f.support_list.cache_read          = 0;
+                    nand_config->_f.support_list.cache_write         = 1;
+                    nand_config->_f.support_list.interleave          = 0;
+                    nand_config->_f.support_list.randomize           = 1;
+
+                    nand_config->_f.support_type.multiplane_read     = 0;
+                    nand_config->_f.support_type.multiplane_write    = 1;
+                    nand_config->_f.support_type.cache_read          = 0;
+                    nand_config->_f.support_type.cache_write         = 1;
+                    nand_config->_f.support_type.interleave          = 0;
+                    nand_config->_f.support_type.paired_page_mapping = 0;
+                    nand_config->_f.support_type.block_indicator     = 1;
+                    nand_config->_f.support_type.paired_plane        = 0;   // 0: match block & page address, 1: match page address
+                    nand_config->_f.support_type.multiplane_erase    = 1;   // 1: CMD1(0x60)-ADDR-CMD1(0x60)-ADDR-CMD2(0xD0)-BSY, 2: CMD1(0x60)-ADDR-CMD2(0xD1)-BSY-CMD1(0x60)-ADDR-CMD2(0xD0)-BSY
+                    nand_config->_f.support_type.read_retry          = NAND_READRETRY_TYPE_HYNIX_20NM_MLC_BC_DIE;
+
+                    nand_config->_f.step_of_static_wear_leveling     = (nand_config->_f.block_endurance * 20) / 100; // Endurance's 20%
+                  //nand_config->_f.max_channel;
+                  //nand_config->_f.max_way;
+
+                    if (Exchange.ftl.fnConfig) { Exchange.ftl.fnConfig((void *)&phy_features.nand_config); }
+                }
+
+                bytes_per_page = 16384;
+
+            } break;
+
+#if 0
+            case NAND_HYNIX_H27UBG8T2CTR:
+            {
+                if (scan_format)
+                {
+                    /**********************************************************
+                     * manufacturer
+                     **********************************************************/
+                    memcpy((void *)nand_config->_f.manufacturer, (const void *)"HYNIX", strlen("HYNIX"));
+                    memcpy((void *)nand_config->_f.modelname, (const void *)"H27UBG8T2CTR", strlen("H27UBG8T2CTR"));
                     memcpy((void *)nand_config->_f.id, (const void *)id, sizeof(unsigned char) * 8);
                     memcpy((void *)nand_config->_f.generation, (const void *)"20NM C-DIE", strlen("20NM C-DIE"));
 
@@ -1709,6 +2098,7 @@ unsigned int NFC_PHY_ScanSkhynix(unsigned char * _id, unsigned char * _onfi_id, 
                 bytes_per_page = 8192;
 
             } break;
+#endif
 
             case NAND_HYNIX_H27UBG8T2DTR:
             {
@@ -1720,7 +2110,7 @@ unsigned int NFC_PHY_ScanSkhynix(unsigned char * _id, unsigned char * _onfi_id, 
                     memcpy((void *)nand_config->_f.manufacturer, (const void *)"HYNIX", strlen("HYNIX"));
                     memcpy((void *)nand_config->_f.modelname, (const void *)"H27UBG8T2DTR", strlen("H27UBG8T2DTR"));
                     memcpy((void *)nand_config->_f.id, (const void *)id, sizeof(unsigned char) * 8);
-                    memcpy((void *)nand_config->_f.generation, (const void *)"16NM ?-DIE", strlen("16NM ?-DIE"));
+                    memcpy((void *)nand_config->_f.generation, (const void *)"16NM A-DIE", strlen("16NM A-DIE"));
 
                     /**********************************************************
                      * timing config
@@ -1764,7 +2154,7 @@ unsigned int NFC_PHY_ScanSkhynix(unsigned char * _id, unsigned char * _onfi_id, 
                     nand_config->_f.timing.async.tRWC  = 20;
                     nand_config->_f.timing.async.tR    = 100000;
                     nand_config->_f.timing.async.tWB   = 100;
-                    nand_config->_f.timing.async.tCCS  = 200;
+                    nand_config->_f.timing.async.tCCS  = 300;
                     nand_config->_f.timing.async.tADL  = 400;
                     nand_config->_f.timing.async.tRHW  = 100;
                     nand_config->_f.timing.async.tWHR  = 80;
@@ -1772,7 +2162,7 @@ unsigned int NFC_PHY_ScanSkhynix(unsigned char * _id, unsigned char * _onfi_id, 
                     nand_config->_f.timing.async.tRR   = 20;
                     nand_config->_f.timing.async.tFEAT = 1000;
 
-                    nand_config->_f.timing.async.tCS   = 15;
+                    nand_config->_f.timing.async.tCS   = 20;
                     nand_config->_f.timing.async.tCH   = 5;
                     nand_config->_f.timing.async.tCLS  = 10;
                     nand_config->_f.timing.async.tALS  = 10;
@@ -1909,7 +2299,7 @@ unsigned int NFC_PHY_ScanSkhynix(unsigned char * _id, unsigned char * _onfi_id, 
                     nand_config->_f.timing.async.tRR   = 20;
                     nand_config->_f.timing.async.tFEAT = 1000;
 
-                    nand_config->_f.timing.async.tCS   = 15;
+                    nand_config->_f.timing.async.tCS   = 20;
                     nand_config->_f.timing.async.tCH   = 5;
                     nand_config->_f.timing.async.tCLS  = 10;
                     nand_config->_f.timing.async.tALS  = 10;
@@ -2004,6 +2394,50 @@ void NFC_PHY_ScanMicronHelp(unsigned char * _id)
     Exchange.sys.fn.print("\n");
 }
 
+
+
+/******************************************************************************
+ *
+ ******************************************************************************/
+#if defined (__BUILD_MODE_ARM_LINUX_DEVICE_DRIVER__)
+#elif defined (__BUILD_MODE_ARM_UBOOT_DEVICE_DRIVER__)
+#define __fls(x) (fls(x) - 1)
+//#define ffs(x) ({ unsigned long __t = (x); fls(__t & -__t); })
+#define __ffs(x) (ffs(x) - 1)
+#define ffz(x) __ffs( ~(x) )
+
+
+
+static int is_power_of_2(int x)
+{
+	return (x != 0 && ((x & (x - 1)) == 0));
+}
+#endif
+
+
+static int break_down_power_of_2(int x, int *value, int *rest)
+{
+	int e = __fls(x);
+	int is_pow_of_2;
+
+	if (x == 0)
+	{
+		is_pow_of_2 = *value = *rest = e = 0;
+	}
+	else
+	{
+		is_pow_of_2 = is_power_of_2(x);
+		*value = (1 << e);
+		*rest  = x - (1 << e);
+	}
+
+	return is_pow_of_2;
+}
+
+
+/******************************************************************************
+ *
+ ******************************************************************************/
 unsigned int NFC_PHY_ScanMicron(unsigned char * _id, unsigned char * _onfi_id, unsigned int _scan_format)
 {
     unsigned int nand = 0;
@@ -2023,9 +2457,14 @@ unsigned int NFC_PHY_ScanMicron(unsigned char * _id, unsigned char * _onfi_id, u
         NFC_PHY_GetStandardParameter(0, 0, 0x00, (unsigned char *)&phy_features.onfi_param, (unsigned char *)&phy_features.onfi_ext_param);
 
         /**********************************************************************
+         * Generation : L73A
+         **********************************************************************/
+             if (!memcmp((const void *)phy_features.onfi_param._f.device_model, (const void *)"MT29F32G08CBACA",  strlen("MT29F32G08CBACA")))  { nand = NAND_MICRON_L73A_MT29F32G08CBACA; }
+
+        /**********************************************************************
          * Generation : L74A
          **********************************************************************/
-             if (!memcmp((const void *)phy_features.onfi_param._f.device_model, (const void *)"MT29F64G08CBAAA",  strlen("MT29F64G08CBAAA")))  { nand = NAND_MICRON_L74A_MT29F64G08CBAAA; }
+        else if (!memcmp((const void *)phy_features.onfi_param._f.device_model, (const void *)"MT29F64G08CBAAA",  strlen("MT29F64G08CBAAA")))  { nand = NAND_MICRON_L74A_MT29F64G08CBAAA; }
         else if (!memcmp((const void *)phy_features.onfi_param._f.device_model, (const void *)"MT29F64G08CBCAB",  strlen("MT29F64G08CBCAB")))  { nand = NAND_MICRON_L74A_MT29F64G08CBCAB; }
         else if (!memcmp((const void *)phy_features.onfi_param._f.device_model, (const void *)"MT29F128G08CEAAA", strlen("MT29F128G08CEAAA"))) { nand = NAND_MICRON_L74A_MT29F128G08CEAAA; }
         else if (!memcmp((const void *)phy_features.onfi_param._f.device_model, (const void *)"MT29F128G08CFAAA", strlen("MT29F128G08CFAAA"))) { nand = NAND_MICRON_L74A_MT29F128G08CFAAA; }
@@ -2091,7 +2530,25 @@ unsigned int NFC_PHY_ScanMicron(unsigned char * _id, unsigned char * _onfi_id, u
          **********************************************************************/
         if (scan_format)
         {
+			NAND * nand_config = (NAND *)&phy_features.nand_config;
+
             bytes_per_page = NFC_PHY_ConfigOnfi(id, nand, (void *)&phy_features.nand_config, (void *)&phy_features.onfi_param, (void *)&phy_features.onfi_ext_param);
+
+			/*
+			 * Override
+			 */
+			switch (nand)
+			{
+				case NAND_MICRON_L83A_MT29F32G08CBADA:
+				{
+					int base, ext;
+					break_down_power_of_2(nand_config->_f.mainblocks_per_lun, &base, &ext);
+
+					nand_config->_f.mainblocks_per_lun				= base;
+					nand_config->_f.extendedblocks_per_lun			= ext;
+				} break;
+			}
+
             if (Exchange.ftl.fnConfig) { Exchange.ftl.fnConfig((void *)&phy_features.nand_config); }
         }
         else

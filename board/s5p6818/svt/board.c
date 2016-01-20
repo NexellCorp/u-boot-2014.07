@@ -29,6 +29,7 @@
 //#include <asm/sections.h>
 
 #include <platform.h>
+#include <tags.h>
 #include <mach-api.h>
 #include <rtc_nxp.h>
 #include <pm.h>
@@ -191,10 +192,10 @@ int board_early_init_f(void)
 
 #if defined(CONFIG_REGULATOR_MP8845C) && !defined(CONFIG_PMIC_REG_DUMP)
 #if defined(CONFIG_PMIC_I2C_BUSA)
-	bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSA, 1200000);
+	bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSA, 1200000, 0); // ARM
 #endif
 #if defined(CONFIG_PMIC_I2C_BUSB)
-	bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSB, 1100000);
+	bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSB, 1100000, 1); // CORE
 #endif
 #endif
 
@@ -221,10 +222,10 @@ int power_init_board(void)
 #if defined(CONFIG_PMIC_REG_DUMP)
 #if defined(CONFIG_REGULATOR_MP8845C)
 #if defined(CONFIG_PMIC_I2C_BUSA)
-	bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSA, 1200000);
+	bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSA, 1200000, 0); // ARM
 #endif
 #if defined(CONFIG_PMIC_I2C_BUSB)
-	bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSB, 1100000);
+	bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSB, 1100000, 1); // CORE
 #endif
 #endif
 	bd_pmic_init();
@@ -368,7 +369,7 @@ int board_late_init(void)
 	NX_RSTCON_SetRST(RESET_ID_SSP2_P, RSTCON_NEGATE);
 	NX_RSTCON_SetRST(RESET_ID_SSP2, RSTCON_NEGATE);
 
-	// vip 0/1 reset
+	// vip 0/1/2 reset
 	NX_CLKGEN_SetClockBClkMode(CLOCKINDEX_OF_VIP0_MODULE, NX_BCLKMODE_DYNAMIC);
     NX_CLKGEN_SetClockDivisorEnable(CLOCKINDEX_OF_VIP0_MODULE, CTRUE);
    	NX_RSTCON_SetRST(RESET_ID_VIP0, RSTCON_ASSERT);
@@ -377,6 +378,10 @@ int board_late_init(void)
 	NX_CLKGEN_SetClockDivisorEnable(CLOCKINDEX_OF_VIP1_MODULE, CTRUE);
 	NX_RSTCON_SetRST(RESET_ID_VIP1, RSTCON_ASSERT);
 	NX_RSTCON_SetRST(RESET_ID_VIP1, RSTCON_NEGATE);
+	NX_CLKGEN_SetClockBClkMode(CLOCKINDEX_OF_VIP2_MODULE, NX_BCLKMODE_DYNAMIC);
+	NX_CLKGEN_SetClockDivisorEnable(CLOCKINDEX_OF_VIP2_MODULE, CTRUE);
+	NX_RSTCON_SetRST(RESET_ID_VIP2, RSTCON_ASSERT);
+	NX_RSTCON_SetRST(RESET_ID_VIP2, RSTCON_NEGATE);
 
 #if defined(CONFIG_DISPLAY_OUT)
 	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
@@ -390,3 +395,54 @@ int board_late_init(void)
 	return 0;
 }
 
+void setup_board_tags(struct tag **tmp)
+{
+	struct tag *params = *tmp;
+	struct tag_asv_margin *t;
+
+	char *p = getenv("margin");
+	char *s = p;
+	int value = 0;
+	int minus = 0, percent = 0;
+
+	s = strchr(s, '-');
+	if (s)
+		minus = true;
+	else
+		s = strchr(p, '+');
+
+	if (!s)
+		s = p;
+	else
+		s++;
+
+	if (strchr(p, '%'))
+		percent = 1;
+
+	value = simple_strtol(s, NULL, 10);
+	printf("ASV Margin:%s%d%s\n", minus?"-":"+", value, percent?"%":"mV");
+
+	/* set ARM margin */
+	params->hdr.tag = ATAG_ARM_MARGIN;
+	params->hdr.size = tag_size(tag_asv_margin);
+	t = (struct tag_asv_margin *)&params->u;
+	t->value = value;
+	t->minus = minus;
+	t->percent = percent;
+
+	params = tag_next(params);
+	*tmp = params;
+
+	/* set ARM margin */
+	params = *tmp;
+
+	params->hdr.tag = ATAG_CORE_MARGIN;
+	params->hdr.size = tag_size(tag_asv_margin);
+	t = (struct tag_asv_margin *)&params->u;
+	t->value = value;
+	t->minus = minus;
+	t->percent = percent;
+
+	params = tag_next(params);
+	*tmp = params;
+}

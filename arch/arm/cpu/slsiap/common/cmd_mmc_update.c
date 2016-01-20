@@ -77,14 +77,14 @@ int do_update_mmc(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 	dst_addr = simple_strtoull(argv[4], NULL, 16);
 	mem_len  = simple_strtoull(argv[5], NULL, 16);
 
-	p   = (unsigned char *)mem_addr;
+	p   = (unsigned char *)((ulong)mem_addr);
 	blk = (dst_addr/MMC_BLOCK_SIZE);
 	cnt = (mem_len/MMC_BLOCK_SIZE) + ((mem_len & (MMC_BLOCK_SIZE-1)) ? 1 : 0);
 
 	flush_dcache_all();
 
 	if (! strcmp(argv[2], "2ndboot")) {
-		struct boot_dev_head *bh = (struct boot_dev_head *)mem_addr;
+		struct boot_dev_head *bh = (struct boot_dev_head *)((ulong)mem_addr);
 		struct boot_dev_mmc  *bd = (struct boot_dev_mmc *)&bh->bdi;
 
 		bd->port_no = dev; /* set u-boot device port num */

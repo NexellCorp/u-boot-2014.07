@@ -233,13 +233,13 @@ void dram_init_banksize(void)
 #if defined(CONFIG_HARD_I2C) || defined(CONFIG_SYS_I2C)
 static int init_func_i2c(void)
 {
-	puts("I2C:   ");
+	/*puts("I2C:   ");*/
 #ifdef CONFIG_SYS_I2C
 	i2c_init_all();
 #else
 	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
 #endif
-	puts("ready\n");
+	/*puts("ready\n");*/
 	return 0;
 }
 #endif
@@ -776,6 +776,60 @@ static int mark_bootstage(void)
 	return 0;
 }
 
+// psw0523 test
+#if 1
+static init_fnc_t init_sequence_f[] = {
+	arch_cpu_init,
+	mark_bootstage,
+#if defined(CONFIG_BOARD_EARLY_INIT_F)
+	board_early_init_f,
+#endif
+	/*init_timebase,*/
+	timer_init,		/* initialize timer */
+	env_init,		/* initialize environment */
+	init_baud_rate,		/* initialze baudrate settings */
+	serial_init,		/* serial communications setup */
+	console_init_f,		/* stage 1 init of console */
+	display_options,	/* say that we are here */
+#if defined(CONFIG_MISC_INIT_F)
+	misc_init_f,
+#endif
+#if defined(CONFIG_HARD_I2C) || defined(CONFIG_SYS_I2C)
+	init_func_i2c,
+#endif
+#ifdef CONFIG_ARM
+	dram_init,		/* configure available RAM banks */
+#endif
+	/*
+	 * Now that we have DRAM mapped and working, we can
+	 * relocate the code and continue running from DRAM.
+	 *
+	 * Reserve memory at end of RAM for (top down in that order):
+	 *  - area that won't get touched by U-Boot and Linux (optional)
+	 *  - kernel log buffer
+	 *  - protected RAM
+	 *  - LCD framebuffer
+	 *  - monitor code
+	 *  - board info struct
+	 */
+	setup_dest_addr,
+	reserve_round_4k,
+#if !(defined(CONFIG_SYS_ICACHE_OFF) && defined(CONFIG_SYS_DCACHE_OFF)) && \
+		defined(CONFIG_ARM)
+	reserve_mmu,
+#endif
+	reserve_uboot,
+	reserve_malloc,
+	reserve_board,
+	setup_machine,
+	reserve_global_data,
+	reserve_stacks,
+	setup_dram_config,
+	setup_reloc,
+	NULL,
+};
+
+#else
 static init_fnc_t init_sequence_f[] = {
 #ifdef CONFIG_SANDBOX
 	setup_ram_buf,
@@ -958,6 +1012,7 @@ static init_fnc_t init_sequence_f[] = {
 #endif
 	NULL,
 };
+#endif
 
 void board_init_f(ulong boot_flags)
 {

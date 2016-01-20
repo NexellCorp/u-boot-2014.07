@@ -169,7 +169,7 @@ int board_mmc_init(bd_t *bis)
 	#else
 	ddr = 0;
 	#endif
-	err = dw_mci_init(0xC0068000, bus, 0, speed, ddr);
+	err = dw_mci_init(0xC0068000, bus, 1, speed, ddr);
 	#ifdef CONFIG_MMC1_CLK_DELAY
 	dw_mci_clk_delay( CONFIG_MMC1_CLK_DELAY, 0xC0068000);
 	#endif

@@ -75,6 +75,8 @@ static void nand_select_chip(struct mtd_info *mtd, int chipnr)
 		NX_MCUS_SetNFBank(chipnr);
 		NX_MCUS_SetNFCSEnable(CTRUE);
 	}
+
+	dmb();
 }
 
 #define MASK_CLE	0x10	/* NFCM   + 2C00_0000 */
@@ -284,7 +286,7 @@ static int nand_onfi_timing_set(struct mtd_info *mtd, uint32_t mode)
 }
 
 /* timing set */
-static int nexell_nand_timing_set(struct mtd_info *mtd)
+static int nxp_nand_timing_set(struct mtd_info *mtd)
 {
 	struct nand_chip *chip = mtd->priv;
 	uint32_t ret = ONFI_TIMING_MODE_UNKNOWN, mode;
@@ -514,7 +516,7 @@ int board_nand_init(struct nand_chip *chip)
 	printk(KERN_INFO "NAND ecc: Software \n");
 #endif
 
-	nexell_nand_timing_set(mtd);
+	nxp_nand_timing_set(mtd);
 
 	return ret;
 }

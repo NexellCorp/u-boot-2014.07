@@ -65,6 +65,7 @@
 #elif defined (__BUILD_MODE_ARM_UBOOT_DEVICE_DRIVER__)
 #include <common.h>
 #include <malloc.h>
+#include <compiler.h>
 
 #else
 #error "nfc.phy.readretry.c: error! not defined build mode!"
@@ -258,14 +259,14 @@ int NFC_PHY_HYNIX_READRETRY_Init(unsigned int _max_channels, unsigned int _max_w
             }
             else
             {
-                Exchange.sys.fn.print("NFC_PHY_HYNIX_READRETRY_Init: error! reg_data[%d]:0x%08x = malloc(%d)\n", way, (unsigned int)hynix_readretry.reg_data[way], size);
+                Exchange.sys.fn.print("NFC_PHY_HYNIX_READRETRY_Init: error! reg_data[%d]:0x%08x = malloc(%d)\n", way, (uintptr_t)hynix_readretry.reg_data[way], size);
                 resp = -1;
             }
         }
     }
     else
     {
-        Exchange.sys.fn.print("NFC_PHY_HYNIX_READRETRY_Init: error! reg_data:0x%08x = malloc(%d);\n", (unsigned int)hynix_readretry.reg_data, size);
+        Exchange.sys.fn.print("NFC_PHY_HYNIX_READRETRY_Init: error! reg_data:0x%08x = malloc(%d);\n", (uintptr_t)hynix_readretry.reg_data, size);
         resp = -1;
     }
 
@@ -853,7 +854,7 @@ int NFC_PHY_HYNIX_READRETRY_MakeReg(unsigned int _channel, unsigned int _phyway,
     }
     else
     {
-        Exchange.sys.fn.print("NFC_PHY_HYNIX_READRETRY_Make: error! otp_buf:0x%08x, majority_buff:0x%08x\n", (unsigned int)otp_buf, (unsigned int)majority_buf);
+        Exchange.sys.fn.print("NFC_PHY_HYNIX_READRETRY_Make: error! otp_buf:0x%08x, majority_buff:0x%08x\n", (uintptr_t)otp_buf, (uintptr_t)majority_buf);
     }
 
 #if defined (__BUILD_MODE_ARM_LINUX_DEVICE_DRIVER__)
@@ -1010,7 +1011,7 @@ int NFC_PHY_TOSHIBA_READRETRY_Init(unsigned int _max_channels, unsigned int _max
     }
     else
     {
-        Exchange.sys.fn.print("NFC_PHY_TOSHIBA_READRETRY_Init: error! reg_data:0x%08x = malloc(%d);\n", (unsigned int)toshiba_readretry, size);
+        Exchange.sys.fn.print("NFC_PHY_TOSHIBA_READRETRY_Init: error! reg_data:0x%08x = malloc(%d);\n", (uintptr_t)toshiba_readretry, size);
         resp = -1;
     }
     

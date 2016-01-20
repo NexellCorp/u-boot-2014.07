@@ -111,6 +111,19 @@ void serial_device_init(void)
 #ifdef CFG_IO_I2C4_SDA
 	#define	I2C4_SDA	CFG_IO_I2C4_SDA
 #endif
+#ifdef CFG_IO_I2C5_SCL
+    #define I2C5_SCL    CFG_IO_I2C5_SCL
+#endif
+#ifdef CFG_IO_I2C5_SDA
+    #define I2C5_SDA    CFG_IO_I2C5_SDA
+#endif
+#ifdef CFG_IO_I2C6_SCL
+    #define I2C6_SCL    CFG_IO_I2C6_SCL
+#endif
+#ifdef CFG_IO_I2C6_SDA
+    #define I2C6_SDA    CFG_IO_I2C6_SDA
+#endif
+
 
 struct i2c_dev i2c_devices[] = {
 	{ .bus = 0, .scl = I2C0_SCL, .sda = I2C0_SDA, .speed = CONFIG_SYS_I2C_SPEED, .nostop = CONFIG_I2C0_NO_STOP, },
@@ -122,6 +135,13 @@ struct i2c_dev i2c_devices[] = {
 #if defined (CFG_IO_I2C4_SCL) || defined (CFG_IO_I2C4_SDA)
 	{ .bus = 4, .scl = I2C4_SCL, .sda = I2C4_SDA, .speed = CONFIG_SYS_I2C_SPEED, .nostop = CONFIG_I2C4_NO_STOP, },
 #endif
+#if defined (CFG_IO_I2C5_SCL) || defined (CFG_IO_I2C5_SDA)
+    { .bus = 5, .scl = I2C5_SCL, .sda = I2C5_SDA, .speed = CONFIG_SYS_I2C_SPEED, .nostop = CONFIG_I2C5_NO_STOP, },
+#endif
+#if defined (CFG_IO_I2C6_SCL) || defined (CFG_IO_I2C6_SDA)
+    { .bus = 6, .scl = I2C6_SCL, .sda = I2C6_SDA, .speed = CONFIG_SYS_I2C_SPEED, .nostop = CONFIG_I2C6_NO_STOP, },
+#endif
+
 
 };
 
@@ -130,7 +150,7 @@ int i2c_gpio_init(int bus)
 	int scl, sda;
 
 	if (bus > ARRAY_SIZE(i2c_devices) - 1) {
-		printf("i2c bus %d is not exist (max bus %d)\n", bus, ARRAY_SIZE(i2c_devices)-1);
+		printf("i2c bus %d is not exist \n", bus);
 		return -1;
 	}
 

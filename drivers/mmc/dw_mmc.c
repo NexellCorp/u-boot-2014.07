@@ -38,7 +38,7 @@ static void dwmci_set_idma_desc(struct dwmci_idmac *idmac,
 	desc->flags = desc0;
 	desc->cnt = desc1;
 	desc->addr = desc2;
-	desc->next_addr = (unsigned int)desc + sizeof(struct dwmci_idmac);
+	desc->next_addr = (uintptr_t)desc + sizeof(struct dwmci_idmac);
 }
 
 static void dwmci_prepare_data(struct dwmci_host *host,
@@ -55,12 +55,12 @@ static void dwmci_prepare_data(struct dwmci_host *host,
 	dwmci_wait_reset(host, DWMCI_CTRL_FIFO_RESET);
 
 	data_start = (ulong)cur_idmac;
-	dwmci_writel(host, DWMCI_DBADDR, (unsigned int)cur_idmac);
+	dwmci_writel(host, DWMCI_DBADDR, (uintptr_t)cur_idmac);
 
 	if (data->flags == MMC_DATA_READ)
-		start_addr = (unsigned int)data->dest;
+		start_addr = (uintptr_t)data->dest;
 	else
-		start_addr = (unsigned int)data->src;
+		start_addr = (uintptr_t)data->src;
 
 	do {
 		flags = DWMCI_IDMAC_OWN | DWMCI_IDMAC_CH ;

@@ -248,6 +248,7 @@
 	#define RESET_ID_PPM				66
 	#define RESET_ID_VIP1				67
 	#define RESET_ID_VIP0				68
+	#define RESET_ID_VIP2				69
 
 /*
  * Interrupt
@@ -286,6 +287,7 @@
 #include <nx_rtc.h>
 #include <nx_mpegtsi.h>
 #include <nx_vip.h>
+#include <nx_wdt.h>
 
 #endif /* 	__ASSEMBLY__ */
 #endif /*	__S5P6818_H__ */

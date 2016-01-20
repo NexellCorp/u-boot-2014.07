@@ -36,8 +36,6 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-typedef void  (IMAGE)(unsigned long, unsigned long);
-
 #if defined(CONFIG_SETUP_MEMORY_TAGS) || \
 	defined(CONFIG_CMDLINE_TAG) || \
 	defined(CONFIG_INITRD_TAG) || \
@@ -162,6 +160,7 @@ void setup_revision_tag(struct tag **in_params)
 	defined(CONFIG_INITRD_TAG) || \
 	defined(CONFIG_SERIAL_TAG) || \
 	defined(CONFIG_REVISION_TAG)
+__weak void setup_board_tags(struct tag **in_params) {}
 static void setup_end_tag(bd_t *bd)
 {
 	params->hdr.tag = ATAG_NONE;
@@ -173,24 +172,43 @@ static void setup_end_tag(bd_t *bd)
 extern void disable_mmu(void);
 #endif
 
+#ifdef CONFIG_ARM64
+void do_nonsec_virt_switch(void)
+{
+	smp_kick_all_cpus();
+	dcache_disable();	/* flush cache before swtiching to EL2 */
+	armv8_switch_to_el2();
+#ifdef CONFIG_ARMV8_SWITCH_TO_EL1
+	armv8_switch_to_el1();
+#endif
+}
+#endif
+
 int do_goImage (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	ulong addr = 0;
+	ulong addr = 0, addr2 = 0;
 	long  machtype = machine_arch_type;
 #ifdef CONFIG_CMDLINE_TAG
 	char *commandline = getenv("bootargs");
 #endif
 
-	void (*entry)(unsigned long, unsigned long) = NULL;
+#ifdef CONFIG_ARM64
+	void (*entry)(void *, void *, void *, void *) = NULL;
+#else
+	void (*entry)(unsigned long, unsigned long, unsigned long) = NULL;
+#endif
 
-	if (argc < 2) {
+	if (2 > argc) {
 		cmd_usage(cmdtp);
 		return 1;
 	}
 
 	/* get machine type */
+	if (argc == 4)
+		machtype = simple_strtol(argv[3], NULL, 10);	/* get interger machine type */
+
 	if (argc == 3)
-		machtype = simple_strtol(argv[2], NULL, 10);	/* get interger machine type */
+		addr2 = simple_strtoul(argv[2], NULL, 16);		/* get optinal address */
 
 	/* get start address */
 	addr = simple_strtoul(argv[1], NULL, 16);
@@ -220,28 +238,42 @@ int do_goImage (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		setup_initrd_tag(gd->bd, images->rd_start,
 		images->rd_end);
 	#endif
+	setup_board_tags(&params);
 	setup_end_tag(gd->bd);
 #endif
-	printf ("## Starting Image at 0x%08X with machine type %d ...\n",
-		(u_int)addr, (u_int)machtype);
+	/*printf ("## Starting at 0x%08lx mach type %lu (0x%lx) ...\n",*/
+		/*addr, machtype, addr2);*/
+	printf ("## Starting kernel\n");
 
-	entry = (IMAGE*)addr;
 
 #ifdef CONFIG_MMU_ENABLE
 	disable_mmu();
 #endif
 
-	entry(addr, machtype);
+#ifdef CONFIG_ARM64
+	cleanup_before_linux();
+
+	entry = (void(*)(void *, void *, void *, void *))addr;
+	do_nonsec_virt_switch();
+	entry((void*)addr2, NULL, NULL, NULL);
+#else
+	entry = (void (*)(unsigned long, unsigned long, unsigned long))addr;
+	entry(addr, machtype, addr2);
+#endif
 	return 0;
 }
 
 U_BOOT_CMD(
 	goimage, 3, 1,	do_goImage,
-	"start Image at address 'addr'",
-	"addr\n"
-	"    - start Image at address 'addr' with default machine type\n"
-	"addr type\n"
+	"start Image at address 'addr' 'addr2' 'machtype'",
+	"addr addr2 machtype\n"
+	"    - start Image at address 'addr' with machine type, addr2 optional for DTS\n"
+	"addr \n"
 	"    - start Image at address 'addr' with machine type integer\n"
+	"addr2 \n"
+	"    - optional for DTS\n"
+	"machtype \n"
+	"    - optional to redefine machtype\n"
 );
 
 int do_new_cmd (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])

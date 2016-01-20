@@ -171,7 +171,7 @@ void gic_raise_softirq(int cpu)
 #endif
 }
 
-void gic_init(unsigned int nr, int start,
+void gic_dev_init(unsigned int nr, int start,
 			   void __iomem *dist_base, void __iomem *cpu_base)
 {
 	struct gic_chip_data *gic;

@@ -517,6 +517,7 @@ else
 
 endif # $(dot-config)
 
+KBUILD_CFLAGS += $(call cc-option, -mcpu=cortex-a9)	# Add by jhkim for AARCH64
 KBUILD_CFLAGS += -Os #-fomit-frame-pointer
 
 ifdef BUILD_TAG
@@ -1259,7 +1260,7 @@ clobber: rm-files := $(CLOBBER_FILES)
 
 PHONY += clobber
 
-tidy:	
+tidy:
 	@find $(OBJTREE) -type f \( -name '*.depend*' \) -print | xargs rm -f
 
 clobber: clean tidy

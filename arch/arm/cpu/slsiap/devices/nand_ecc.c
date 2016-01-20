@@ -90,6 +90,8 @@ static void __ecc_reset_decoder(void)
 	_pNCTRL->NFCONTROL |= NX_NFCTRL_ECCRST;
 	// disconnect syndrome path
 	_pNCTRL->NFECCAUTOMODE = (_pNCTRL->NFECCAUTOMODE & ~(NX_NFACTRL_ELP)) | NX_NFACTRL_SYN;
+
+	dmb();
 }
 
 static void __ecc_decode_enable(int eccsize)	/* 512 or 1024 */
@@ -106,6 +108,8 @@ static void __ecc_decode_enable(int eccsize)	/* 512 or 1024 */
 		((iNX_BCH_VAR_T & 0x7F) << NX_NFECCCTRL_ELPNUM)		|
 		((iNX_BCH_VAR_R & 0xFF) << NX_NFECCCTRL_PDATACNT)	|
 		(((eccsize-1) & 0x3FF)  << NX_NFECCCTRL_DATACNT);
+
+	dmb();
 }
 
 static void __ecc_write_ecc_decode(unsigned int *ecc, int eccbyte)
@@ -118,6 +122,8 @@ static void __ecc_write_ecc_decode(unsigned int *ecc, int eccbyte)
 
 	for(i = 0; len > i; i++)
 		*pNFORGECC++ = *ecc++;
+
+	dmb();
 }
 
 static void __ecc_wait_for_decode(void)
@@ -142,6 +148,8 @@ static void __ecc_start_correct(int eccsize)
  		((iNX_BCH_VAR_T & 0x07F) << NX_NFECCCTRL_ELPNUM )	|
 		((iNX_BCH_VAR_R & 0x0FF) << NX_NFECCCTRL_PDATACNT)	|
 	 	(((eccsize - 1) & 0x3FF) << NX_NFECCCTRL_DATACNT);
+
+	dmb();
 }
 
 static void __ecc_wait_for_correct(void)
@@ -176,12 +184,16 @@ static void __ecc_setup_encoder(void)
     NX_MCUS_SetNANDRWDataNum(iNX_BCH_VAR_K);
     NX_MCUS_SetParityCount(iNX_BCH_VAR_R);
     NX_MCUS_SetNumOfELP(iNX_BCH_VAR_T);
+
+	dmb();
 }
 
 static void __ecc_encode_enable(void)
 {
 	NX_MCUS_SetNFDecMode(NX_MCUS_DECMODE_ENCODER);
 	NX_MCUS_RunECCEncDec();
+
+	dmb();
 }
 
 static void __ecc_read_ecc_encode(unsigned int *ecc, int eccbyte)

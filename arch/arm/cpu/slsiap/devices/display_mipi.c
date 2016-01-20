@@ -61,12 +61,12 @@ static void disp_mipi_init(void)
 
 	/* BASE : TOP_CLKGEN */
 	/* CLOCK: top CLKGEN not use BCLK */
-	NX_DISPTOP_CLKGEN_SetBaseAddress(clkid, (U32)IO_ADDRESS(NX_DISPTOP_CLKGEN_GetPhysicalAddress(clkid)));
+	NX_DISPTOP_CLKGEN_SetBaseAddress(clkid, (void*)IO_ADDRESS(NX_DISPTOP_CLKGEN_GetPhysicalAddress(clkid)));
 	NX_DISPTOP_CLKGEN_SetClockPClkMode(clkid, NX_PCLKMODE_ALWAYS);
 
 	/* BASE : MIPI */
 	NX_MIPI_Initialize();
-    NX_MIPI_SetBaseAddress(0, IO_ADDRESS(NX_MIPI_GetPhysicalAddress(0)));
+    NX_MIPI_SetBaseAddress(0, (void*)IO_ADDRESS(NX_MIPI_GetPhysicalAddress(0)));
 	NX_MIPI_OpenModule(0);
 }
 

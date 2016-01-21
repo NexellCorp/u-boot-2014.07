@@ -120,6 +120,8 @@ static int disp_mipi_setup(int module, int input, struct disp_vsync_info *psync,
             ,phyctl		// U32 B_DPHYCTL       // Refer to 10.2.3 M_PLLCTL of MIPI_D_PHY_USER_GUIDE.pdf or NX_MIPI_PHY_B_DPHYCTL enum or LN28LPP_MipiDphyCore1p5Gbps_Supplement. default value is all "0". If you want to change register values, it need to confirm from IP Design Team
 			);
 
+	mdelay(20);
+
 	if (pmipi->lcd_init) {
 		NX_MIPI_DSI_SoftwareReset(index);
 	    NX_MIPI_DSI_SetClock (index
@@ -132,7 +134,7 @@ static int disp_mipi_setup(int module, int input, struct disp_vsync_info *psync,
 	            ,0  // CBOOL EnableESCClock_DataLane2,
 	            ,0  // CBOOL EnableESCClock_DataLane3,
 	            ,1  // CBOOL EnableESCPrescaler , // ESCClock = ByteClock / ESCPrescalerValue
-	            ,5  // U32   ESCPrescalerValue
+	            ,10  // U32   ESCPrescalerValue
 	   			);
 
 		NX_MIPI_DSI_SetPhy( index
@@ -162,7 +164,7 @@ static int disp_mipi_setup(int module, int input, struct disp_vsync_info *psync,
             ,1  // CBOOL EnableESCClock_DataLane2,
             ,1  // CBOOL EnableESCClock_DataLane3,
             ,1  // CBOOL EnableESCPrescaler , // ESCClock = ByteClock / ESCPrescalerValue
-            ,5  // U32   ESCPrescalerValue
+            ,10  // U32   ESCPrescalerValue
    			);
 
 	NX_MIPI_DSI_SetPhy( index

@@ -358,13 +358,17 @@ void bd_display_run(char *cmd, int bl_duty, int bl_on)
 {
 	static int display_init = 0;
 
+
+
 	//Add init the LCD PWR 
 	//NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENB), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), TRUE);
+	/*
 	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_RESET), PAD_GET_BITNO(CFG_IO_LCD_RESET), TRUE);
 	mdelay(20);
 	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_DR_PWR_ON), PAD_GET_BITNO(CFG_IO_LCD_DR_PWR_ON), TRUE);
 	mdelay(20);
 	mdelay(10);
+	*/
 	
 
 	if (cmd) {
@@ -414,38 +418,24 @@ int board_late_init(void)
         writel((-1UL), SCR_RESET_SIG_RESET); /* clear */
 
         printf("RECOVERY BOOT\n");
-        bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+        //bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
         run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
     }
-    writel((-1UL), SCR_RESET_SIG_RESET);
 #endif /* CONFIG_RECOVERY_BOOT */
 
-#if defined(CONFIG_BAT_CHECK)
-	{
-		int ret =0;
-		int bat_check_skip = 0;
-	    // psw0523 for cts
-	    // bat_check_skip = 1;
+	//if(ret == 1)
+	//	auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
 
 #if defined(CONFIG_DISPLAY_OUT)
-		ret = power_battery_check(bat_check_skip, bd_display_run);
-#else
-		ret = power_battery_check(bat_check_skip, NULL);
+	//bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 #endif
-		if(ret == 1)
-			auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
-	}
-#else /* CONFIG_BAT_CHECK */
 
-#if defined(CONFIG_DISPLAY_OUT)
-	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
-#endif
-	//bd_display_run(0, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+	bd_display();
 
 	/* Temp check gpio to update */
 	//auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
 
-#endif /* CONFIG_BAT_CHECK */
+    writel((-1UL), SCR_RESET_SIG_RESET);
 
 	return 0;
 }

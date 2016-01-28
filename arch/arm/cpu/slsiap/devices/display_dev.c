@@ -207,7 +207,17 @@ int disp_syncgen_setup(int module, struct disp_vsync_info *psync, struct disp_sy
 	/* MLC top screen size */
    	NX_MLC_SetScreenSize(module, psync->h_active_len, psync->v_active_len);
 
-   	return 0;
+    /* Set TFT_CLKCTRL (offset : 1030h)
+        Field name : DPC0_CLKCTRL, DPC1_CLKCRL
+        Default value : clk_inv_lv0/1 = 0 : PADCLK_InvCLK 
+        Invert case   : clk_inv_lv0/1 = 1 : PADCLK_CLK
+    */
+	if (module == 0 && par->clk_inv_lv0)
+		NX_DISPLAYTOP_SetPADClock(PADMUX_PrimaryMLC, PADCLK_CLK);
+	if (module == 1 && par->clk_inv_lv1)
+		NX_DISPLAYTOP_SetPADClock(PADMUX_SecondaryMLC, PADCLK_CLK);
+
+	return 0;
 }
 
 void disp_multily_init(int module)

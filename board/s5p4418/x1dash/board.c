@@ -427,10 +427,10 @@ int board_late_init(void)
 	//	auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
 
 #if defined(CONFIG_DISPLAY_OUT)
-	//bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 #endif
 
-	bd_display();
+	//bd_display();
 
 	/* Temp check gpio to update */
 	//auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);

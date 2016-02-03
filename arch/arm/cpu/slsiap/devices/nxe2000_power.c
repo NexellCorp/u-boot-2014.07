@@ -453,6 +453,8 @@ static int nxe2000_device_setup(struct nxe2000_power *power)
 
 	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
 	i2c_set_bus_num(bus);
+	
+	nxe2000_i2c_write(NXE2000_REG_BANKSEL, 0x00, power);
 
 #if defined(CONFIG_PMIC_REG_DUMP)
 	printf("##########################################################\n");

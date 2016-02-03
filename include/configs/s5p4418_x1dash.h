@@ -54,7 +54,8 @@
 #define CONFIG_MEM_MALLOC_LENGTH		32*1024*1024
 
 /* when CONFIG_LCD */
-#define CONFIG_FB_ADDR					0x46000000
+#define CONFIG_FB_ADDR_46000000					0x46000000
+#define CONFIG_FB_ADDR                  0x6731e000
 #define CONFIG_BMP_ADDR					0x47000000
 
 /* Download OFFSET */

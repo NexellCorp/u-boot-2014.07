@@ -373,9 +373,8 @@ int board_late_init(void)
 	run_command(boot, 0);
 #endif
 
-#if defined CONFIG_POWER_OFF_BOOT
 	unsigned int power_key_val=0;
-#endif
+	unsigned int timer_cnt0 = 3 * 1000; //3 sec
 
  // reboot bootloader -> fastboot(download)
 	if (FASTBOOT_SIGNATURE == readl(SCR_USER_SIG6_READ)) {
@@ -401,17 +400,43 @@ int board_late_init(void)
         printf("POWER OFF BOOT\n");
 		do {
 			power_key_val = NX_ALIVE_GetInputValue(PAD_GET_BITNO(CFG_PWRKEY));
-		} while (0 != power_key_val);
+		} while (power_key_val != 0);
+		goto done;
     }
 #endif /* CONFIG_POWER_OFF_BOOT */
+    
+
+/* Check Force Recovery mode */
+	power_key_val = NX_ALIVE_GetInputValue(PAD_GET_BITNO(CFG_PWRKEY));
+
+	if(!power_key_val){
+		while (timer_cnt0 > 0) {
+
+			power_key_val = NX_ALIVE_GetInputValue(PAD_GET_BITNO(CFG_PWRKEY));
+
+			if (power_key_val) {
+				printf("PWRKEY Relased.\n");
+				break;
+			}
+			mdelay(1);
+			timer_cnt0--;
+		}
+	}
+	
+	if(timer_cnt0 == 0) {
+        printf("RECOVERY BOOT in FORCE\n");
+		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+        run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
+	}
+
+done:
+	
+	writel((-1UL), SCR_RESET_SIG_RESET);
 
 #if defined(CONFIG_DISPLAY_OUT)
 	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 #endif
 
-	//bd_display();
-
-    writel((-1UL), SCR_RESET_SIG_RESET);
 
 	return 0;
 }

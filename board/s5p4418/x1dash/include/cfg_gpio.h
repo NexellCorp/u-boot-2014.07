@@ -232,6 +232,8 @@
 #define PAD_GPIOALV4    (PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_UP )				//PMIC_INT
 #define PAD_GPIOALV5    (PAD_MODE_OUT  | PAD_LEVEL_LOW  | PAD_PULL_UP )				//Reserved
 
+#define CFG_PWRKEY                                  (PAD_GPIO_ALV + 0)
+
 /*------------------------------------------------------------------------------
  *	GPIO LCD (Backlight Enable/PWM)
  */

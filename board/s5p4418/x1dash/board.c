@@ -327,38 +327,9 @@ int power_init_board(void)
 
 extern void	bd_display(void);
 
-static void auto_update(int io, int wait)
-{
-	unsigned int grp = PAD_GET_GROUP(io);
-	unsigned int bit = PAD_GET_BITNO(io);
-	int level = 1, i = 0;
-	char *cmd = "fastboot";
-
-	for (i = 0; wait > i; i++) {
-		switch (io & ~(32-1)) {
-		case PAD_GPIO_A:
-		case PAD_GPIO_B:
-		case PAD_GPIO_C:
-		case PAD_GPIO_D:
-		case PAD_GPIO_E:
-			level = NX_GPIO_GetInputValue(grp, bit);	break;
-		case PAD_GPIO_ALV:
-			level = NX_ALIVE_GetInputValue(bit);	break;
-		};
-		if (level)
-			break;
-		mdelay(1);
-	}
-
-	if (i == wait)
-		run_command (cmd, 0);
-}
-
 void bd_display_run(char *cmd, int bl_duty, int bl_on)
 {
 	static int display_init = 0;
-
-
 
 	//Add init the LCD PWR 
 	//NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENB), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), TRUE);
@@ -402,6 +373,10 @@ int board_late_init(void)
 	run_command(boot, 0);
 #endif
 
+#if defined CONFIG_POWER_OFF_BOOT
+	unsigned int power_key_val=0;
+#endif
+
  // reboot bootloader -> fastboot(download)
 	if (FASTBOOT_SIGNATURE == readl(SCR_USER_SIG6_READ)) {
 		writel((-1UL), SCR_USER_SIG6_RESET); /* clear */
@@ -414,7 +389,6 @@ int board_late_init(void)
 
 #if defined CONFIG_RECOVERY_BOOT
     if (RECOVERY_SIGNATURE == readl(SCR_RESET_SIG_READ)) {
-        writel((-1UL), SCR_RESET_SIG_RESET); /* clear */
 
         printf("RECOVERY BOOT\n");
 		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
@@ -422,14 +396,20 @@ int board_late_init(void)
     }
 #endif /* CONFIG_RECOVERY_BOOT */
 
+#if defined CONFIG_POWER_OFF_BOOT
+    if (POWEROFF_SIGNATURE == readl(SCR_RESET_SIG_READ)) {
+        printf("POWER OFF BOOT\n");
+		do {
+			power_key_val = NX_ALIVE_GetInputValue(PAD_GET_BITNO(CFG_PWRKEY));
+		} while (0 != power_key_val);
+    }
+#endif /* CONFIG_POWER_OFF_BOOT */
+
 #if defined(CONFIG_DISPLAY_OUT)
 	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 #endif
 
 	//bd_display();
-
-	/* Temp check gpio to update */
-	//auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
 
     writel((-1UL), SCR_RESET_SIG_RESET);
 

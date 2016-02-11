@@ -479,6 +479,11 @@
 #endif
 
 /*-----------------------------------------------------------------------
+ * POWER_OFF boot
+ */
+#define	CONFIG_POWER_OFF_BOOT
+
+/*-----------------------------------------------------------------------
  * Debug message
  */
 //#define DEBUG							/* u-boot debug macro, nand, ethernet,... */

@@ -475,7 +475,7 @@
  */
 #define	CONFIG_RECOVERY_BOOT
 #if defined (CONFIG_RECOVERY_BOOT)
-	#define CONFIG_CMD_RECOVERY_BOOT "setenv bootargs console=ttyAMA0,115200n8 androidboot.hardware=x1dash androidboot.console=ttyAMA0 androidboot.serialno=12345 initrd=0x49000000,0x200000 init=/init;ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
+	#define CONFIG_CMD_RECOVERY_BOOT "setenv bootargs console=ttyAMA0,115200n8 androidboot.hardware=x1dash androidboot.console=ttyAMA0 androidboot.serialno=12345 initrd=0x49000000,0x200000 init=/init quite;ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
 #endif
 
 /*-----------------------------------------------------------------------

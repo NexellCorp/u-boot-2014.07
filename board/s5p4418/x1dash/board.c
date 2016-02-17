@@ -390,6 +390,7 @@ int board_late_init(void)
     if (RECOVERY_SIGNATURE == readl(SCR_RESET_SIG_READ)) {
 
         printf("RECOVERY BOOT\n");
+		writel((-1UL), SCR_RESET_SIG_RESET);
 		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
         run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
     }

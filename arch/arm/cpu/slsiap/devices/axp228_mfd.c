@@ -1216,9 +1216,8 @@ skip_bat_animation:
 
 	return ret;
 
-#if defined(CONFIG_DISPLAY_OUT)
 enter_shutdown:
-
+#if defined(CONFIG_DISPLAY_OUT)
 #if defined(CONFIG_PMIC_REG_DUMP)
 	axp228_register_dump(&nxe_power_config);
 #endif
@@ -1257,8 +1256,8 @@ enter_shutdown:
 	
 	while(1);
 
-	return 0;
 #endif
+	return 0;
 }
 #endif /* CONFIG_BAT_CHECK */
 

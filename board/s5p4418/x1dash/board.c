@@ -391,7 +391,7 @@ int board_late_init(void)
 
         printf("RECOVERY BOOT\n");
 		writel((-1UL), SCR_RESET_SIG_RESET);
-		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+		bd_display_run(CONFIG_CMD_LOGO_RECOVERY, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
         run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
     }
 #endif /* CONFIG_RECOVERY_BOOT */
@@ -426,7 +426,7 @@ int board_late_init(void)
 	
 	if(timer_cnt0 == 0) {
         printf("RECOVERY BOOT in FORCE\n");
-		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+		bd_display_run(CONFIG_CMD_LOGO_RECOVERY, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
         run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
 	}
 

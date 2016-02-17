@@ -464,6 +464,7 @@
 	#else
 	/* From MMC */
     #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_RECOVERY "ext4load mmc 0:1 0x47000000 recover-on-android.bmp; drawbmp 0x47000000"
     #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
     #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
 	#endif

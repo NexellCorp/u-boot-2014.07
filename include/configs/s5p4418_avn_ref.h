@@ -46,11 +46,11 @@
  */
 #define CONFIG_RELOC_TO_TEXT_BASE												/* Relocate u-boot code to TEXT_BASE */
 
-#define	CONFIG_SYS_TEXT_BASE 			0x42C00000
+#define	CONFIG_SYS_TEXT_BASE 			0x43C00000
 #define	CONFIG_SYS_INIT_SP_ADDR			CONFIG_SYS_TEXT_BASE					/* init and run stack pointer */
 
 /* malloc() pool */
-#define	CONFIG_MEM_MALLOC_START			0x43000000
+#define	CONFIG_MEM_MALLOC_START			0x44000000
 #define CONFIG_MEM_MALLOC_LENGTH		32*1024*1024							/* more than 2M for ubifs: MAX 16M */
 
 /* when CONFIG_LCD */
@@ -646,6 +646,12 @@
 #if defined (CONFIG_RECOVERY_BOOT)
     #define CONFIG_CMD_RECOVERY_BOOT "setenv bootargs console=ttyAMA3,115200n8 androidboot.hardware=s5p4418_avn_ref androidboot.console=ttyAMA3 androidboot.serialno=12345 initrd=0x49000000,0x200000 init=/init;ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
 #endif
+
+#define        CONFIG_UPDATE_BOOT
+#if defined (CONFIG_UPDATE_BOOT)
+    #define CONFIG_CMD_UPDATE_BOOT "setenv bootargs console=ttyAMA3,115200n8 root=/dev/ram0 rw initrd=0x49000000,32M ramdisk=32768;ext4load mmc 2:1 0x48000000 uImage_update;ext4load mmc 2:1 0x49000000 ramdisk_update.gz;bootm 0x48000000"
+#endif
+
 
 #define CONFIG_SILENT_CONSOLE
 #define CONFIG_SYS_CONSOLE_INFO_QUIET	/* print u-boot logo */

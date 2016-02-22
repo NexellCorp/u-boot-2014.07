@@ -313,8 +313,20 @@ int board_late_init(void)
         bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
         run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
     }
-    writel((-1UL), SCR_RESET_SIG_RESET);
 #endif /* CONFIG_RECOVERY_BOOT */
+
+#if defined CONFIG_UPDATE_BOOT
+    if (UPDATE_SIGNATURE == readl(SCR_RESET_SIG_READ)) {
+        writel((-1UL), SCR_RESET_SIG_RESET); /* clear */
+
+        printf("UPDATE BOOT\n");
+        bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+        run_command(CONFIG_CMD_UPDATE_BOOT, 0);        /* recovery boot */
+    }
+#endif /* CONFIG_RECOVERY_BOOT */
+    
+	writel((-1UL), SCR_RESET_SIG_RESET);
+
 
 
 #if defined(CONFIG_DISPLAY_OUT)

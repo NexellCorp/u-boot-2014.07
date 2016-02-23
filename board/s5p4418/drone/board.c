@@ -394,6 +394,17 @@ int board_late_init(void)
 	run_command(boot, 0);
 #endif
 
+#if 1 // reboot bootloader -> fastboot(download)
+	if (FASTBOOT_SIGNATURE == readl(SCR_USER_SIG6_READ)) {
+		writel((-1UL), SCR_USER_SIG6_RESET); /* clear */
+		printf("\nuser reset : fastboot\n");
+		run_command ("fastboot", 0);	/* fastboot */
+		writel((-1UL), SCR_USER_SIG6_RESET);
+		return 0;
+	}
+	writel((-1UL), SCR_USER_SIG6_RESET);
+#endif
+
 #if defined(CONFIG_RECOVERY_BOOT)
     if (RECOVERY_SIGNATURE == readl(SCR_RESET_SIG_READ)) {
         writel((-1UL), SCR_RESET_SIG_RESET); /* clear */
@@ -402,9 +413,19 @@ int board_late_init(void)
         bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
         run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
     }
-    writel((-1UL), SCR_RESET_SIG_RESET);
 #endif /* CONFIG_RECOVERY_BOOT */
 
+#if defined CONFIG_UPDATE_BOOT
+    if (UPDATE_SIGNATURE == readl(SCR_RESET_SIG_READ)) {
+        writel((-1UL), SCR_RESET_SIG_RESET); /* clear */
+
+        printf("UPDATE BOOT\n");
+        bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+        run_command(CONFIG_CMD_UPDATE_BOOT, 0);        /* recovery boot */
+    }
+#endif /* CONFIG_RECOVERY_BOOT */
+
+    writel((-1UL), SCR_RESET_SIG_RESET);
 #if defined(CONFIG_BAT_CHECK)
 	{
 		int ret =0;

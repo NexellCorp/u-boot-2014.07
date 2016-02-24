@@ -57,6 +57,8 @@ DECLARE_GLOBAL_DATA_PTR;
 #define DBGOUT(msg...)		do {} while (0)
 #endif
 
+#define FASTBOOT_SIGNATURE      0x46415354 /* (ASCII) : FAST  */
+
 /*------------------------------------------------------------------------------
  * intialize nexell soc and board status.
  */

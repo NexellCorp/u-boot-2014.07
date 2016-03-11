@@ -25,6 +25,17 @@
 #include <errno.h>
 #include "display_dev.h"
 
+#if defined(CONFIG_MACH_S5P6818)
+#define	PLLPMS_150MHz		0x2192
+#define	BANDCTL_150MHz		0x2
+
+#define	PLLPMS_100MHz		0x3323
+#define	BANDCTL_100MHz		0x1
+
+#define	PLLPMS_80MHz		0x3283
+#define	BANDCTL_80MHz		0x0
+#endif
+
 static void disp_mipi_reset(void)
 {
 	int index = 0;
@@ -103,6 +114,12 @@ static int disp_mipi_setup(int module, int input, struct disp_vsync_info *psync,
 	unsigned int pllctl  = pmipi->pllctl;
 	unsigned int phyctl  = pmipi->phyctl;
 
+#if defined(CONFIG_MACH_S5P6818)
+	U32 esc_pre_value = 1;
+#else
+	U32 esc_pre_value = 10;
+#endif
+
 	switch (input) {
 	case DISP_DEVICE_SYNCGEN0:	input = 0; break;
 	case DISP_DEVICE_SYNCGEN1:	input = 1; break;
@@ -111,14 +128,27 @@ static int disp_mipi_setup(int module, int input, struct disp_vsync_info *psync,
 		return -EINVAL;
 	}
 
+#if defined(CONFIG_MACH_S5P6818)
 	NX_MIPI_DSI_SetPLL(index
-			,CTRUE      // CBOOL Enable      ,
-            ,0xFFFFFFFF // U32 PLLStableTimer,
-            ,pllpms     // 19'h033E8: 1Ghz  // Use LN28LPP_MipiDphyCore1p5Gbps_Supplement.
-            ,bandctl    // 4'hF     : 1Ghz  // Use LN28LPP_MipiDphyCore1p5Gbps_Supplement.
-            ,pllctl     // U32 M_PLLCTL      , // Refer to 10.2.2 M_PLLCTL of MIPI_D_PHY_USER_GUIDE.pdf  Default value is all "0". If you want to change register values, it need to confirm from IP Design Team
-            ,phyctl		// U32 B_DPHYCTL       // Refer to 10.2.3 M_PLLCTL of MIPI_D_PHY_USER_GUIDE.pdf or NX_MIPI_PHY_B_DPHYCTL enum or LN28LPP_MipiDphyCore1p5Gbps_Supplement. default value is all "0". If you want to change register values, it need to confirm from IP Design Team
-			);
+						,CTRUE			// CBOOL Enable      ,
+						,0xFFFFFFFF		// U32 PLLStableTimer,
+						,PLLPMS_100MHz	// 19'h033E8: 1Ghz  // Use LN28LPP_MipiDphyCore1p5Gbps_Supplement.
+						,BANDCTL_100MHz	// 4'hF     : 1Ghz  // Use LN28LPP_MipiDphyCore1p5Gbps_Supplement.
+						,0				// U32 M_PLLCTL      , // Refer to 10.2.2 M_PLLCTL of MIPI_D_PHY_USER_GUIDE.pdf  Default value is all "0". If you want to change register values, it need to confirm from IP Design Team
+						,0				// U32 B_DPHYCTL       // Refer to 10.2.3 M_PLLCTL of MIPI_D_PHY_USER_GUIDE.pdf or NX_MIPI_PHY_B_DPHYCTL enum or LN28LPP_MipiDphyCore1p5Gbps_Supplement. default value is all "0". If you want to change register values, it need to confirm from IP Design Team
+						);
+#else
+	NX_MIPI_DSI_SetPLL(index
+						,CTRUE      // CBOOL Enable      ,
+						,0xFFFFFFFF // U32 PLLStableTimer,
+						,pllpms     // 19'h033E8: 1Ghz  // Use LN28LPP_MipiDphyCore1p5Gbps_Supplement.
+						,bandctl    // 4'hF     : 1Ghz  // Use LN28LPP_MipiDphyCore1p5Gbps_Supplement.
+						,pllctl     // U32 M_PLLCTL      , // Refer to 10.2.2 M_PLLCTL of MIPI_D_PHY_USER_GUIDE.pdf  Default value is all "0". If you want to change register values, it need to confirm from IP Design Team
+						,phyctl		// U32 B_DPHYCTL       // Refer to 10.2.3 M_PLLCTL of MIPI_D_PHY_USER_GUIDE.pdf or NX_MIPI_PHY_B_DPHYCTL enum or LN28LPP_MipiDphyCore1p5Gbps_Supplement. default value is all "0". If you want to change register values, it need to confirm from IP Design Team
+						);
+#endif
+
+	mdelay(20);
 
 	if (pmipi->lcd_init) {
 		NX_MIPI_DSI_SoftwareReset(index);
@@ -132,7 +162,7 @@ static int disp_mipi_setup(int module, int input, struct disp_vsync_info *psync,
 	            ,0  // CBOOL EnableESCClock_DataLane2,
 	            ,0  // CBOOL EnableESCClock_DataLane3,
 	            ,1  // CBOOL EnableESCPrescaler , // ESCClock = ByteClock / ESCPrescalerValue
-	            ,5  // U32   ESCPrescalerValue
+	            ,esc_pre_value  // U32   ESCPrescalerValue
 	   			);
 
 		NX_MIPI_DSI_SetPhy( index
@@ -151,6 +181,34 @@ static int disp_mipi_setup(int module, int input, struct disp_vsync_info *psync,
 			return ret;
 	}
 
+#if defined(CONFIG_MACH_S5P6818)
+	NX_MIPI_DSI_SetPLL(index
+			,CTRUE      // CBOOL Enable      ,
+			,0xFFFFFFFF // U32 PLLStableTimer,
+			,pllpms     // 19'h033E8: 1Ghz  // Use LN28LPP_MipiDphyCore1p5Gbps_Supplement.
+			,bandctl    // 4'hF     : 1Ghz  // Use LN28LPP_MipiDphyCore1p5Gbps_Supplement.
+			,pllctl     // U32 M_PLLCTL      , // Refer to 10.2.2 M_PLLCTL of MIPI_D_PHY_USER_GUIDE.pdf  Default value is all "0". If you want to change register values, it need to confirm from IP Design Team
+			,phyctl		// U32 B_DPHYCTL       // Refer to 10.2.3 M_PLLCTL of MIPI_D_PHY_USER_GUIDE.pdf or NX_MIPI_PHY_B_DPHYCTL enum or LN28LPP_MipiDphyCore1p5Gbps_Supplement. default value is all "0". If you want to change register values, it need to confirm from IP Design Team
+			);
+
+	mdelay(1);
+
+	NX_MIPI_DSI_SetClock (index
+			,0  // CBOOL EnableTXHSClock    ,
+			,0  // CBOOL UseExternalClock   , // CFALSE: PLL clock CTRUE: External clock
+			,1  // CBOOL EnableByteClock    , // ByteClock means (D-PHY PLL clock / 8)
+			,1  // CBOOL EnableESCClock_ClockLane,
+			,1  // CBOOL EnableESCClock_DataLane0,
+			,0  // CBOOL EnableESCClock_DataLane1,
+			,0  // CBOOL EnableESCClock_DataLane2,
+			,0  // CBOOL EnableESCClock_DataLane3,
+			,1  // CBOOL EnableESCPrescaler , // ESCClock = ByteClock / ESCPrescalerValue
+			,10  // U32   ESCPrescalerValue
+			);
+
+	mdelay(1);
+#endif
+
 	NX_MIPI_DSI_SoftwareReset(index);
     NX_MIPI_DSI_SetClock (index
     		,1  // CBOOL EnableTXHSClock    ,
@@ -162,7 +220,7 @@ static int disp_mipi_setup(int module, int input, struct disp_vsync_info *psync,
             ,1  // CBOOL EnableESCClock_DataLane2,
             ,1  // CBOOL EnableESCClock_DataLane3,
             ,1  // CBOOL EnableESCPrescaler , // ESCClock = ByteClock / ESCPrescalerValue
-            ,5  // U32   ESCPrescalerValue
+            ,esc_pre_value  // U32   ESCPrescalerValue
    			);
 
 	NX_MIPI_DSI_SetPhy( index

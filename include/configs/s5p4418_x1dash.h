@@ -120,7 +120,8 @@
 //#define CONFIG_BOOTFILE					"uImage"  		/* File to load	*/
 
 //#define CONFIG_BOOTCOMMAND "ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 root.img.gz;bootm 0x48000000"
-#define CONFIG_BOOTCOMMAND "ext4load mmc 0:1 0x40008000 Image;goimage 0x40008000"
+//#define CONFIG_BOOTCOMMAND "ext4load mmc 0:1 0x40008000 Image;goimage 0x40008000"
+#define CONFIG_BOOTCOMMAND "ext4load mmc 0:1 0x40008000 Image;ext4load mmc 0:1 0x49000000 root.img.gz;goimage 0x40008000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -346,7 +347,8 @@
 	#define CONFIG_MMC2_ATTACH      	TRUE    /* 2 = MMC2 : External */
 
 	#define CONFIG_MMC0_CLOCK			50000000
-	#define CONFIG_MMC0_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0x1c) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(1)
+	//#define CONFIG_MMC0_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0x1c) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(1)
+	#define CONFIG_MMC0_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0x1c) | DW_MMC_DRIVE_PHASE(1)| DW_MMC_SAMPLE_PHASE(1)
 
 	#define CONFIG_MMC2_CLOCK			25000000
 	#define CONFIG_MMC2_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0x1c) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(1)
@@ -428,11 +430,14 @@
 #define CFG_FASTBOOT_TRANSFER_BUFFER_SIZE	(CFG_MEM_PHY_SYSTEM_SIZE - CFG_FASTBOOT_TRANSFER_BUFFER)
 
 #define	FASTBOOT_PARTS_DEFAULT		\
-			"flash=mmc,0:2ndboot:2nd:0x200,0x8e00;"	\
-			"flash=mmc,0:bootloader:boot:0x8000,0x77000;"	\
-			"flash=mmc,0:boot:ext4:0x00100000,0x04000000;"		\
-			"flash=mmc,0:system:ext4:0x04100000,0x2F200000;"	\
-			"flash=mmc,0:root:ext4:0x33300000,0x0;"		
+        "flash=mmc,0:2ndboot:2nd:0x200,0x8e00;" \
+        "flash=mmc,0:bootloader:boot:0x8000,0x77000;" \
+        "flash=mmc,0:boot:ext4:0x000100000,0x004000000;" \
+        "flash=mmc,0:system:ext4:0x04100000,0x2F200000;" \
+        "flash=mmc,0:cache:ext4:0x33300000,0x1AC00000;" \
+        "flash=mmc,0:misc:emmc:0x4E000000,0x00800000;" \
+        "flash=mmc,0:recovery:emmc:0x4E900000,0x01600000;" \
+        "flash=mmc,0:userdata:ext4:0x50000000,0x0;"
 #endif
 
 /*-----------------------------------------------------------------------

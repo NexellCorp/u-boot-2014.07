@@ -1056,8 +1056,12 @@ int power_pmic_function_init(void)
 	ret |= power_nxe2000_init();
 	ret |= power_nxe2000_bat_init(i2c_bus);
 #endif
+#if defined(CONFIG_POWER_FG_NXE2000)
 	ret |= power_nxe2000_fg_init(i2c_bus);
+#endif
+#if defined(CONFIG_POWER_MUIC_NXE2000)
 	ret |= power_nxe2000_muic_init(i2c_bus);
+#endif
 
 	return ret;
 }

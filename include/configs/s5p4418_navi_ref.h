@@ -385,17 +385,22 @@
  * PMIC
  */
 
-//#define CONFIG_PMIC
+#define CONFIG_PMIC
 	#if defined(CONFIG_PMIC)
 		#define CONFIG_CMD_I2C
 		#define CONFIG_PMIC_I2C
-		#define CONFIG_PMIC_I2C_BUSA				I2C_7
-		#define CONFIG_PMIC_I2C_BUSB				I2C_8
+		#define CONFIG_PMIC_I2C_BUS							I2C_7
 
 		#define CONFIG_POWER
 		#define CONFIG_POWER_I2C
 
-		#define CONFIG_REGULATOR_MP8845C
+		#define CONFIG_PMIC_NXE2000
+	#endif
+
+	#if defined(CONFIG_PMIC_NXE2000)
+		#define CONFIG_POWER_NXE2000
+
+		//#define CONFIG_ENABLE_INIT_VOLTAGE						/* enable set voltage(ARM, CORE)  */
 		//#define CONFIG_PMIC_REG_DUMP
 	#endif
 
@@ -450,10 +455,7 @@
     #define CONFIG_I2C6_NO_STOP             0               /* when tx end, 0= generate stop signal , 1: skip stop signal */
 
     #define CONFIG_I2C7_NEXELL                              /* 1 = i2c 5 */
-    #define CONFIG_I2C7_NO_STOP             0               /* when tx end, 0= generate stop signal , 1: skip stop signal */
-
-    #define CONFIG_I2C8_NEXELL                              /* 1 = i2c 5 */
-    #define CONFIG_I2C8_NO_STOP             0               /* when tx end, 0= generate stop signal , 1: skip stop signal */
+    #define CONFIG_I2C7_NO_STOP             1               /* when tx end, 0= generate stop signal , 1: skip stop signal */
 
     #define CFG_IO_I2C0_SCL					((PAD_GPIO_B + 18) | PAD_FUNC_ALT2)	//AP_GPB18_MDEC_HDCAM_HMRX_AUDIO2SCL
     #define CFG_IO_I2C0_SDA					((PAD_GPIO_B + 16) | PAD_FUNC_ALT2)	//AP_GPB16_MDEC_HDCAM_HMRX_AUDIO2SDA
@@ -476,11 +478,8 @@
     #define CFG_IO_I2C6_SCL					((PAD_GPIO_E + 1) | PAD_FUNC_ALT0)	// AP_GPD26_DESSCL
     #define CFG_IO_I2C6_SDA					((PAD_GPIO_E + 2) | PAD_FUNC_ALT0)	// AP_GPD27_DESSDA
 
-    #define CFG_IO_I2C7_SCL					((PAD_GPIO_E + 9) | PAD_FUNC_ALT0)	// AP_GPE9_ARM_SCL
-    #define CFG_IO_I2C7_SDA					((PAD_GPIO_E + 8) | PAD_FUNC_ALT0)	// AP_GPE8_ARM_SDA
-
-//    #define CFG_IO_I2C8_SCL					((PAD_GPIO_E + 11) | PAD_FUNC_ALT0)	// AP_GPE11_CORE_SCL
-//    #define CFG_IO_I2C8_SDA					((PAD_GPIO_E + 10) | PAD_FUNC_ALT0)	// AP_GPE10_CORE_SDA
+    #define CFG_IO_I2C7_SCL					((PAD_GPIO_E + 9) | PAD_FUNC_ALT0)	// AP_GPE9_PMIC_SCL
+    #define CFG_IO_I2C7_SDA					((PAD_GPIO_E + 8) | PAD_FUNC_ALT0)	// AP_GPE8_PMIC_SDA
 
 #endif
 
@@ -586,7 +585,7 @@
 /*-----------------------------------------------------------------------
  * FASTBOOT
  */
-//#define CONFIG_FASTBOOT
+#define CONFIG_FASTBOOT
 
 #if defined(CONFIG_FASTBOOT) & defined(CONFIG_USB_GADGET)
 #define CFG_FASTBOOT_TRANSFER_BUFFER        CONFIG_MEM_LOAD_ADDR

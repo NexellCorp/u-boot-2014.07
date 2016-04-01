@@ -38,9 +38,8 @@
 #include <power/pmic.h>
 #endif
 
-#if defined(CONFIG_REGULATOR_MP8845C)
-#include <i2c.h>
-#include <mp8845c_regulator.h>
+#if defined(CONFIG_PMIC_NXE2000)
+#include <nxe2000-private.h>
 #endif
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -276,13 +275,8 @@ int board_early_init_f(void)
 {
 	bd_gpio_init();
 	bd_alive_init();
-#if defined(CONFIG_REGULATOR_MP8845C) && !defined(CONFIG_PMIC_REG_DUMP)
-#if defined(CONFIG_PMIC_I2C_BUSA)
-    bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSA, 1200000, 0); // ARM
-#endif
-#if defined(CONFIG_PMIC_I2C_BUSB)
-    bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSB, 1100000, 1); // CORE
-#endif
+#if (defined(CONFIG_PMIC_NXE2000)||defined(CONFIG_PMIC_AXP228))&& !defined(CONFIG_PMIC_REG_DUMP)
+	bd_pmic_init();
 #endif
 #if defined(CONFIG_NXP_RTC_USE)
 	nxp_rtc_init();
@@ -296,18 +290,14 @@ int board_init(void)
 	return 0;
 }
 
-#if defined(CONFIG_PMIC_REG_DUMP)
+#if defined(CONFIG_PMIC_NXE2000)||defined(CONFIG_PMIC_AXP228)
 int power_init_board(void)
 {
 	int ret = 0;
 #if defined(CONFIG_PMIC_REG_DUMP)
-#if defined(CONFIG_PMIC_I2C_BUSA)
-    bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSA, 1200000, 0); // ARM
+	bd_pmic_init();
 #endif
-#if defined(CONFIG_PMIC_I2C_BUSB)
-    bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSB, 1100000, 1); // CORE
-#endif
-#endif
+	ret = power_pmic_function_init();
 	return ret;
 }
 #endif

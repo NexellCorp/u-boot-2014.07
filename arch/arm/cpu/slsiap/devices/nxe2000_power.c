@@ -454,6 +454,8 @@ static int nxe2000_device_setup(struct nxe2000_power *power)
 	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
 	i2c_set_bus_num(bus);
 
+	nxe2000_i2c_write(NXE2000_REG_BANKSEL, 0x00, power);
+
 #if defined(CONFIG_PMIC_REG_DUMP)
 	printf("##########################################################\n");
 	printf("##\e[31m PMIC OTP Value \e[0m \n");
@@ -490,8 +492,10 @@ static int nxe2000_device_setup(struct nxe2000_power *power)
 #endif
 
 	/* Set DCDC voltage register */
+#ifdef CONFIG_ENABLE_INIT_VOLTAGE
 	nxe2000_i2c_write(NXE2000_REG_DC1VOL	, cache[NXE2000_REG_DC1VOL]		, power);
 	nxe2000_i2c_write(NXE2000_REG_DC2VOL	, cache[NXE2000_REG_DC2VOL]		, power);
+#endif
 	nxe2000_i2c_write(NXE2000_REG_DC3VOL	, cache[NXE2000_REG_DC3VOL]		, power);
 	nxe2000_i2c_write(NXE2000_REG_DC4VOL	, cache[NXE2000_REG_DC4VOL]		, power);
 	nxe2000_i2c_write(NXE2000_REG_DC5VOL	, cache[NXE2000_REG_DC5VOL]		, power);
@@ -851,14 +855,14 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 			&& (temp_ccaverage <= 15))
 		{
 			printf("No Battery 0. chgstate : 0x%02x, cc_average : %dmA \n", temp_chgstate, temp_ccaverage);
-			show_bat_state = 3;
+			//show_bat_state = 3;
 		}
 		else if(((temp_chgstate & 0x1F) == NXE2000_VAL_CHGSTATE_BATT_OVV)
 			&& (temp_ccaverage >= -4)
 			&& (temp_ccaverage <= 15))
 		{
 			printf("No Battery 1. chgstate : 0x%02x, cc_average : %dmA \n", temp_chgstate, temp_ccaverage);
-			show_bat_state = 3;
+			//show_bat_state = 3;
 		}
 
 		pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, back_reg);
@@ -1052,8 +1056,12 @@ int power_pmic_function_init(void)
 	ret |= power_nxe2000_init();
 	ret |= power_nxe2000_bat_init(i2c_bus);
 #endif
+#if defined(CONFIG_POWER_FG_NXE2000)
 	ret |= power_nxe2000_fg_init(i2c_bus);
+#endif
+#if defined(CONFIG_POWER_MUIC_NXE2000)
 	ret |= power_nxe2000_muic_init(i2c_bus);
+#endif
 
 	return ret;
 }

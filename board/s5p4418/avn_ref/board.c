@@ -302,7 +302,7 @@ int power_init_board(void)
 	int ret = 0;
 #if defined(CONFIG_PMIC_REG_DUMP)
 #if defined(CONFIG_PMIC_I2C_BUSA)
-    bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSA, 1200000, 0); // ARM
+    bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSA, 1250000, 0); // ARM
 #endif
 #if defined(CONFIG_PMIC_I2C_BUSB)
     bd_pmic_init_mp8845(CONFIG_PMIC_I2C_BUSB, 1100000, 1); // CORE

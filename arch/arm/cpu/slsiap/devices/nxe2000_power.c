@@ -497,9 +497,10 @@ static int nxe2000_device_setup(struct nxe2000_power *power)
 	nxe2000_i2c_write(NXE2000_REG_DC2VOL	, cache[NXE2000_REG_DC2VOL]		, power);
 #endif
 	nxe2000_i2c_write(NXE2000_REG_DC3VOL	, cache[NXE2000_REG_DC3VOL]		, power);
+#ifdef CONFIG_ENABLE_INIT_VOLTAGE
 	nxe2000_i2c_write(NXE2000_REG_DC4VOL	, cache[NXE2000_REG_DC4VOL]		, power);
 	nxe2000_i2c_write(NXE2000_REG_DC5VOL	, cache[NXE2000_REG_DC5VOL]		, power);
-
+#endif
 	nxe2000_i2c_write(NXE2000_REG_DC1VOL_SLP, cache[NXE2000_REG_DC1VOL_SLP]	, power);
 	nxe2000_i2c_write(NXE2000_REG_DC2VOL_SLP, cache[NXE2000_REG_DC2VOL_SLP]	, power);
 	nxe2000_i2c_write(NXE2000_REG_DC3VOL_SLP, cache[NXE2000_REG_DC3VOL_SLP]	, power);

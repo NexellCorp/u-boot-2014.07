@@ -24,6 +24,8 @@
 #include <common.h>
 #include <errno.h>
 #include "display_dev.h"
+#include "nx_gamma_tbl.h"
+
 
 #if (0)
 #define DBGOUT(msg...)		{ printf("DISP: " msg); }
@@ -36,6 +38,8 @@
 #define	KERN_ERR
 #define	KERN_INFO
 #endif
+
+struct NX_MLC_GammaTable_Parameter   nx_mlc_gammatable;
 
 void disp_lcd_device(int io)
 {
@@ -220,9 +224,86 @@ void disp_multily_init(int module)
 	NX_MLC_SetClockBClkMode(module, NX_BCLKMODE_ALWAYS);
 }
 
+inline double fastPrecisePow(double a, double b) {
+  // calculate approximation with fraction of the exponent
+  int e = (int) b;
+  union {
+    double d;
+    int x[2];
+  } u = { a };
+  u.x[1] = (int)((b - e) * (u.x[1] - 1072632447) + 1072632447);
+  u.x[0] = 0;
+ 
+  // exponentiation by squaring with the exponent's integer part
+  // double r = u.d makes everything much slower, not sure why
+  double r = 1.0;
+  while (e) {
+    if (e & 1) {
+      r *= a;
+    }
+    a *= a;
+    e >>= 1;
+  }
+ 
+  return r * u.d;
+}
+
+float powf_fast(float a, float b) {
+    union { float d; int x; } u = { a };
+    u.x = (int)(b * (u.x - 1064866805) + 1064866805);
+    return u.d;
+}
+/*
+double nx_pow(double x, double y)
+{
+    double temp;
+    if( y == 0)
+       return 1;
+    temp = nx_pow(x, y/2);       
+    if (y%2 == 0)
+        return temp*temp;
+    else
+    {
+        if(y > 0)
+            return x*temp*temp;
+        else
+            return (temp*temp)/x;
+    }
+}
+*/
+
+
+static ssize_t set_mlc_gamma(int module, int gamma)
+{
+
+    struct NX_MLC_GammaTable_Parameter *p_nx_mlc_gammatable;
+    U32 i;
+
+    p_nx_mlc_gammatable = &nx_mlc_gammatable;
+
+    for(i=0; i<256; i++) {
+        p_nx_mlc_gammatable->R_TABLE[i] = mlc_gtable[gamma-1][i];
+        p_nx_mlc_gammatable->G_TABLE[i] = mlc_gtable[gamma-1][i];
+        p_nx_mlc_gammatable->B_TABLE[i] = mlc_gtable[gamma-1][i];
+    }
+
+    p_nx_mlc_gammatable->DITHERENB   = 0;
+    p_nx_mlc_gammatable->ALPHASELECT = 0;
+    p_nx_mlc_gammatable->YUVGAMMAENB = 0;
+    p_nx_mlc_gammatable->RGBGAMMAENB = 0;
+    p_nx_mlc_gammatable->ALLGAMMAENB = 1;
+
+    NX_MLC_SetGammaTable( module, CTRUE, p_nx_mlc_gammatable );
+    return 0;
+}
+
+
 void disp_multily_enable(int module, int layer, int enable)
 {
 	CBOOL on = (enable ? CTRUE : CFALSE);
+	/* set gamma */
+	if(module == 0) //set primary disp gamma
+		set_mlc_gamma(module, 10); //gamma 1.0
 	/* START: MLC TOP */
 	NX_MLC_SetMLCEnable(module, on);
 	NX_MLC_SetTopDirtyFlag(module);

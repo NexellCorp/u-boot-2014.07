@@ -366,7 +366,7 @@ int board_late_init(void)
 	run_command(boot, 0);
 #endif
 
-#if 0 //defined CONFIG_RECOVERY_BOOT
+#if defined CONFIG_RECOVERY_BOOT
     if (RECOVERY_SIGNATURE == readl(SCR_RESET_SIG_READ)) {
         writel((-1UL), SCR_RESET_SIG_RESET); /* clear */
 
@@ -376,7 +376,7 @@ int board_late_init(void)
     }
 #endif /* CONFIG_RECOVERY_BOOT */
 
-#if 0 //defined CONFIG_UPDATE_BOOT
+#if defined CONFIG_UPDATE_BOOT
     if (UPDATE_SIGNATURE == readl(SCR_RESET_SIG_READ)) {
         writel((-1UL), SCR_RESET_SIG_RESET); /* clear */
 

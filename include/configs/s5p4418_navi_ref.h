@@ -592,14 +592,11 @@
 #define CFG_FASTBOOT_TRANSFER_BUFFER_SIZE	(CFG_MEM_PHY_SYSTEM_SIZE - CFG_FASTBOOT_TRANSFER_BUFFER)
 
 #define	FASTBOOT_PARTS_DEFAULT		\
-			"flash=mmc,0:2ndboot:2nd:0x200,0x4000;"	\
-			"flash=mmc,0:bootloader:boot:0x8000,0x70000;"	\
-			"flash=mmc,0:boot:ext4:0x00100000,0x04000000;"		\
-			"flash=mmc,0:system:ext4:0x04100000,0x28E00000;"	\
-			"flash=mmc,0:cache:ext4:0x2CF00000,0x21000000;"		\
-			"flash=mmc,0:misc:emmc:0x4E000000,0x00800000;"		\
-			"flash=mmc,0:recovery:emmc:0x4E900000,0x01600000;"	\
-			"flash=mmc,0:userdata:ext4:0x50000000,0x0;"
+			"flash=mmc,0:2ndboot:2nd:0x200,0x7e00;"\
+			"flash=mmc,0:bootloader:boot:0x8000,0x77000;" \
+			"flash=mmc,0:boot:ext4:0x00100000,0x04000000;" \
+			"flash=mmc,0:system:ext4:0x04100000,0x2F200000;" \
+			"flash=mmc,0:root:ext4:0x33300000,0x0;"
 #endif
 
 /*-----------------------------------------------------------------------

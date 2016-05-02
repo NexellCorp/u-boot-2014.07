@@ -521,8 +521,7 @@
 	#define CONFIG_SYS_MMC_BOOT_DEV		(0)		/* BOOT MMC DEVICE NUM */
 
 	#if defined(CONFIG_ENV_IS_IN_MMC)
-	//#define	CONFIG_ENV_OFFSET			512*1024			/* 0x00080000 */
-	#define	CONFIG_ENV_OFFSET			480*1024			/* 0x00080000 - 32*/
+	#define CONFIG_ENV_OFFSET           476*1024
 	#define CONFIG_ENV_SIZE			32*1024				/* N block size (512Byte Per Block)  */
 	#define CONFIG_ENV_RANGE		CONFIG_ENV_SIZE * 2	/* avoid bad block */
 	#define CONFIG_SYS_MMC_ENV_DEV		CONFIG_SYS_MMC_BOOT_DEV

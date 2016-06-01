@@ -31,8 +31,10 @@
 #define	debug	printf
 */
 
+
 #define MMC_BLOCK_SIZE			(512)
-#define	MAX_PART_TABLE			(8)
+//#define	MAX_PART_TABLE			(8)
+#define	MAX_PART_TABLE			(32)
 #define DOS_EBR_BLOCK				(0x100000/MMC_BLOCK_SIZE)
 
 #define DOS_PART_DISKSIG_OFFSET		0x1b8
@@ -82,6 +84,7 @@ static inline int is_extended(int part_type)
         part_type == 0xf ||
         part_type == 0x85);
 }
+
 
 static inline void part_mmc_chs(dos_partition_t *pt, lbaint_t lba_start, lbaint_t lba_size)
 {
@@ -384,7 +387,7 @@ static int do_fdisk(cmd_tbl_t *cmdtp, int flag, int argc, char* const argv[])
 }
 
 U_BOOT_CMD(
-	fdisk, 16, 1, do_fdisk,
+	fdisk, 30, 1, do_fdisk,
 	"mmc list or create ms-dos partition tables (MAX TABLE 7)",
 	"<dev no>\n"
 	"	- list partition table info\n"

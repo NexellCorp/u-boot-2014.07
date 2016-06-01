@@ -431,12 +431,24 @@
 #define	FASTBOOT_PARTS_DEFAULT		\
         "flash=mmc,0:2ndboot:2nd:0x200,0x8e00;" \
         "flash=mmc,0:bootloader:boot:0x8000,0x77000;" \
-        "flash=mmc,0:boot:ext4:0x000100000,0x004000000;" \
-        "flash=mmc,0:system:ext4:0x04100000,0x2F200000;" \
-        "flash=mmc,0:cache:ext4:0x33300000,0x1AC00000;" \
-        "flash=mmc,0:misc:emmc:0x4E000000,0x00800000;" \
-        "flash=mmc,0:recovery:emmc:0x4E900000,0x01600000;" \
-        "flash=mmc,0:userdata:ext4:0x50000000,0x0;"
+		"flash=mmc,0:boot:ext4:0x000100000,0x004000000;" \
+		"flash=mmc,0:system:ext4:0x04100000,0x1F400000" \
+		"flash=mmc,0:cache:ext4:0x23600000,0x1AC00000;" \
+        "flash=mmc,0:misc:emmc:0x3E300000,0x00800000;" \
+		"flash=mmc,0:recovery:emmc:0x3EC00000,0x01600000;" \
+		"flash=mmc,0:reserv1:emmc:0x40300000,0x0010000;" \
+		"flash=mmc,0:reserv2:emmc:0x40400000,0x00100000;" \
+		"flash=mmc,0:reserv3:emmc:0x40500000,0x00100000;" \
+		"flash=mmc,0:vendor:ext4:0x40600000,0x1F400000;" \
+		"flash=mmc,0:ota:ext4:0x5FA00000,0x1F400000;" \
+		"flash=mmc,0:reserv4:emmc:0x7EF00000,0x08000000;" \
+		"flash=mmc,0:reserv5:emmc:0x87000000,0x04000000;"\
+		"flash=mmc,0:reserv6:emmc:0x8B100000,0x00A00000;" \
+		"flash=mmc,0:reserv7:emmc:0x8BC00000,0x00A00000;" \
+		"flash=mmc,0:reserv8:emmc:0x8C700000,0x00A00000;" \
+		"flash=mmc,0:reserv9:emmc:0x8D200000,0x00A00000;" \
+		"flash=mmc,0:reserv10:emmc:0x8DD00000,0x00A00000;" \
+		"flash=mmc,0:userdata:ext4:0x8E700000,0x0;"
 #endif
 
 /*-----------------------------------------------------------------------

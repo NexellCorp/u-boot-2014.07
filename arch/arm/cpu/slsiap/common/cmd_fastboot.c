@@ -61,7 +61,7 @@ static const char *const f_parts_default = FASTBOOT_PARTS_DEFAULT;
 #define	FASTBOOT_NAND_MAX		1
 #define	FASTBOOT_MEM_MAX		1
 
-#define	FASTBOOT_DEV_PART_MAX	(16)				/* each device max partition max num */
+#define	FASTBOOT_DEV_PART_MAX	(32)				/* each device max partition max num */
 
 /* device types */
 #define	FASTBOOT_DEV_EEPROM		(1<<0)	/*  name "eeprom" */
@@ -185,7 +185,7 @@ extern int mmc_get_part_table(block_dev_desc_t *desc, uint64_t (*parts)[2], int 
 
 static int mmc_make_parts(int dev, uint64_t (*parts)[2], int count)
 {
-	char cmd[1024];
+	char cmd[2048];
 	int i = 0, l = 0, p = 0;
 
 	l = sprintf(cmd, "fdisk %d %d:", dev, count);
@@ -1571,9 +1571,12 @@ static int fboot_cmd_flash(const char *cmd, f_cmd_inf *inf, struct f_trans_stat 
 		part_lists_print();
 		part_mbr_update();
 		parse_comment(p, &p);
-
+		/*
 		if (0 == setenv("fastboot", (char *)p) &&
 			0 == saveenv());
+			goto done_flash;
+		*/
+		if (0 == setenv("fastboot", (char *)p) );
 			goto done_flash;
 
 	/* set environments */

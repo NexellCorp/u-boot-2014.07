@@ -146,13 +146,12 @@ static int abortboot_normal(int bootdelay)
 	int abort = 0;
 	unsigned long ts;
 
-    // psw0523 fix
-/*#ifdef CONFIG_MENUPROMPT*/
-	/*printf(CONFIG_MENUPROMPT);*/
-/*#else*/
-	/*if (bootdelay >= 0)*/
-		/*printf("Hit any key to stop autoboot: %2d ", bootdelay);*/
-/*#endif*/
+#ifdef CONFIG_MENUPROMPT
+	printf(CONFIG_MENUPROMPT);
+#else
+	if (bootdelay >= 0)
+		printf("Hit any key to stop autoboot: %2d ", bootdelay);
+#endif
 
 #if defined CONFIG_ZERO_BOOTDELAY_CHECK
 	/*

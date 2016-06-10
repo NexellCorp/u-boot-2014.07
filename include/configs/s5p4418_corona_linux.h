@@ -380,31 +380,28 @@
 	#define CONFIG_NXP_DWC_OTG_PHY
 #endif
 
+
 /*-----------------------------------------------------------------------
  * PMIC
  */
+#define CONFIG_PMIC
+#if defined(CONFIG_PMIC)
+	#define CONFIG_CMD_I2C
+	#define CONFIG_PMIC_I2C
+	#define CONFIG_PMIC_I2C_BUS			I2C_3
 
-//#define CONFIG_PMIC
-	#if defined(CONFIG_PMIC)
-		#define CONFIG_CMD_I2C
-		#define CONFIG_PMIC_I2C
-		#define CONFIG_PMIC_I2C_BUS							I2C_7
+	#define CONFIG_POWER
+	#define CONFIG_POWER_I2C
 
-		#define CONFIG_POWER
-		#define CONFIG_POWER_I2C
+	#define CONFIG_PMIC_NXE1500
+#endif
 
-//		#define CONFIG_PMIC_NXE2000
-		#define CONFIG_PMIC_NXE1500
-	#endif
+#if defined(CONFIG_PMIC_NXE1500)
+	#define CONFIG_POWER_NXE1500
 
-//	#if defined(CONFIG_PMIC_NXE2000)
-	#if defined(CONFIG_PMIC_NXE1500)
-//		#define CONFIG_POWER_NXE2000
-		#define CONFIG_POWER_NXE1500
-
-//		#define CONFIG_ENABLE_INIT_VOLTAGE					/* enable set voltage(ARM, CORE)  */
-//		#define CONFIG_PMIC_REG_DUMP
-	#endif
+	//#define CONFIG_ENABLE_INIT_VOLTAGE		/* enable set voltage(ARM, CORE, DDROI, DDR)  */
+	//#define CONFIG_PMIC_REG_DUMP
+#endif
 
 /*-----------------------------------------------------------------------
  * I2C
@@ -444,44 +441,11 @@
 	#define	CONFIG_I2C2_NEXELL						/* 1 = i2c 2 */
 	#define	CONFIG_I2C2_NO_STOP				0		/* when tx end, 0= generate stop signal , 1: skip stop signal */
 
-//  #define CONFIG_I2C3_NEXELL                      /* 1 = i2c 3 */
-//  #define CONFIG_I2C3_NO_STOP             0       /* when tx end, 0= generate stop signal , 1: skip stop signal */
+	#define CONFIG_I2C3_NEXELL						/* 1 = i2c 3 */
+	#define CONFIG_I2C3_NO_STOP				1		/* when tx end, 0= generate stop signal , 1: skip stop signal */
 
-//  #define CONFIG_I2C4_NEXELL                      /* 1 = i2c 4 */
-//  #define CONFIG_I2C4_NO_STOP             0       /* when tx end, 0= generate stop signal , 1: skip stop signal */
-
-//  #define CONFIG_I2C5_NEXELL                      /* 1 = i2c 5 */
-//  #define CONFIG_I2C5_NO_STOP             0       /* when tx end, 0= generate stop signal , 1: skip stop signal */
-
-//  #define CONFIG_I2C6_NEXELL                      /* 1 = i2c 5 */
-//  #define CONFIG_I2C6_NO_STOP             0       /* when tx end, 0= generate stop signal , 1: skip stop signal */
-
-	#define CONFIG_I2C7_NEXELL                      /* 1 = i2c 5 */
-	#define CONFIG_I2C7_NO_STOP             1       /* when tx end, 0= generate stop signal , 1: skip stop signal */
-
-//  #define CFG_IO_I2C0_SCL					((PAD_GPIO_B + 18) | PAD_FUNC_ALT2)	//AP_GPB18_MDEC_HDCAM_HMRX_AUDIO2SCL
-//  #define CFG_IO_I2C0_SDA					((PAD_GPIO_B + 16) | PAD_FUNC_ALT2)	//AP_GPB16_MDEC_HDCAM_HMRX_AUDIO2SDA
-
-//  #define CFG_IO_I2C1_SCL					((PAD_GPIO_C + 1) | PAD_FUNC_ALT1)	//AP_GPC1_SECSCL
-//  #define CFG_IO_I2C1_SDA					((PAD_GPIO_C + 2) | PAD_FUNC_ALT1)	//AP_GPC2_SECSDA
-
-//  #define CFG_IO_I2C2_SCL					((PAD_GPIO_C + 25) | PAD_FUNC_ALT1)	// AP_GPC25_TW9900_CS4955_HUBSCL
-//  #define CFG_IO_I2C2_SDA					((PAD_GPIO_C + 27) | PAD_FUNC_ALT1)	// AP_GPC27_TW9900_CS4955_HUBSDA
-
-//  #define CFG_IO_I2C3_SCL					((PAD_GPIO_D + 4) | PAD_FUNC_ALT0)	// AP_GPD4_DMB_AUD1_APLSCL
-//  #define CFG_IO_I2C3_SDA					((PAD_GPIO_D + 5) | PAD_FUNC_ALT0)	// AP_GPD5_DMB_AUD1_APLSDA
-
-//  #define CFG_IO_I2C4_SCL					((PAD_GPIO_D + 6) | PAD_FUNC_ALT0)	// AP_GPD6_TOUCH_BTSCL
-//  #define CFG_IO_I2C4_SDA					((PAD_GPIO_D + 7) | PAD_FUNC_ALT0)	// AP_GPD7_TOUCH_BTSDA
-
-//  #define CFG_IO_I2C5_SCL					((PAD_GPIO_D + 29) | PAD_FUNC_ALT0)	// AP_GPD22_HMO_SCL
-//  #define CFG_IO_I2C5_SDA					((PAD_GPIO_D + 30) | PAD_FUNC_ALT0)	// AP_GPD23_HMO_SDA
-
-//  #define CFG_IO_I2C6_SCL					((PAD_GPIO_E + 1) | PAD_FUNC_ALT0)	// AP_GPD26_DESSCL
-//  #define CFG_IO_I2C6_SDA					((PAD_GPIO_E + 2) | PAD_FUNC_ALT0)	// AP_GPD27_DESSDA
-
-    #define CFG_IO_I2C7_SCL					((PAD_GPIO_E + 9) | PAD_FUNC_ALT0)	// AP_GPE9_PMIC_SCL
-    #define CFG_IO_I2C7_SDA					((PAD_GPIO_E + 8) | PAD_FUNC_ALT0)	// AP_GPE8_PMIC_SDA
+	#define CFG_IO_I2C3_SCL					((PAD_GPIO_E + 9) | PAD_FUNC_ALT0)	// AP_GPE9_PMIC_SCL
+	#define CFG_IO_I2C3_SDA					((PAD_GPIO_E + 8) | PAD_FUNC_ALT0)	// AP_GPE8_PMIC_SDA
 
 #endif
 
@@ -651,8 +615,8 @@
 #endif
 
 
-#define CONFIG_SILENT_CONSOLE
-#define CONFIG_SYS_CONSOLE_INFO_QUIET	/* print u-boot logo */
+//#define CONFIG_SILENT_CONSOLE
+//#define CONFIG_SYS_CONSOLE_INFO_QUIET	/* print u-boot logo */
 #ifdef CONFIG_SILENT_CONSOLE
 #define CONFIG_SILENT_U_BOOT_ONLY		/* for bootm command, if not defined fail bootm command */
 #endif

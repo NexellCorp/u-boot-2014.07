@@ -38,8 +38,8 @@
 #include <power/pmic.h>
 #endif
 
-#if defined(CONFIG_PMIC_NXE2000)
-#include <nxe2000-private.h>
+#if defined(CONFIG_PMIC_NXE1500)
+#include <nxe1500-private.h>
 #endif
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -275,7 +275,7 @@ int board_early_init_f(void)
 {
 	bd_gpio_init();
 	bd_alive_init();
-#if (defined(CONFIG_PMIC_NXE2000)||defined(CONFIG_PMIC_AXP228))&& !defined(CONFIG_PMIC_REG_DUMP)
+#if (defined(CONFIG_PMIC_NXE1500))&& !defined(CONFIG_PMIC_REG_DUMP)
 	bd_pmic_init();
 #endif
 #if defined(CONFIG_NXP_RTC_USE)
@@ -290,7 +290,7 @@ int board_init(void)
 	return 0;
 }
 
-#if defined(CONFIG_PMIC_NXE2000)||defined(CONFIG_PMIC_AXP228)
+#if defined(CONFIG_PMIC_NXE1500)
 int power_init_board(void)
 {
 	int ret = 0;

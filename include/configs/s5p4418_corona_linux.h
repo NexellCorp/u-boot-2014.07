@@ -615,8 +615,8 @@
 #if	defined(CONFIG_DISPLAY_OUT)
 	#define	CONFIG_PWM			/* backlight */
 	/* display out device */
-	#define	CONFIG_DISPLAY_OUT_LVDS
-//  #define	CONFIG_DISPLAY_OUT_HDMI
+//	#define	CONFIG_DISPLAY_OUT_LVDS
+//	#define	CONFIG_DISPLAY_OUT_HDMI
 
 	/* display logo */
 	#define CONFIG_LOGO_NEXELL				/* Draw loaded bmp file to FB or fill FB */

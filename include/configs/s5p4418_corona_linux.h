@@ -615,8 +615,8 @@
 #endif
 
 
-//#define CONFIG_SILENT_CONSOLE
-//#define CONFIG_SYS_CONSOLE_INFO_QUIET	/* print u-boot logo */
+#define CONFIG_SILENT_CONSOLE
+#define CONFIG_SYS_CONSOLE_INFO_QUIET	/* print u-boot logo */
 #ifdef CONFIG_SILENT_CONSOLE
 #define CONFIG_SILENT_U_BOOT_ONLY		/* for bootm command, if not defined fail bootm command */
 #endif

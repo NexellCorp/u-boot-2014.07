@@ -14,7 +14,12 @@
 #include "fastboot.h"
 #include "nand.h"
 
+#include <nx_tieoff.h>
+
 #if defined(CONFIG_FASTBOOT)
+
+#define SOC_PA_TIEOFF       PHY_BASEADDR_TIEOFF
+#define SOC_VA_TIEOFF       IO_ADDRESS(SOC_PA_TIEOFF)
 
 #define FBOOT_USBD_IS_CONNECTED() (readl(S5P_OTG_GOTGCTL)&(B_SESSION_VALID|A_SESSION_VALID))
 #define FBOOT_USBD_DETECT_IRQ() (readl(S5P_OTG_GINTSTS) & \
@@ -340,14 +345,17 @@ int fastboot_poll(void)
 
 	/* A disconnect happended, this signals that the cable
 	   has been disconnected, return immediately */
-	if (!FBOOT_USBD_IS_CONNECTED())
-		return FASTBOOT_DISCONNECT;
+	if (((readl((SOC_VA_TIEOFF + 0x34)) >> 24) & 0xf) == 0x0) {	// OTGVBUS 5V
+		if (!FBOOT_USBD_IS_CONNECTED()) 
+			return FASTBOOT_DISCONNECT;
+	}
 
-	else if (FBOOT_USBD_DETECT_IRQ()) {
-		if (!fboot_usb_int_hndlr())
+	if (FBOOT_USBD_DETECT_IRQ()) {
+		if (!fboot_usb_int_hndlr()) {
 			ret = FASTBOOT_OK;
-		else
+		}else {
 			ret = FASTBOOT_ERROR;
+		}
 		FBOOT_USBD_CLEAR_IRQ();
 	}
 

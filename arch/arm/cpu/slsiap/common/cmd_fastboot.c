@@ -1842,6 +1842,9 @@ void fboot_usb_descriptor(descriptors_t *desc)
 	}
 }
 
+extern bool dflag;
+extern bool rdflag;
+
 static int do_fastboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	static int init_parts = 0;
@@ -1906,6 +1909,7 @@ static int do_fastboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 						printf("Fastboot ended by user\n");
 						fboot_lcd_status("exit");
 						f_connect = 0;
+						dflag = rdflag = true;
 						break;
 					}
 				}
@@ -1913,18 +1917,21 @@ static int do_fastboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 				if (FASTBOOT_ERROR == status) {
 					printf("Fastboot error \n");
 					fboot_lcd_status("error!!!");
+					dflag = rdflag = true;
 					break;
 				}
 				else if (FASTBOOT_DISCONNECT == status) {
 					f_connect = 1;
 					printf("Fastboot disconnect detected\n");
 					fboot_lcd_status("disconnect...");
+					dflag = rdflag = true;
 					break;
 				}
 				else if ((FASTBOOT_INACTIVE == status) && timeout) {
 					if (curr_time >= end_time) {
 						printf("Fastboot inactivity detected\n");
 						fboot_lcd_status("inactivity...");
+						dflag = rdflag = true;
 						break;
 					}
 				}
@@ -1937,6 +1944,7 @@ static int do_fastboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 						end_time = curr_time;
 						end_time += timeout;
 						debug("%d)\n", end_time);
+						dflag = rdflag = true;
 					}
 				}
 			} /* while (1) */

@@ -76,14 +76,19 @@ void otg_phy_init(void)
 
     // 4. Select VBUS
     addr = (SOC_VA_TIEOFF + 0x34);
-//    writel(readl(addr) |  (3<<24), addr);   /* Select VBUS 3.3V */
-    writel(readl(addr) & ~(3<<24), addr);   /* Select VBUS 5V */
+#ifdef CONFIG_USB_OTG_V3_3
+    writel(readl(addr) |  (1<<24), addr);   // The VBUS signal is valid, and the pull-up registor on D+ is enabled
+	udelay(10);
+    writel(readl(addr) |  (1<<25), addr);   /* Select VBUS 3.3V */
+#else
+	writel(readl(addr) & ~(3<<24), addr);   /* Select VBUS 5V */
+#endif
     udelay(10);
 
     // 5. POR of PHY
     writel(readl(addr) |  (3<<7), addr);
-    udelay(10);
-    writel(readl(addr) & ~(2<<7), addr);
+	udelay(10);
+	writel(readl(addr) & ~(2<<7), addr);
     udelay(40); // 40us delay need.
 
     // 6. UTMI reset
@@ -101,9 +106,12 @@ void otg_phy_off(void)
 
     addr = (SOC_VA_TIEOFF + 0x34);
 
-    // 0. Select VBUS
-    writel(readl(addr) |  (3<<24), addr);   /* Select VBUS 3.3V */
-//    writel(readl(addr) & ~(3<<24), addr);   /* Select VBUS 5V */
+    // 0. De-select VBUS
+#ifdef CONFIG_USB_OTG_V3_3
+    writel(readl(addr) & ~(3<<24), addr);   /* Select VBUS 5V */
+#else
+	writel(readl(addr) |  (3<<24), addr);   /* Select VBUS 3.3V */
+#endif
     udelay(10);
     // 1. UTMI reset
     writel(readl(addr) & ~(1<<3), addr);

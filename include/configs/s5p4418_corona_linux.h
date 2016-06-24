@@ -378,6 +378,7 @@
 	#define CONFIG_NXP_USBDOWN
 	#define CONFIG_NXP_DWC_OTG
 	#define CONFIG_NXP_DWC_OTG_PHY
+	#define CONFIG_USB_OTG_V3_3	// VBUS 3.3V
 #endif
 
 
@@ -615,8 +616,8 @@
 #endif
 
 
-#define CONFIG_SILENT_CONSOLE
-#define CONFIG_SYS_CONSOLE_INFO_QUIET	/* print u-boot logo */
+//#define CONFIG_SILENT_CONSOLE
+//#define CONFIG_SYS_CONSOLE_INFO_QUIET	/* print u-boot logo */
 #ifdef CONFIG_SILENT_CONSOLE
 #define CONFIG_SILENT_U_BOOT_ONLY		/* for bootm command, if not defined fail bootm command */
 #endif

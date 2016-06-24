@@ -42,14 +42,13 @@
 #define fboot_usb_int_bulkin()
 #endif
 
-
+#define SOC_PA_TIEOFF       PHY_BASEADDR_TIEOFF
+#define	SOC_VA_TIEOFF		IO_ADDRESS(SOC_PA_TIEOFF)
 
 static struct NX_TIEOFF_RegisterSet * const pTieoffreg		= (struct NX_TIEOFF_RegisterSet *)PHY_BASEADDR_TIEOFF_MODULE;
 //static struct NX_USB20OTG_APB_RegisterSet * const pUSB20OTGAPBReg	= (struct NX_USB20OTG_APB_RegisterSet *)PHY_BASEADDR_USB20OTG_MODULE_APB;
 //static struct NX_USB_OTG_RegisterSet * const pUOReg			= (struct NX_USB_OTG_RegisterSet *)PHY_BASEADDR_USB20OTG_MODULE_AHBS0;
 
-
-#undef USB_OTG_DEBUG_SETUP
 #ifdef USB_OTG_DEBUG_SETUP
 #define DBG_SETUP0(fmt, args...) printf("[%s:%d] " fmt, __FUNCTION__, __LINE__, ##args)
 #define DBG_SETUP1(fmt, args...) printf("\t" fmt, ##args)
@@ -60,7 +59,6 @@ static struct NX_TIEOFF_RegisterSet * const pTieoffreg		= (struct NX_TIEOFF_Regi
 #define DBG_SETUP2(fmt, args...) do { } while (0)
 #endif
 
-#undef USB_OTG_DEBUG_BULK
 #ifdef USB_OTG_DEBUG_BULK
 #define DBG_BULK0(fmt, args...) printf("[%s:%d] " fmt, __FUNCTION__, __LINE__, ##args)
 #define DBG_BULK1(fmt, args...)	printf("\t" fmt, ##args)
@@ -412,14 +410,16 @@ static void s3c_usb_wait_cable_insert(void)
 	do {
 		udelay(50);
 
-		tmp = readl(S5P_OTG_GOTGCTL);
-
-		if (tmp & (B_SESSION_VALID|A_SESSION_VALID)) {
-			printf("OTG cable Connected!\n");
+		tmp = (readl((SOC_VA_TIEOFF + 0x34)) >> 24) & 0xf;
+		if (tmp == 0x3) {	// USBVBUS 3.3V
 			break;
-		} else if(ucFirst == 1) {
-			printf("Insert a OTG cable into the connector!\n");
-			ucFirst = 0;
+		} else {			// OTGVBUS 5V
+			tmp = readl(S5P_OTG_GOTGCTL);
+			if (tmp & (B_SESSION_VALID|A_SESSION_VALID)) {
+				break;
+			} else if(ucFirst == 1) {
+				ucFirst = 0;
+			}
 		}
 	} while(1);
 }
@@ -473,7 +473,7 @@ static void s3c_usb_init_device(void)
 	writel(1<<18|otg.speed<<0, S5P_OTG_DCFG); /* [][1: full speed(30Mhz) 0:high speed]*/
 
 	writel(INT_RESUME|INT_OUT_EP|INT_IN_EP|INT_ENUMDONE|
-		INT_RESET|INT_SUSPEND|INT_RX_FIFO_NOT_EMPTY,
+		INT_RESET|INT_SUSPEND|INT_RX_FIFO_NOT_EMPTY|INT_DISCONN,
 		S5P_OTG_GINTMSK);	/*gint unmask */
 }
 
@@ -1337,7 +1337,7 @@ static void s3c_usb_upload_start(void)
 			writel(MODE_DMA|BURST_INCR4|GBL_INT_UNMASK,
 				S5P_OTG_GAHBCFG);
 			writel(INT_RESUME|INT_OUT_EP|INT_IN_EP| INT_ENUMDONE|
-				INT_RESET|INT_SUSPEND, S5P_OTG_GINTMSK);
+				INT_RESET|INT_SUSPEND|INT_DISCONN, S5P_OTG_GINTMSK);
 
 			writel((u32)(ulong)otg.up_ptr, S5P_OTG_DIEPDMA_IN);
 
@@ -1399,7 +1399,7 @@ static void s3c_usb_download_start(u32 fifo_cnt_byte)
 
 		DBG_BULK1("downloadFileSize!=0, Dma Start for 2nd OUT PKT \n");
 		writel(INT_RESUME|INT_OUT_EP|INT_IN_EP|INT_ENUMDONE|
-			INT_RESET|INT_SUSPEND, S5P_OTG_GINTMSK); /*gint unmask */
+			INT_RESET|INT_SUSPEND|INT_DISCONN, S5P_OTG_GINTMSK); /*gint unmask */
 		writel(MODE_DMA|BURST_INCR4|GBL_INT_UNMASK,
 			S5P_OTG_GAHBCFG);
 		writel((u32)(ulong)otg.dn_ptr, S5P_OTG_DOEPDMA_OUT);
@@ -1699,7 +1699,7 @@ static void s3c_usb_set_opmode(USB_OPMODE mode)
 	otg.op_mode = mode;
 
 	writel(INT_RESUME|INT_OUT_EP|INT_IN_EP|INT_ENUMDONE|
-		INT_RESET|INT_SUSPEND|INT_RX_FIFO_NOT_EMPTY,
+		INT_RESET|INT_SUSPEND|INT_RX_FIFO_NOT_EMPTY|INT_DISCONN,
 		S5P_OTG_GINTMSK); /*gint unmask */
 
 	writel(MODE_SLAVE|BURST_SINGLE|GBL_INT_UNMASK, S5P_OTG_GAHBCFG);
@@ -1801,7 +1801,7 @@ static void s3c_usb_pkt_receive(void)
 			if( otg.op_mode == USB_CPU )
 				writel(INT_RESUME|INT_OUT_EP|INT_IN_EP|
 					INT_ENUMDONE|INT_RESET|INT_SUSPEND|
-					INT_RX_FIFO_NOT_EMPTY,
+					INT_RX_FIFO_NOT_EMPTY|INT_DISCONN,
 					S5P_OTG_GINTMSK);
 			return;
 		}
@@ -1910,35 +1910,49 @@ void dwc_otg_clear_ep0_state(void)
 	s_ep0state = 0;
 }
 
+u8	g_otg_int = 0;
+bool dflag = true;
+bool rdflag = true;
+
 int s3c_udc_int_hndlr(void)
 {
 	u32 int_status;
 	int tmp;
 	int ret = ERROR;
-
 	flush_dcache_all();
 
 	int_status = readl(S5P_OTG_GINTSTS); /* Core Interrupt Register */
 	writel(int_status, S5P_OTG_GINTSTS); /* Interrupt Clear */
 	DBG_SETUP0("*** USB OTG Interrupt(S5P_OTG_GINTSTS: 0x%08x) ****\n",
 		int_status);
+	if (rdflag == true) {
+		if (((int_status >> 28)) == 0x1 || ((int_status >> 28)) == 0x5 ) {
+			printf("OTG device is ready!\n");
+			printf("------------------------------------------\n");
+		} else {
+			printf("OTG device is not ready!\n");
+			printf("------------------------------------------\n");
+			return ret;
+		}
+		rdflag = false;
+	}
 
 	if (int_status & INT_RESET) {
 		DBG_SETUP1("INT_RESET\n");
 		writel(INT_RESET, S5P_OTG_GINTSTS); /* Interrupt Clear */
-
 		s3c_usb_reset();
 		ret = OK;
+		g_otg_int |= (1 << 0);
 	}
 
 	if (int_status & INT_ENUMDONE) {
 		DBG_SETUP1("INT_ENUMDONE :");
 		writel(INT_ENUMDONE, S5P_OTG_GINTSTS); /* Interrupt Clear */
-
 		tmp = s3c_usb_set_init();
 		ret = OK;
 		if (tmp == FALSE)
 			return ret;
+		g_otg_int |= (1 << 1);
 	}
 
 	if (int_status & INT_RESUME) {
@@ -1947,7 +1961,6 @@ int s3c_udc_int_hndlr(void)
 
 		if(SUSPEND_RESUME_ON) {
 			writel(readl(S5P_OTG_PCGCCTL)&~(1<<0), S5P_OTG_PCGCCTL);
-			DBG_SETUP1("INT_RESUME\n");
 		}
 		ret = OK;
 	}
@@ -1967,11 +1980,11 @@ int s3c_udc_int_hndlr(void)
 		/* Read only register field */
 
 		writel(INT_RESUME|INT_OUT_EP|INT_IN_EP|
-			INT_ENUMDONE|INT_RESET|INT_SUSPEND,
+			INT_ENUMDONE|INT_RESET|INT_SUSPEND|INT_DISCONN,
 			S5P_OTG_GINTMSK);
 		s3c_usb_pkt_receive();
 		writel(INT_RESUME|INT_OUT_EP|INT_IN_EP|INT_ENUMDONE|
-			INT_RESET |INT_SUSPEND|INT_RX_FIFO_NOT_EMPTY,
+			INT_RESET|INT_SUSPEND|INT_DISCONN|INT_RX_FIFO_NOT_EMPTY,
 			S5P_OTG_GINTMSK); /*gint unmask */
 		ret = OK;
 	}
@@ -1982,6 +1995,17 @@ int s3c_udc_int_hndlr(void)
 
 		s3c_usb_transfer();
 		ret = OK;
+	}
+
+	if (g_otg_int == 0x3) {
+		g_otg_int &= ~(1 << 0);
+		if (dflag == true) {
+			printf("OTG device is connected!\n");
+			dflag = false;
+		}
+	} else if (int_status == 0x4008c28 || int_status == 0x4008c2c) {
+		printf("OTG device is disconnected!\n");
+		dflag = true;
 	}
 
 	return ret;

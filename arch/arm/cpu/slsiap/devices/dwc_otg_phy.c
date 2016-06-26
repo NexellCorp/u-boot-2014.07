@@ -87,17 +87,17 @@ void otg_phy_init(void)
 
     // 5. POR of PHY
     writel(readl(addr) |  (3<<7), addr);
-	udelay(10);
+	udelay(1);
 	writel(readl(addr) & ~(2<<7), addr);
     udelay(40); // 40us delay need.
 
     // 6. UTMI reset
     writel(readl(addr) |  (1<<3), addr);
-    udelay(10); // 10 clock need
+    udelay(1); // 10 clock need
 
     // 7. AHB reset
     writel(readl(addr) |  (1<<2), addr);
-    udelay(10); // 10 clock need
+    udelay(1); // 10 clock need
 }
 
 void otg_phy_off(void)
@@ -113,18 +113,20 @@ void otg_phy_off(void)
 	writel(readl(addr) |  (3<<24), addr);   /* Select VBUS 3.3V */
 #endif
     udelay(10);
+
     // 1. UTMI reset
     writel(readl(addr) & ~(1<<3), addr);
-    udelay(10); // 10 clock need
+    udelay(1); // 10 clock need
 
     // 2. AHB reset
     writel(readl(addr) & ~(1<<2), addr);
-    udelay(10); // 10 clock need
+    udelay(1); // 10 clock need
 
     // 3. POR of PHY
     writel(readl(addr) |  (3<<7), addr);
-    writel(readl(addr) & ~(1<<7), addr);
-    udelay(10); // 10 clock need
+	udelay(1);
+    writel(readl(addr) & ~(2<<7), addr);
+    udelay(40); // 40us delay need
 
     // 4. Release otg common reset
     addr = (SOC_VA_RSTCON + 0x04);

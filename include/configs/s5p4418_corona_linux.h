@@ -378,7 +378,7 @@
 	#define CONFIG_NXP_USBDOWN
 	#define CONFIG_NXP_DWC_OTG
 	#define CONFIG_NXP_DWC_OTG_PHY
-	#define CONFIG_USB_OTG_V3_3	// VBUS 3.3V
+	#define CONFIG_USB_OTG_V3_3	// OTG device mode detection : USBVBUS 3.3V
 #endif
 
 

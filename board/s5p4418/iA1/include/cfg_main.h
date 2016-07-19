@@ -28,8 +28,8 @@
 /*------------------------------------------------------------------------------
  * 	System Name
  */
-#define	CFG_SYS_CPU_NAME				"s5p4418"
-#define	CFG_SYS_BOARD_NAME				"s5p4418-navi_ref"
+#define	CFG_SYS_CPU_NAME						"s5p4418"
+#define	CFG_SYS_BOARD_NAME						"s5p4418-iA1"
 
 /*------------------------------------------------------------------------------
  * 	BUS config
@@ -84,26 +84,29 @@
 #define CFG_DISP_OUTPUT_MODOLE				0	// 0 : Primary, 1 : Secondary
 
 #define CFG_DISP_PRI_SCREEN_LAYER			1
-#define CFG_DISP_PRI_SCREEN_RGB_FORMAT			MLC_RGBFMT_A8R8G8B8
-#define CFG_DISP_PRI_SCREEN_PIXEL_BYTE			4
-#define CFG_DISP_PRI_SCREEN_COLOR_KEY			0x090909
+#define CFG_DISP_PRI_SCREEN_RGB_FORMAT		MLC_RGBFMT_R8G8B8
+#define CFG_DISP_PRI_SCREEN_PIXEL_BYTE		3
+#define CFG_DISP_PRI_SCREEN_COLOR_KEY		0x090909
 
 #define CFG_DISP_PRI_VIDEO_PRIORITY			2	// 0, 1, 2, 3
-#define CFG_DISP_PRI_BACK_GROUND_COLOR			0x000000
+#define CFG_DISP_PRI_BACK_GROUND_COLOR		0x000000
 
 #define CFG_DISP_PRI_MLC_INTERLACE			CFALSE
 
-#define CFG_DISP_PRI_RESOL_WIDTH			1024	// X Resolution
-#define CFG_DISP_PRI_RESOL_HEIGHT			600	// Y Resolution
+#define	CFG_DISP_PRI_LCD_WIDTH_MM			0
+#define	CFG_DISP_PRI_LCD_HEIGHT_MM			0
 
-#define CFG_DISP_PRI_HSYNC_SYNC_WIDTH			20
-#define CFG_DISP_PRI_HSYNC_BACK_PORCH			160
-#define CFG_DISP_PRI_HSYNC_FRONT_PORCH			160
-#define CFG_DISP_PRI_HSYNC_ACTIVE_HIGH			CTRUE
-#define CFG_DISP_PRI_VSYNC_SYNC_WIDTH			3
-#define CFG_DISP_PRI_VSYNC_BACK_PORCH			23
-#define CFG_DISP_PRI_VSYNC_FRONT_PORCH			12
-#define CFG_DISP_PRI_VSYNC_ACTIVE_HIGH			CTRUE
+#define CFG_DISP_PRI_RESOL_WIDTH          	800	// X Resolution
+#define CFG_DISP_PRI_RESOL_HEIGHT			480	// Y Resolution
+
+#define CFG_DISP_PRI_HSYNC_SYNC_WIDTH		20
+#define CFG_DISP_PRI_HSYNC_BACK_PORCH		160
+#define CFG_DISP_PRI_HSYNC_FRONT_PORCH		160
+#define CFG_DISP_PRI_HSYNC_ACTIVE_HIGH		CTRUE
+#define CFG_DISP_PRI_VSYNC_SYNC_WIDTH		3
+#define CFG_DISP_PRI_VSYNC_BACK_PORCH		23
+#define CFG_DISP_PRI_VSYNC_FRONT_PORCH		12
+#define CFG_DISP_PRI_VSYNC_ACTIVE_HIGH		CTRUE
 
 #define CFG_DISP_PRI_CLKGEN0_SOURCE			DPC_VCLK_SRC_PLL2
 #define CFG_DISP_PRI_CLKGEN0_DIV			12 // even divide
@@ -122,7 +125,8 @@
 #define CFG_DISP_PRI_OUT_FORMAT				DPC_FORMAT_RGB666
 #define CFG_DISP_PRI_OUT_YCORDER			DPC_YCORDER_CbYCrY
 #define CFG_DISP_PRI_OUT_INTERLACE			CFALSE
-#define CFG_DISP_PRI_OUT_INVERT_FIELD			CFALSE
+#define CFG_DISP_PRI_OUT_INVERT_FIELD		CFALSE
+
 
 /*------------------------------------------------------------------------------
  * 	LVDS
@@ -133,7 +137,7 @@
  *  SPI
  */
 #define CFG_SPI0_SRC_CLK				100*1000*1000
-#define CFG_SPI0_OUT_CLK				20*1000*1000
+#define CFG_SPI0_OUT_CLK				30*1000*1000
 
 #define CFG_SPI1_SRC_CLK				100*1000*1000
 #define CFG_SPI1_OUT_CLK				30*1000*1000

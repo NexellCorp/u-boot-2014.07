@@ -354,8 +354,6 @@ int bd_display(void)
 		preset = V4L2_DV_576P50;
 	else if ((multily.x_resol == 720) && (multily.y_resol == 480))
 		preset = V4L2_DV_480P59_94;
-	else if ((multily.x_resol == 800) && (multily.y_resol == 480))
-		preset = V4L2_DV_800_480_60;
 
 	display_hdmi(CFG_DISP_OUTPUT_MODOLE, preset, CONFIG_FB_ADDR,
 		&vsync, &syncgen, &multily);

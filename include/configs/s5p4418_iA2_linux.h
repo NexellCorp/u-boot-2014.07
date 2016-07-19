@@ -54,8 +54,7 @@
 #define CONFIG_MEM_MALLOC_LENGTH		32*1024*1024
 
 /* when CONFIG_LCD */
-#define CONFIG_FB_ADDR					0x58000000
-#define CONFIG_FB_ADDR_FASTBOOT         0x46000000
+#define CONFIG_FB_ADDR					0x46000000
 #define CONFIG_BMP_ADDR					0x47000000
 
 /* Download OFFSET */
@@ -110,7 +109,7 @@
  *	U-Boot Environments
  */
 /* refer to common/env_common.c	*/
-#define CONFIG_BOOTDELAY				1
+#define CONFIG_BOOTDELAY				3
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 //#define CONFIG_ETHADDR		   			00:e2:1c:ba:e8:60
 //#define CONFIG_NETMASK		   			255.255.255.0
@@ -119,12 +118,14 @@
 //#define CONFIG_GATEWAYIP				192.168.1.254
 //#define CONFIG_BOOTFILE					"uImage"  		[> File to load	<]
 
+//#define CONFIG_BOOTCOMMAND "ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 root.img.gz;bootm 0x48000000"
 #define CONFIG_BOOTCOMMAND "mmc dev 0; mmc read 48000000 0x800 0x4000;mmc read 49000000 0x8000 0x10000;bootm 0x48000000"
+//#define CONFIG_BOOTCOMMAND "eeprom read 0x48000000 0x80000 0x280000;eeprom read 0x49000000 0x300000 0x4fffff;bootm 0x48000000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
  */
-#define CONFIG_SYS_PROMPT				"s5p4418# "		/* Monitor Command Prompt   */
+#define CONFIG_SYS_PROMPT				"iA2# "		/* Monitor Command Prompt   */
 #define CONFIG_SYS_LONGHELP							/* undef to save memory	   */
 #define CONFIG_SYS_CBSIZE				1024			/* Console I/O Buffer Size  */
 #define CONFIG_SYS_PBSIZE				(CONFIG_SYS_CBSIZE+sizeof(CONFIG_SYS_PROMPT)+16) 	/* Print Buffer Size */
@@ -521,7 +522,8 @@
 	#define CONFIG_SYS_MMC_BOOT_DEV		(0)		/* BOOT MMC DEVICE NUM */
 
 	#if defined(CONFIG_ENV_IS_IN_MMC)
-	#define CONFIG_ENV_OFFSET           476*1024
+	//#define	CONFIG_ENV_OFFSET			512*1024			/* 0x00080000 */
+	#define	CONFIG_ENV_OFFSET			476*1024			/* 0x00077000*/
 	#define CONFIG_ENV_SIZE			32*1024				/* N block size (512Byte Per Block)  */
 	#define CONFIG_ENV_RANGE		CONFIG_ENV_SIZE * 2	/* avoid bad block */
 	#define CONFIG_SYS_MMC_ENV_DEV		CONFIG_SYS_MMC_BOOT_DEV
@@ -539,8 +541,8 @@
 #if !defined(CONFIG_ENV_IS_IN_MMC) && !defined(CONFIG_ENV_IS_IN_NAND) &&	\
 	!defined(CONFIG_ENV_IS_IN_FLASH) && !defined(CONFIG_ENV_IS_IN_EEPROM)
 	#define CONFIG_ENV_IS_NOWHERE						/* default: CONFIG_ENV_IS_NOWHERE */
-	#define	CONFIG_ENV_OFFSET			  1024
-	#define CONFIG_ENV_SIZE				4*1024		/* env size */
+	#define	CONFIG_ENV_OFFSET			  	  1024
+	#define CONFIG_ENV_SIZE           		4*1024		/* env size */
 	#undef	CONFIG_CMD_IMLS								/* imls - list all images found in flash, default enable so disable */
 #endif
 
@@ -590,6 +592,12 @@
 #define CFG_FASTBOOT_TRANSFER_BUFFER        CONFIG_MEM_LOAD_ADDR
 #define CFG_FASTBOOT_TRANSFER_BUFFER_SIZE	(CFG_MEM_PHY_SYSTEM_SIZE - CFG_FASTBOOT_TRANSFER_BUFFER)
 
+// #define	FASTBOOT_PARTS_DEFAULT		
+//			"flash=eeprom,0:2ndboot:2nd:0x0,0x4000;"	
+//			"flash=eeprom,0:bootloader:boot:0x10000,0x70000;"	
+//			"flash=eeprom,0:kernel:raw:0x80000,0x280000;" 
+//			"flash=eeprom,0:ramdisk:raw:0x300000,0x4fffff;"
+
 #define	FASTBOOT_PARTS_DEFAULT		\
 			"flash=mmc,0:2ndboot:2nd:0x200,0x7e00;" \
 			"flash=mmc,0:bootloader:boot:0x8000,0x77000;" \
@@ -601,7 +609,7 @@
 /*-----------------------------------------------------------------------
  * Logo command
  */
-#define CONFIG_DISPLAY_OUT
+//#define CONFIG_DISPLAY_OUT
 
 #define CONFIG_LOGO_DEVICE_MMC
 
@@ -612,8 +620,8 @@
 #if	defined(CONFIG_DISPLAY_OUT)
 	#define	CONFIG_PWM			/* backlight */
 	/* display out device */
-	#define	CONFIG_DISPLAY_OUT_LVDS
-    //#define	CONFIG_DISPLAY_OUT_HDMI
+	//#define	CONFIG_DISPLAY_OUT_LVDS
+	#define	CONFIG_DISPLAY_OUT_HDMI
 
 	/* display logo */
 	#define CONFIG_LOGO_NEXELL				/* Draw loaded bmp file to FB or fill FB */

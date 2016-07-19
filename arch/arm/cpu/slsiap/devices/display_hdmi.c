@@ -27,27 +27,111 @@
 #define DBGOUT(msg...)		do {} while (0)
 #endif
 
+
+/**
+ * preset tables : TODO
+ */
+
+struct hdmiphy_preset {
+	u32 preset;
+	const u8 *data;
+};
+
+static const u8 hdmiphy_preset25_2[32] = {
+	0x52, 0x3f, 0x55, 0x40, 0x01, 0x00, 0xc8, 0x82,
+    0xc8, 0xbd, 0xd8, 0x45, 0xa0, 0xac, 0x80, 0x06,
+    0x80, 0x01, 0x84, 0x05, 0x22, 0x24, 0x86, 0x54,
+    0xf4, 0x24, 0x00, 0x00, 0x00, 0x01, 0x80, 0x10,
+};
+
+static const u8 hdmiphy_preset25_175[32] = {
+    0xd1, 0x1f, 0x50, 0x40, 0x20, 0x1e, 0xc8, 0x81,
+    0xe8, 0xbd, 0xd8, 0x45, 0xa0, 0xac, 0x80, 0x06,
+    0x80, 0x09, 0x84, 0x05, 0x22, 0x24, 0x86, 0x54,
+    0xf4, 0x24, 0x00, 0x00, 0x00, 0x01, 0x80, 0x10,
+};
+
+static const u8 hdmiphy_preset27[32] = {
+    0xd1, 0x22, 0x51, 0x40, 0x08, 0xfc, 0xe0, 0x98,
+    0xe8, 0xcb, 0xd8, 0x45, 0xa0, 0xac, 0x80, 0x06,
+    0x80, 0x09, 0x84, 0x05, 0x22, 0x24, 0x86, 0x54,
+    0xe4, 0x24, 0x00, 0x00, 0x00, 0x01, 0x80, 0x10,
+};
+
+static const u8 hdmiphy_preset27_027[32] = {
+    0xd1, 0x2d, 0x72, 0x40, 0x64, 0x12, 0xc8, 0x43,
+    0xe8, 0x0e, 0xd9, 0x45, 0xa0, 0xac, 0x80, 0x06,
+    0x80, 0x09, 0x84, 0x05, 0x22, 0x24, 0x86, 0x54,
+    0xe3, 0x24, 0x00, 0x00, 0x00, 0x01, 0x80, 0x10,
+};
+
+static const u8 hdmiphy_preset54[32] = {
+    0x54, 0x2d, 0x35, 0x40, 0x01, 0x00, 0xc8, 0x82,
+    0xc8, 0x0e, 0xd9, 0x45, 0xa0, 0xac, 0x80, 0x06,
+    0x80, 0x09, 0x84, 0x05, 0x22, 0x24, 0x86, 0x54,
+    0xe4, 0x24, 0x01, 0x00, 0x00, 0x01, 0x80, 0x10,
+};
+
+static const u8 hdmiphy_preset54_054[32] = {
+    0xd1, 0x2d, 0x32, 0x40, 0x64, 0x12, 0xc8, 0x43,
+    0xe8, 0x0e, 0xd9, 0x45, 0xa0, 0xac, 0x80, 0x06,
+    0x80, 0x09, 0x84, 0x05, 0x22, 0x24, 0x86, 0x54,
+    0xe3, 0x24, 0x01, 0x00, 0x00, 0x01, 0x80, 0x10,
+};
+
+static const u8 hdmiphy_preset74_175[32] = {
+    0xd1, 0x1f, 0x10, 0x40, 0x5b, 0xef, 0xc8, 0x81,
+    0xe8, 0xb9, 0xd8, 0x45, 0xa0, 0xac, 0x80, 0x56,
+    0x80, 0x09, 0x84, 0x05, 0x22, 0x24, 0x86, 0x54,
+    0xa6, 0x24, 0x01, 0x00, 0x00, 0x01, 0x80, 0x10,
+};
+
 static const u8 hdmiphy_preset74_25[32] = {
     0xd1, 0x1f, 0x10, 0x40, 0x40, 0xf8, 0xc8, 0x81,
     0xe8, 0xba, 0xd8, 0x45, 0xa0, 0xac, 0x80, 0x56,
     0x80, 0x09, 0x84, 0x05, 0x22, 0x24, 0x86, 0x54,
-    0xa5, 0x24, 0x01, 0x00, 0x00, 0x01, 0x10, 0x80,
+    0xa5, 0x24, 0x01, 0x00, 0x00, 0x01, 0x80, 0x10,
+};
+
+static const u8 hdmiphy_preset148_352[32] = {
+    0xd1, 0x1f, 0x00, 0x40, 0x5b, 0xef, 0xc8, 0x81,
+    0xe8, 0xb9, 0xd8, 0x45, 0xa0, 0xac, 0x80, 0x66,
+    0x80, 0x09, 0x84, 0x05, 0x22, 0x24, 0x86, 0x54,
+    0x4b, 0x25, 0x03, 0x00, 0x00, 0x01, 0x80, 0x10,
 };
 
 static const u8 hdmiphy_preset148_5[32] = {
     0xd1, 0x1f, 0x00, 0x40, 0x40, 0xf8, 0xc8, 0x81,
-    0xe8, 0xba, 0xd8, 0x45, 0xa0, 0xac, 0x80, 0x66,
+    0xe8, 0xba, 0xd8, 0x45, 0xa0, 0xac, 0x80, 0x6b,
     0x80, 0x09, 0x84, 0x05, 0x22, 0x24, 0x86, 0x54,
-    0x4b, 0x25, 0x03, 0x00, 0x00, 0x01, 0x80,
+    0x4b, 0x25, 0x03, 0x00, 0x00, 0x01, 0x80, 0x10,
 };
 
-#define HDMIPHY_PRESET_TABLE_SIZE   (32)
-
-enum NXP_HDMI_PRESET {
-    NXP_HDMI_PRESET_720P = 0,   /* 1280 x 720 */
-    NXP_HDMI_PRESET_1080P,      /* 1920 x 1080 */
-    NXP_HDMI_PRESET_MAX
+const struct hdmiphy_preset hdmiphy_preset[] = {
+	{ V4L2_DV_480P59_94, hdmiphy_preset27 },
+	{ V4L2_DV_480P60, hdmiphy_preset27_027 },
+	{ V4L2_DV_800_480_60, hdmiphy_preset27 },
+	{ V4L2_DV_576P50, hdmiphy_preset27 },
+	{ V4L2_DV_720P50, hdmiphy_preset74_25 },
+	{ V4L2_DV_720P59_94, hdmiphy_preset74_175 },
+	{ V4L2_DV_720P60, hdmiphy_preset74_25 },
+    { V4L2_DV_1080P24, hdmiphy_preset74_25 },
+	{ V4L2_DV_1080P50, hdmiphy_preset148_5 },
+	{ V4L2_DV_1080P59_94, hdmiphy_preset148_352 },
+	{ V4L2_DV_1080P60, hdmiphy_preset148_5 },
 };
+
+const int hdmiphy_preset_cnt = ARRAY_SIZE(hdmiphy_preset);
+
+static const u8 *_hdmiphy_preset2conf(u32 preset)
+{
+    int i;
+    for (i = 0; i < hdmiphy_preset_cnt; i++) {
+        if (hdmiphy_preset[i].preset == preset)
+            return hdmiphy_preset[i].data;
+    }
+    return NULL;
+}
 
 static inline void hdmi_reset(void)
 {
@@ -77,11 +161,11 @@ static int hdmi_phy_enable(int preset, int enable)
 	if (!enable)
 		return 0;
 
-	switch (preset) {
-    case NXP_HDMI_PRESET_720P:	table = hdmiphy_preset74_25; size = 32; break;
-    case NXP_HDMI_PRESET_1080P: table = hdmiphy_preset148_5; size = 31;  break;
-    default: printf("hdmi: phy not support preset %d\n", preset);
-        return -EINVAL;
+	size = 32;
+	table = _hdmiphy_preset2conf(preset);
+	if (table == NULL) {
+		printf("hdmi: phy not support preset %d\n", preset);
+		return -EINVAL;
 	}
 
     NX_HDMI_SetReg(0, HDMI_PHY_Reg7C, (0<<7));
@@ -124,30 +208,104 @@ static inline int hdmi_get_vsync(int preset,
 				struct disp_vsync_info *psync, struct disp_syncgen_param *par)
 {
     switch (preset) {
-    case NXP_HDMI_PRESET_720P:	/* 720p: 1280x720 */
-        psync->h_active_len  = 1280;
-        psync->h_sync_width  =   40;
-        psync->h_back_porch  =  220;
-        psync->h_front_porch =  110;
-        psync->h_sync_invert =    0;
-        psync->v_active_len  =  720;
-        psync->v_sync_width  =    5;
-        psync->v_back_porch  =   20;
-        psync->v_front_porch =    5;
-        psync->v_sync_invert =    0;
+    case V4L2_DV_480P59_94:
+    case V4L2_DV_480P60:
+        /* 480p: 720x480 */
+        psync->h_active_len = 720;
+        psync->h_sync_width = 62;
+        psync->h_back_porch = 60;
+        psync->h_front_porch = 16;
+        psync->h_sync_invert = 0;
+        psync->v_active_len = 480;
+        psync->v_sync_width = 6;
+        psync->v_back_porch = 30;
+        psync->v_front_porch = 9;
+        psync->v_sync_invert = 0;
         break;
 
-    case NXP_HDMI_PRESET_1080P:	/* 1080p: 1920x1080 */
-        psync->h_active_len  = 1920;
-        psync->h_sync_width  =   44;
-        psync->h_back_porch  =  148;
-        psync->h_front_porch =   88;
-        psync->h_sync_invert =    0;
-        psync->v_active_len =  1080;
-        psync->v_sync_width =     5;
-        psync->v_back_porch =    36;
-        psync->v_front_porch =    4;
-        psync->v_sync_invert =    0;
+	case V4L2_DV_800_480_60:
+        /* 800x480 */
+        psync->h_active_len = 800;
+        psync->h_sync_width = 14;
+        psync->h_back_porch = 18;
+        psync->h_front_porch = 12;
+        psync->h_sync_invert = 0;
+        psync->v_active_len = 480;
+        psync->v_sync_width = 5;
+        psync->v_back_porch = 39;
+        psync->v_front_porch = 5;
+        psync->v_sync_invert = 0;
+        break;
+
+    case V4L2_DV_576P50:
+        /* 576p: 720x576 */
+        psync->h_active_len = 720;
+        psync->h_sync_width = 64;
+        psync->h_back_porch = 68;
+        psync->h_front_porch = 12;
+        psync->h_sync_invert = 0;
+        psync->v_active_len = 576;
+        psync->v_sync_width = 5;
+        psync->v_back_porch = 39;
+        psync->v_front_porch = 5;
+        psync->v_sync_invert = 0;
+        break;
+
+    case V4L2_DV_720P50:
+        psync->h_active_len = 1280;
+        psync->h_sync_width = 40;
+        psync->h_back_porch = 220;
+        psync->h_front_porch = 440;
+        psync->h_sync_invert = 0;
+        psync->v_active_len = 720;
+        psync->v_sync_width = 5;
+        psync->v_back_porch = 20;
+        psync->v_front_porch = 5;
+        psync->v_sync_invert = 0;
+        break;
+
+    case V4L2_DV_720P59_94:
+    case V4L2_DV_720P60:
+        /* 720p: 1280x720 */
+        psync->h_active_len = 1280;
+        psync->h_sync_width = 40;
+        psync->h_back_porch = 220;
+        psync->h_front_porch = 110;
+        psync->h_sync_invert = 0;
+        psync->v_active_len = 720;
+        psync->v_sync_width = 5;
+        psync->v_back_porch = 20;
+        psync->v_front_porch = 5;
+        psync->v_sync_invert = 0;
+        break;
+
+    case V4L2_DV_1080P50:
+    case V4L2_DV_1080P59_94:
+    case V4L2_DV_1080P60:
+        /* 1080p: 1920x1080 */
+        psync->h_active_len = 1920;
+        psync->h_sync_width = 44;
+        psync->h_back_porch = 148;
+        psync->h_front_porch = 88;
+        psync->h_sync_invert = 0;
+        psync->v_active_len = 1080;
+        psync->v_sync_width = 5;
+        psync->v_back_porch = 36;
+        psync->v_front_porch = 4;
+        psync->v_sync_invert = 0;
+        break;
+
+    case V4L2_DV_1080P24:
+        psync->h_active_len = 1920;
+        psync->h_sync_width = 44;
+        psync->h_back_porch = 148;
+        psync->h_front_porch = 638;
+        psync->h_sync_invert = 0;
+        psync->v_active_len = 1080;
+        psync->v_sync_width = 5;
+        psync->v_back_porch = 36;
+        psync->v_front_porch = 4;
+        psync->v_sync_invert = 0;
         break;
     default:
         printf("HDMI: not support preset sync %d\n", preset);
@@ -483,17 +641,19 @@ void display_hdmi(int module, int preset, unsigned int fbbase,
 	int input = module == 0 ? DISP_DEVICE_SYNCGEN0 : DISP_DEVICE_SYNCGEN1;
 	int layer  = pmly->fb_layer;
 
+#if 0 
 	switch(preset) {
-	case 0:	pmly->x_resol = 1280, pmly->y_resol =  720;
+	case V4L2_DV_720P60:	pmly->x_resol = 1280, pmly->y_resol =  720;
 			pvsync->h_active_len = 1280, pvsync->v_active_len = 720;
 			break;
-	case 1:	pmly->x_resol = 1920, pmly->y_resol = 1080;
+	case V4L2_DV_1080P60:	pmly->x_resol = 1920, pmly->y_resol = 1080;
 			pvsync->h_active_len = 1920, pvsync->v_active_len = 1080;
 			break;
 	default:
 		printf("hdmi not support preset %d\n", preset);
 		return;
 	}
+#endif
 
 	printf("HDMI: display.%d, preset %d (%4d * %4d)\n",
 		module, preset, pmly->x_resol, pmly->y_resol);

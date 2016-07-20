@@ -693,9 +693,10 @@ ssize_t spi_write (uchar *addr, int alen, uchar *buffer, int len)
 			SPIFifoReset();
 
 			WriteSize= CONFIG_EEPROM_ERASE_SIZE;
+
+			printf(".");
 			while(WriteSize > 0)
 			{
-				printf(".........\r");
 				SPIFifoReset();
 				flash_page_program(FlashAddr , alen , pWBuffer , CONFIG_EEPROM_WRITE_PAGE_SIZE);
 

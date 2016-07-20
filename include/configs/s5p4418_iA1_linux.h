@@ -597,13 +597,6 @@
 			"flash=eeprom,0:bootloader:boot:0x10000,0x70000;"	\
 			"flash=eeprom,0:kernel:raw:0x80000,0x280000;" \
 			"flash=eeprom,0:ramdisk:raw:0x300000,0x4fffff;"
-
-// #define	FASTBOOT_PARTS_DEFAULT		\
-			"flash=mmc,0:2ndboot:2nd:0x200,0x7e00;" \
-			"flash=mmc,0:bootloader:boot:0x8000,0x77000;" \
-			"flash=mmc,0:kernel:raw:0x100000,0xF00000;" \
-			"flash=mmc,0:ramdisk:raw:0x1000000,0x3200000;" \
-			"flash=mmc,0:userdata:ext4:0x4200000,0x0;"
 #endif
 
 /*-----------------------------------------------------------------------

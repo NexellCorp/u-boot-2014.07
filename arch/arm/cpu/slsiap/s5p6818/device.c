@@ -123,7 +123,18 @@ void serial_device_init(void)
 #ifdef CFG_IO_I2C6_SDA
     #define I2C6_SDA    CFG_IO_I2C6_SDA
 #endif
-
+#ifdef CFG_IO_I2C7_SCL
+    #define I2C7_SCL    CFG_IO_I2C7_SCL
+#endif
+#ifdef CFG_IO_I2C7_SDA
+    #define I2C7_SDA    CFG_IO_I2C7_SDA
+#endif
+#ifdef CFG_IO_I2C8_SCL
+    #define I2C8_SCL    CFG_IO_I2C8_SCL
+#endif
+#ifdef CFG_IO_I2C8_SDA
+    #define I2C8_SDA    CFG_IO_I2C8_SDA
+#endif
 
 struct i2c_dev i2c_devices[] = {
 	{ .bus = 0, .scl = I2C0_SCL, .sda = I2C0_SDA, .speed = CONFIG_SYS_I2C_SPEED, .nostop = CONFIG_I2C0_NO_STOP, },
@@ -141,7 +152,12 @@ struct i2c_dev i2c_devices[] = {
 #if defined (CFG_IO_I2C6_SCL) || defined (CFG_IO_I2C6_SDA)
     { .bus = 6, .scl = I2C6_SCL, .sda = I2C6_SDA, .speed = CONFIG_SYS_I2C_SPEED, .nostop = CONFIG_I2C6_NO_STOP, },
 #endif
-
+#if defined (CFG_IO_I2C7_SCL) || defined (CFG_IO_I2C7_SDA)
+    { .bus = 7, .scl = I2C7_SCL, .sda = I2C7_SDA, .speed = CONFIG_SYS_I2C_SPEED, .nostop = CONFIG_I2C7_NO_STOP, },
+#endif
+#if defined (CFG_IO_I2C8_SCL) || defined (CFG_IO_I2C8_SDA)
+    { .bus = 8, .scl = I2C8_SCL, .sda = I2C8_SDA, .speed = CONFIG_SYS_I2C_SPEED, .nostop = CONFIG_I2C8_NO_STOP, },
+#endif
 
 };
 

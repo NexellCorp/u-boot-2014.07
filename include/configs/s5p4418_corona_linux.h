@@ -119,12 +119,16 @@
 //#define CONFIG_GATEWAYIP					192.168.1.254
 //#define CONFIG_BOOTFILE					"uImage"  		[> File to load	<]
 
+#if 0
 #define CONFIG_BOOTCOMMAND "mmc dev 0;mmc read 48000000 800 2800; mmc read 49000000 3800 18000; bootm 48000000"
+#else
+#define CONFIG_BOOTCOMMAND "eeprom read 0x48000000 0x40000 0x400000;eeprom read 0x49000000 0x440000 0xBA0000;bootm 0x48000000"
+#endif
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
  */
-#define CONFIG_SYS_PROMPT				"s5p4418# "			/* Monitor Command Prompt */
+#define CONFIG_SYS_PROMPT				"nxp4330# "			/* Monitor Command Prompt */
 #define CONFIG_SYS_LONGHELP									/* undef to save memory	*/
 #define CONFIG_SYS_CBSIZE				1024				/* Console I/O Buffer Size */
 #define CONFIG_SYS_PBSIZE				(CONFIG_SYS_CBSIZE+sizeof(CONFIG_SYS_PROMPT)+16) 	/* Print Buffer Size */
@@ -269,16 +273,15 @@
  * EEPROM
  */
 
-//#define CONFIG_CMD_EEPROM
-//#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
-//#define CONFIG_ENV_IS_IN_EEPROM
+#define CONFIG_CMD_EEPROM
+#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
+#define CONFIG_ENV_IS_IN_EEPROM
 
 #if defined(CONFIG_CMD_EEPROM)
 
 	#if defined(CONFIG_SPI)
 		#define CONFIG_SPI_MODULE_0
 		#define CONFIG_SPI0_TYPE				1 /* 1: EEPROM, 0: SPI device */
-// 		#define CONFIG_EEPROM_SPI_MODULE_NUM	0
 
 		#define CONFIG_EEPROM_ERASE_SIZE		32*1024
 		#define CONFIG_EEPROM_WRITE_PAGE_SIZE	256
@@ -297,10 +300,6 @@
 		#define CMD_SPI_RES				0xAB		// Release from Deep Power-down
 
 		#define CONFIG_SPI_EEPROM_WRITE_PROTECT
-		#if defined(CONFIG_SPI_EEPROM_WRITE_PROTECT)
-			#define	CONFIG_SPI_EEPROM_WP_PAD			CFG_IO_SPI_EEPROM_WP
-			#define	CONFIG_SPI_EEPROM_WP_ALT			CFG_IO_SPI_EEPROM_WP_ALT
-		#endif
 
 		#define CONFIG_CMD_SPI_EEPROM_UPDATE
 		#if defined (CONFIG_CMD_SPI_EEPROM_UPDATE)
@@ -311,12 +310,12 @@
 		 *    0 ~   16K Second Boot [NSIH + Sencond boot]
 		 *   16 ~   32K Reserved
 		 *   32 ~   64K Enviroment
-		 *   64 ~  512K U-Boot
+		 *   64 ~  256K U-Boot
  	 	 */
 			#define	CONFIG_2STBOOT_OFFSET	0
 			#define	CONFIG_2STBOOT_SIZE		16*1024
 			#define	CONFIG_UBOOT_OFFSET		64*1024
-			#define	CONFIG_UBOOT_SIZE		(512-64)*1024
+			#define	CONFIG_UBOOT_SIZE		(256-64)*1024
 		#endif
 		#if defined(CONFIG_ENV_IS_IN_EEPROM)
 			#define	CONFIG_ENV_OFFSET			32*1024	/* 248 ~ 256K Environment */
@@ -461,8 +460,8 @@
  * #> fatload mmc 0  0x.....	"file"
  *
  */
-#define	CONFIG_CMD_MMC
-#define CONFIG_ENV_IS_IN_MMC
+//#define CONFIG_CMD_MMC
+//#define CONFIG_ENV_IS_IN_MMC
 
 #if defined(CONFIG_CMD_MMC)
 
@@ -558,12 +557,20 @@
 #define CFG_FASTBOOT_TRANSFER_BUFFER        CONFIG_MEM_LOAD_ADDR
 #define CFG_FASTBOOT_TRANSFER_BUFFER_SIZE	(CFG_MEM_PHY_SYSTEM_SIZE - CFG_FASTBOOT_TRANSFER_BUFFER)
 
+#if 1
+#define FASTBOOT_PARTS_DEFAULT      \
+            "flash=eeprom,0:2ndboot:2nd:0x0,0x4000;"\
+            "flash=eeprom,0:bootloader:boot:0x10000,0x30000;" \
+            "flash=eeprom,0:kernel:raw:0x40000,0x400000;" \
+            "flash=eeprom,0:ramdisk:raw:0x440000,0xBA0000;" 
+#else
 #define	FASTBOOT_PARTS_DEFAULT		\
-			"flash=mmc,0:2ndboot:2nd:0x200,0x7e00;"\
-			"flash=mmc,0:bootloader:boot:0x8000,0x77000;" \
+			"flash=mmc,0:2ndboot:2nd:0x200,0x7E00;"\
+			"flash=mmc,0:bootloader:boot:0x8000,0x70000;" \
 			"flash=mmc,0:kernel:raw:0x100000,0x500000" \
 			"flash=mmc,0:ramdisk:raw:0x700000,0x3000000;" \
 			"flash=mmc,0:userdata:ext4:0x3700000,0x0;"
+#endif
 #endif
 
 /*-----------------------------------------------------------------------

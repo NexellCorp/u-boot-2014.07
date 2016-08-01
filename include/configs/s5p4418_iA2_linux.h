@@ -119,8 +119,8 @@
 //#define CONFIG_BOOTFILE					"uImage"  		[> File to load	<]
 
 //#define CONFIG_BOOTCOMMAND "ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 root.img.gz;bootm 0x48000000"
-#define CONFIG_BOOTCOMMAND "mmc dev 0; mmc read 48000000 0x800 0x4000;mmc read 49000000 0x8000 0x10000;bootm 0x48000000"
-//#define CONFIG_BOOTCOMMAND "eeprom read 0x48000000 0x80000 0x280000;eeprom read 0x49000000 0x300000 0x4fffff;bootm 0x48000000"
+//#define CONFIG_BOOTCOMMAND "mmc dev 0; mmc read 48000000 0x800 0x4000;mmc read 49000000 0x8000 0x10000;bootm 0x48000000"
+#define CONFIG_BOOTCOMMAND "eeprom read 0x48000000 0x80000 0x280000;eeprom read 0x49000000 0x300000 0x4fffff;bootm 0x48000000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -270,9 +270,9 @@
  * EEPROM
  */
 
-//#define CONFIG_CMD_EEPROM
-//#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
-//#define CONFIG_ENV_IS_IN_EEPROM
+#define CONFIG_CMD_EEPROM
+#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
+#define CONFIG_ENV_IS_IN_EEPROM
 
 #if defined(CONFIG_CMD_EEPROM)
 
@@ -425,7 +425,7 @@
  *	- 0x30 = slave, 0xRR = register, 1 = read length
  *
  */
-#define	CONFIG_CMD_I2C
+//#define	CONFIG_CMD_I2C
 #if defined(CONFIG_CMD_I2C)
 	#define	CONFIG_HARD_I2C
 	#define CONFIG_I2C_MULTI_BUS
@@ -494,8 +494,8 @@
  * #> fatload mmc 0  0x.....	"file"
  *
  */
-#define	CONFIG_CMD_MMC
-#define CONFIG_ENV_IS_IN_MMC
+//#define CONFIG_CMD_MMC
+//#define CONFIG_ENV_IS_IN_MMC
 
 #if defined(CONFIG_CMD_MMC)
 
@@ -592,26 +592,19 @@
 #define CFG_FASTBOOT_TRANSFER_BUFFER        CONFIG_MEM_LOAD_ADDR
 #define CFG_FASTBOOT_TRANSFER_BUFFER_SIZE	(CFG_MEM_PHY_SYSTEM_SIZE - CFG_FASTBOOT_TRANSFER_BUFFER)
 
-// #define	FASTBOOT_PARTS_DEFAULT		
-//			"flash=eeprom,0:2ndboot:2nd:0x0,0x4000;"	
-//			"flash=eeprom,0:bootloader:boot:0x10000,0x70000;"	
-//			"flash=eeprom,0:kernel:raw:0x80000,0x280000;" 
-//			"flash=eeprom,0:ramdisk:raw:0x300000,0x4fffff;"
-
 #define	FASTBOOT_PARTS_DEFAULT		\
-			"flash=mmc,0:2ndboot:2nd:0x200,0x7e00;" \
-			"flash=mmc,0:bootloader:boot:0x8000,0x77000;" \
-			"flash=mmc,0:kernel:raw:0x100000,0xF00000;" \
-			"flash=mmc,0:ramdisk:raw:0x1000000,0x3200000;" \
-			"flash=mmc,0:userdata:ext4:0x4200000,0x0;"
+			"flash=eeprom,0:2ndboot:2nd:0x0,0x4000;"	\
+			"flash=eeprom,0:bootloader:boot:0x10000,0x70000;"	\
+			"flash=eeprom,0:kernel:raw:0x80000,0x280000;" \
+			"flash=eeprom,0:ramdisk:raw:0x300000,0x4fffff;"
 #endif
 
 /*-----------------------------------------------------------------------
  * Logo command
  */
-//#define CONFIG_DISPLAY_OUT
+// #define CONFIG_DISPLAY_OUT
 
-#define CONFIG_LOGO_DEVICE_MMC
+//#define CONFIG_LOGO_DEVICE_MMC
 
 #if defined(CONFIG_LOGO_DEVICE_MMC) && defined(CONFIG_LOGO_DEVICE_NAND)
 #error "Duplicated config for logo device!!!"

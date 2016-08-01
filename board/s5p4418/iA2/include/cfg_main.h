@@ -96,7 +96,7 @@
 #define	CFG_DISP_PRI_LCD_WIDTH_MM			0
 #define	CFG_DISP_PRI_LCD_HEIGHT_MM			0
 
-#define CFG_DISP_PRI_RESOL_WIDTH          	720	// X Resolution
+#define CFG_DISP_PRI_RESOL_WIDTH          	800	// X Resolution
 #define CFG_DISP_PRI_RESOL_HEIGHT			480	// Y Resolution
 
 #define CFG_DISP_PRI_HSYNC_SYNC_WIDTH		20
@@ -136,7 +136,7 @@
  *  SPI
  */
 #define CFG_SPI0_SRC_CLK				100*1000*1000
-#define CFG_SPI0_OUT_CLK				20*1000*1000
+#define CFG_SPI0_OUT_CLK				30*1000*1000
 
 #define CFG_SPI1_SRC_CLK				100*1000*1000
 #define CFG_SPI1_OUT_CLK				30*1000*1000

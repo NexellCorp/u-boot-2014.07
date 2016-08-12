@@ -76,7 +76,7 @@
 #define	NXE2000_DEF_LDO7_ON					1		/* VAL = 0: Off, 1: On */	/* 2.8V VID,		Boot On	*/
 #define	NXE2000_DEF_LDO8_ON					0		/* VAL = 0: Off, 1: On */	/* 3.3V none,	Not Use	*/
 #define	NXE2000_DEF_LDO9_ON					0		/* VAL = 0: Off, 1: On */	/* 3.3V none,	Not Use	*/
-#define	NXE2000_DEF_LDO10_ON				0		/* VAL = 0: Off, 1: On */	/* 1.2V none,	Not Use	*/
+#define	NXE2000_DEF_LDO10_ON				1		/* VAL = 0: Off, 1: On */	/* 1.2V none,	Not Use	*/
 #define	NXE2000_DEF_LDORTC1_ON				1		/* VAL = 0: Off, 1: On */	/* 1.8V ALIVE,	Boot On	*/
 #define	NXE2000_DEF_LDORTC2_ON				1		/* VAL = 0: Off, 1: On */	/* 1.0V ALIVE,	Boot On	*/
 

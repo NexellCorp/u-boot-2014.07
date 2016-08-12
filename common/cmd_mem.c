@@ -1027,6 +1027,7 @@ static int do_mem_mtest(cmd_tbl_t *cmdtp, int flag, int argc,
 	printf("Testing %08x ... %08x:\n", (uint)start, (uint)end);
 	debug("%s:%d: start %#08lx end %#08lx\n", __func__, __LINE__,
 	      start, end);
+	printf("Iteration limit = %d\n", iteration_limit);
 
 	buf = map_sysmem(start, end - start);
 	dummy = map_sysmem(CONFIG_SYS_MEMTEST_SCRATCH, sizeof(vu_long));

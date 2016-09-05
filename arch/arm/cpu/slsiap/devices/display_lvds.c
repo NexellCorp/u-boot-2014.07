@@ -250,9 +250,14 @@ void display_lvds(int module, unsigned int fbbase,
 	disp_lvds_enable(1);
 
 	/* LCD Device Power On */
-	#ifdef CFG_IO_LCD_PWR_ENB
+#ifdef CFG_IO_LCD_PWR_ENB
 	disp_lcd_device(CFG_IO_LCD_PWR_ENB);
-	#endif
+#endif
+
+	/* LCD Device Reset */
+#ifdef CFG_IO_NLCDRST
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_NLCDRST), PAD_GET_BITNO(CFG_IO_NLCDRST), CTRUE);
+#endif
 }
 
 

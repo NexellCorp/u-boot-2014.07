@@ -53,7 +53,7 @@
 #define	CONFIG_SYS_INIT_SP_ADDR			CONFIG_SYS_TEXT_BASE					/* init and run stack pointer */
 
 /* malloc() pool */
-#define	CONFIG_MEM_MALLOC_START			0x43000000
+#define	CONFIG_MEM_MALLOC_START			0x44000000
 #define CONFIG_MEM_MALLOC_LENGTH		32*1024*1024
 
 /* when CONFIG_LCD */
@@ -170,8 +170,10 @@
 #define CONFIG_PL011_SERIAL
 #define CONFIG_CONS_INDEX				CFG_UART_DEBUG_CH
 #define CONFIG_PL011_CLOCK				CFG_UART_CLKGEN_CLOCK_HZ
-#define CONFIG_PL01x_PORTS				{ (void *)IO_ADDRESS(PHY_BASEADDR_UART0), 	\
-										  (void *)IO_ADDRESS(PHY_BASEADDR_UART1) }
+#define CONFIG_PL01x_PORTS              { (void *)IO_ADDRESS(PHY_BASEADDR_UART0),   \
+                                          (void *)IO_ADDRESS(PHY_BASEADDR_UART1),   \
+                                          (void *)IO_ADDRESS(PHY_BASEADDR_UART2),   \
+                                          (void *)IO_ADDRESS(PHY_BASEADDR_UART3) }
 
 #define CONFIG_BAUDRATE		   			CFG_UART_DEBUG_BAUDRATE
 #define CONFIG_SYS_BAUDRATE_TABLE	   	{ 9600, 19200, 38400, 57600, 115200 }
@@ -498,7 +500,7 @@
 	#define CONFIG_MMC2_ATTACH      	FALSE
 
 	#define CONFIG_MMC0_CLOCK			50000000
-	#define CONFIG_MMC0_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(1)
+	#define CONFIG_MMC0_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(3)| DW_MMC_SAMPLE_PHASE(1)
 
 	#define CONFIG_DWMMC
 	#define CONFIG_NXP_DWMMC

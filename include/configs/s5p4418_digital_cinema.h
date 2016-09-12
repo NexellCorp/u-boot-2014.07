@@ -53,7 +53,7 @@
 #define	CONFIG_SYS_INIT_SP_ADDR			CONFIG_SYS_TEXT_BASE					/* init and run stack pointer */
 
 /* malloc() pool */
-#define	CONFIG_MEM_MALLOC_START			0x43000000
+#define	CONFIG_MEM_MALLOC_START			0x44000000
 #define CONFIG_MEM_MALLOC_LENGTH		32*1024*1024
 
 /* when CONFIG_LCD */
@@ -106,7 +106,7 @@
 #if defined(CONFIG_CMD_MEMTEST)
  	#define CONFIG_SYS_ALT_MEMTEST
 #endif
-#define CONFIG_CMD_NET      /* bootp, tftpboot, rarpboot    */
+//#define CONFIG_CMD_NET      /* bootp, tftpboot, rarpboot    */
 #define CONFIG_CMD_RUN      /* run command in env variable  */
 #define CONFIG_CMD_SAVEENV  /* saveenv          */
 #define CONFIG_CMD_SOURCE   /* "source" command support */
@@ -171,7 +171,9 @@
 #define CONFIG_CONS_INDEX				CFG_UART_DEBUG_CH
 #define CONFIG_PL011_CLOCK				CFG_UART_CLKGEN_CLOCK_HZ
 #define CONFIG_PL01x_PORTS				{ (void *)IO_ADDRESS(PHY_BASEADDR_UART0), 	\
-										  (void *)IO_ADDRESS(PHY_BASEADDR_UART1) }
+										  (void *)IO_ADDRESS(PHY_BASEADDR_UART1),	\
+										  (void *)IO_ADDRESS(PHY_BASEADDR_UART2),	\
+										  (void *)IO_ADDRESS(PHY_BASEADDR_UART3) }
 
 #define CONFIG_BAUDRATE		   			CFG_UART_DEBUG_BAUDRATE
 #define CONFIG_SYS_BAUDRATE_TABLE	   	{ 9600, 19200, 38400, 57600, 115200 }
@@ -181,7 +183,7 @@
  * Ethernet configuration
  * depend on CONFIG_CMD_NET
  */
-#define CONFIG_DRIVER_DM9000			1
+//#define CONFIG_DRIVER_DM9000			1
 
 #if defined(CONFIG_CMD_NET)
 	/* DM9000 Ethernet device */
@@ -361,7 +363,7 @@
  * #> fatls   usb 0 "directory"
  * #> fatload usb 0  0x.....	"file"
  */
-#define CONFIG_CMD_USB
+//#define CONFIG_CMD_USB
 #if defined(CONFIG_CMD_USB)
 	#define CONFIG_USB_EHCI_SYNOPSYS
 	#define CONFIG_USB_EHCI_MODE
@@ -413,12 +415,12 @@
 
 	#define CONFIG_PMIC_CHARGING_PATH	CONFIG_PMIC_CHARGING_PATH_ADP_UBC
 
-	#define	CFG_IO_I2C0_SCL	((PAD_GPIO_C +  9) | PAD_FUNC_ALT0)
-	#define	CFG_IO_I2C0_SDA	((PAD_GPIO_C + 10) | PAD_FUNC_ALT0)
+	#define	CFG_IO_I2C0_SCL	((PAD_GPIO_C +  9) | PAD_FUNC_ALT1)
+	#define	CFG_IO_I2C0_SDA	((PAD_GPIO_C + 10) | PAD_FUNC_ALT1)
 
 	#define CONFIG_SW_UBC_DETECT							/* need with CONFIG_FASTBOOT. */
 
-	#define CONFIG_HAVE_BATTERY
+//	#define CONFIG_HAVE_BATTERY
 
 //	#define CONFIG_ENABLE_INIT_VOLTAGE						/* enable set voltage(ARM, CORE)  */
 
@@ -499,7 +501,7 @@
 	#define CONFIG_MMC2_ATTACH      	FALSE
 
 	#define CONFIG_MMC0_CLOCK			50000000
-	#define CONFIG_MMC0_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(1)
+	#define CONFIG_MMC0_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(3)| DW_MMC_SAMPLE_PHASE(1)
 
 	#define CONFIG_DWMMC
 	#define CONFIG_NXP_DWMMC

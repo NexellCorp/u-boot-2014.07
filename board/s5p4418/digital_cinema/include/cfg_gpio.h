@@ -39,7 +39,7 @@
 #define PAD_GPIOA8      (PAD_MODE_IN   | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[7]          ,2:_                    ,3:_                    =
 #define PAD_GPIOA9      (PAD_MODE_IN   | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[8]          ,2:_                    ,3:_                    =
 #define PAD_GPIOA10     (PAD_MODE_IN   | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[9]          ,2:_                    ,3:_                    =
-#define PAD_GPIOA11     (PAD_MODE_IN   | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[10]         ,2:_                    ,3:_                    =
+#define PAD_GPIOA11     (PAD_MODE_INT  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULL_UP  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[10]         ,2:_                    ,3:_                    =
 #define PAD_GPIOA12     (PAD_MODE_OUT  | PAD_FUNC_ALT0 | PAD_LEVEL_HIGH  | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[11]         ,2:_                    ,3:_                    =
 #define PAD_GPIOA13     (PAD_MODE_OUT  | PAD_FUNC_ALT0 | PAD_LEVEL_HIGH  | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[12]         ,2:_                    ,3:_                    =
 #define PAD_GPIOA14     (PAD_MODE_IN   | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[13]         ,2:_                    ,3:_                    =
@@ -168,7 +168,7 @@
 #define PAD_GPIOD16     (PAD_MODE_IN  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: UART2RXD            ,2: CAN0_TX             ,3:_                    =
 #define PAD_GPIOD17     (PAD_MODE_ALT | PAD_FUNC_ALT1 | PAD_LEVEL_LOW  | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: UART3RXD            ,2: CAN1_TX             ,3:_                    =
 #define PAD_GPIOD18     (PAD_MODE_ALT | PAD_FUNC_ALT1 | PAD_LEVEL_LOW  | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: UART0TXD            ,2:_                    ,3: SDnCD2              =
-#define PAD_GPIOD19     (PAD_MODE_OUT | PAD_FUNC_ALT0 | PAD_LEVEL_HIGH | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: UART1TXD            ,2:_                    ,3:_                    =
+#define PAD_GPIOD19     (PAD_MODE_OUT | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: UART1TXD            ,2:_                    ,3:_                    =
 #define PAD_GPIOD20     (PAD_MODE_IN  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: UART2TXD            ,2:_                    ,3:_                    =
 #define PAD_GPIOD21     (PAD_MODE_ALT | PAD_FUNC_ALT1 | PAD_LEVEL_LOW  | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: UART3TXD            ,2:_                    ,3:_                    =
 #define PAD_GPIOD22     (PAD_MODE_IN  | PAD_FUNC_ALT1 | PAD_LEVEL_LOW  | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: SDMMC1_CCLK         ,2:_                    ,3:_                    =
@@ -228,11 +228,11 @@
  *	| MODE(IN/OUT/DETECT) | ALIVE OUT or ALIVE DETMODE0 | PullUp |
  *
  -----------------------------------------------------------------------------*/
-#define PAD_GPIOALV0    (PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_OFF)              //  AP_AGP0_PWRKEY
+#define PAD_GPIOALV0    (PAD_MODE_INT | PAD_LEVEL_LOW  | PAD_PULL_OFF)              //  AP_AGP0_PWRKEY
 #define PAD_GPIOALV1    (PAD_MODE_OUT | PAD_LEVEL_HIGH | PAD_PULL_OFF)              //  AP_AGP1_SAP_PWRKEY
 #define PAD_GPIOALV2    (PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_OFF)              //  AP_AGP2_FPGA_GPIOA
-#define PAD_GPIOALV3    (PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_OFF)              //  AP_AGP3_LOWBAT_DET
-#define PAD_GPIOALV4    (PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_OFF)              //  AP_AGP4_PMIC_INT
+#define PAD_GPIOALV3    (PAD_MODE_INT | PAD_LEVEL_LOW  | PAD_PULL_OFF)              //  AP_AGP3_LOWBAT_DET
+#define PAD_GPIOALV4    (PAD_MODE_INT | PAD_LEVEL_LOW  | PAD_PULL_OFF)              //  AP_AGP4_PMIC_INT
 #define PAD_GPIOALV5    (PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_DN)
 
 #elif defined (CONFIG_PLAT_S5P4418_DC_SAP)
@@ -256,8 +256,8 @@
 #define PAD_GPIOA8      (PAD_MODE_IN   | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[7]          ,2:_                    ,3:_                    =
 #define PAD_GPIOA9      (PAD_MODE_IN   | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[8]          ,2:_                    ,3:_                    =
 #define PAD_GPIOA10     (PAD_MODE_IN   | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[9]          ,2:_                    ,3:_                    =
-#define PAD_GPIOA11     (PAD_MODE_IN   | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[10]         ,2:_                    ,3:_                    =
-#define PAD_GPIOA12     (PAD_MODE_OUT  | PAD_FUNC_ALT0 | PAD_LEVEL_HIGH  | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[11]         ,2:_                    ,3:_                    =
+#define PAD_GPIOA11     (PAD_MODE_INT  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULL_UP  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[10]         ,2:_                    ,3:_                    =
+#define PAD_GPIOA12     (PAD_MODE_OUT  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[11]         ,2:_                    ,3:_                    =
 #define PAD_GPIOA13     (PAD_MODE_IN   | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[12]         ,2:_                    ,3:_                    =
 #define PAD_GPIOA14     (PAD_MODE_IN   | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[13]         ,2:_                    ,3:_                    =
 #define PAD_GPIOA15     (PAD_MODE_IN   | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[14]         ,2:_                    ,3:_                    =
@@ -445,11 +445,11 @@
  *	| MODE(IN/OUT/DETECT) | ALIVE OUT or ALIVE DETMODE0 | PullUp |
  *
  -----------------------------------------------------------------------------*/
-#define PAD_GPIOALV0    (PAD_MODE_IN  | PAD_LEVEL_LOW | PAD_PULL_OFF)             //  AP_AGP0_PWRKEY
-#define PAD_GPIOALV1    (PAD_MODE_IN  | PAD_LEVEL_LOW | PAD_PULL_DN)              //  AP_AGP1_SAP_PWRKEY
+#define PAD_GPIOALV0    (PAD_MODE_INT | PAD_LEVEL_LOW | PAD_PULL_OFF)             //  AP_AGP0_PWRKEY
+#define PAD_GPIOALV1    (PAD_MODE_IN  | PAD_LEVEL_LOW | PAD_PULL_DN)
 #define PAD_GPIOALV2    (PAD_MODE_IN  | PAD_LEVEL_LOW | PAD_PULL_OFF)             //  AP_AGP2_FPGA_GPIOA
-#define PAD_GPIOALV3    (PAD_MODE_IN  | PAD_LEVEL_LOW | PAD_PULL_DN)              //  AP_AGP3_LOWBAT_DET
-#define PAD_GPIOALV4    (PAD_MODE_IN  | PAD_LEVEL_LOW | PAD_PULL_OFF)             //  AP_AGP4_PMIC_INT
+#define PAD_GPIOALV3    (PAD_MODE_IN  | PAD_LEVEL_LOW | PAD_PULL_DN)
+#define PAD_GPIOALV4    (PAD_MODE_INT | PAD_LEVEL_LOW | PAD_PULL_OFF)             //  AP_AGP4_PMIC_INT
 #define PAD_GPIOALV5    (PAD_MODE_IN  | PAD_LEVEL_LOW | PAD_PULL_DN)
 #endif
 

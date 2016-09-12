@@ -106,7 +106,7 @@
 #if defined(CONFIG_CMD_MEMTEST)
  	#define CONFIG_SYS_ALT_MEMTEST
 #endif
-#define CONFIG_CMD_NET      /* bootp, tftpboot, rarpboot    */
+//#define CONFIG_CMD_NET      /* bootp, tftpboot, rarpboot    */
 #define CONFIG_CMD_RUN      /* run command in env variable  */
 #define CONFIG_CMD_SAVEENV  /* saveenv          */
 #define CONFIG_CMD_SOURCE   /* "source" command support */

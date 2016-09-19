@@ -413,7 +413,9 @@ int board_late_init(void)
         writel((-1UL), SCR_RESET_SIG_RESET); /* clear */
 
         printf("RECOVERY BOOT\n");
+#if defined(CONFIG_PLAT_S5P4418_DC_NAP)
         bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+#endif
         run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
     }
 
@@ -424,7 +426,9 @@ int board_late_init(void)
         writel((-1UL), SCR_RESET_SIG_RESET); /* clear */
 
         printf("UPDATE BOOT\n");
+#if defined(CONFIG_PLAT_S5P4418_DC_NAP)
         bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+#endif
         run_command(CONFIG_CMD_UPDATE_BOOT, 0);        /* recovery boot */
     }
 #endif /* CONFIG_RECOVERY_BOOT */
@@ -446,7 +450,9 @@ int board_late_init(void)
 #else /* CONFIG_BAT_CHECK */
 
 #if defined(CONFIG_DISPLAY_OUT)
+#if defined(CONFIG_PLAT_S5P4418_DC_NAP)
 	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+#endif
 #endif
 
 	/* Temp check gpio to update */

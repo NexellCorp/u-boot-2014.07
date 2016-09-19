@@ -51,13 +51,17 @@ void fboot_lcd_start(void)
 		CFG_DISP_PRI_RESOL_WIDTH * CFG_DISP_PRI_RESOL_HEIGHT *
 		CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
 
+#if defined(CONFIG_PLAT_S5P4418_DC_NAP)
 	run_command(CONFIG_CMD_LOGO_UPDATE, 0);
 	lcd_draw_text("wait for update", _logo_left, _logo_top, 2, 2, 0);
+#endif
 }
 
 void fboot_lcd_stop(void)
 {
+#if defined(CONFIG_PLAT_S5P4418_DC_NAP)
 	run_command(CONFIG_CMD_LOGO_WALLPAPERS, 0);
+#endif
 }
 
 void fboot_lcd_part(char *part, char *stat)

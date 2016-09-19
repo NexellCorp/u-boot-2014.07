@@ -125,7 +125,7 @@
 #define CONFIG_GATEWAYIP				192.168.1.254
 #define CONFIG_BOOTFILE					"uImage"  		/* File to load	*/
 
-#define CONFIG_BOOTCOMMAND "ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 root.img.gz;bootm 0x48000000"
+#define CONFIG_BOOTCOMMAND "mmc dev 0;mmc read 48000000 800 2800; mmc read 49000000 3800 18000; bootm 48000000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -414,8 +414,8 @@
 
 	#define CONFIG_PMIC_CHARGING_PATH	CONFIG_PMIC_CHARGING_PATH_ADP_UBC
 
-	#define	CFG_IO_I2C0_SCL	((PAD_GPIO_C +  9) | PAD_FUNC_ALT0)
-	#define	CFG_IO_I2C0_SDA	((PAD_GPIO_C + 10) | PAD_FUNC_ALT0)
+	#define	CFG_IO_I2C0_SCL	((PAD_GPIO_C +  9) | PAD_FUNC_ALT1)
+	#define	CFG_IO_I2C0_SDA	((PAD_GPIO_C + 10) | PAD_FUNC_ALT1)
 
 	#define CONFIG_SW_UBC_DETECT							/* need with CONFIG_FASTBOOT. */
 
@@ -578,15 +578,12 @@
 #define CFG_FASTBOOT_TRANSFER_BUFFER        CONFIG_MEM_LOAD_ADDR
 #define CFG_FASTBOOT_TRANSFER_BUFFER_SIZE	(CFG_MEM_PHY_SYSTEM_SIZE - CFG_FASTBOOT_TRANSFER_BUFFER)
 
-#define	FASTBOOT_PARTS_DEFAULT		\
-			"flash=mmc,0:2ndboot:2nd:0x200,0x4000;"	\
-			"flash=mmc,0:bootloader:boot:0x8000,0x70000;"	\
-			"flash=mmc,0:boot:ext4:0x00100000,0x04000000;"		\
-			"flash=mmc,0:system:ext4:0x04100000,0x28E00000;"	\
-			"flash=mmc,0:cache:ext4:0x2CF00000,0x21000000;"		\
-			"flash=mmc,0:misc:emmc:0x4E000000,0x00800000;"		\
-			"flash=mmc,0:recovery:emmc:0x4E900000,0x01600000;"	\
-			"flash=mmc,0:userdata:ext4:0x50000000,0x0;"
+#define FASTBOOT_PARTS_DEFAULT      \
+            "flash=mmc,0:2ndboot:2nd:0x200,0x7E00;"\
+            "flash=mmc,0:bootloader:boot:0x8000,0x70000;" \
+            "flash=mmc,0:kernel:raw:0x100000,0x500000" \
+            "flash=mmc,0:ramdisk:raw:0x700000,0x3000000;" \
+            "flash=mmc,0:userdata:ext4:0x3700000,0x0;"
 #endif
 
 /*-----------------------------------------------------------------------
@@ -627,12 +624,12 @@
 /*-----------------------------------------------------------------------
  * Recover boot
  */
-#define	CONFIG_RECOVERY_BOOT
+//#define CONFIG_RECOVERY_BOOT
 #if defined (CONFIG_RECOVERY_BOOT)
 	#define CONFIG_CMD_RECOVERY_BOOT "ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
 #endif
 
-#define CONFIG_UPDATE_BOOT
+//#define CONFIG_UPDATE_BOOT
 #if defined (CONFIG_UPDATE_BOOT)
     #define CONFIG_CMD_UPDATE_BOOT "setenv bootargs console=ttyAMA0,115200n8 root=/dev/ram0 rw initrd=0x49000000,32M ramdisk=32768;ext4load mmc 0:1 0x48000000 uImage_update;ext4load mmc 0:1 0x49000000 ramdisk_update.gz;bootm 0x48000000"
 #endif

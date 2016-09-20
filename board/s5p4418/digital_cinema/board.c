@@ -437,7 +437,7 @@ int board_late_init(void)
 #if defined(CONFIG_BAT_CHECK)
 	{
 		int ret =0;
-		int bat_check_skip = 0;
+		int bat_check_skip = 1;
 
 #if defined(CONFIG_DISPLAY_OUT)
 		ret = power_battery_check(bat_check_skip, bd_display_run);

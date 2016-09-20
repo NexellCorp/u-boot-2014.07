@@ -414,16 +414,16 @@
 
 	#define CONFIG_PMIC_CHARGING_PATH	CONFIG_PMIC_CHARGING_PATH_ADP_UBC
 
-	#define	CFG_IO_I2C0_SCL	((PAD_GPIO_C +  9) | PAD_FUNC_ALT1)
-	#define	CFG_IO_I2C0_SDA	((PAD_GPIO_C + 10) | PAD_FUNC_ALT1)
+	#define	CFG_IO_I2C0_SCL	(PAD_GPIO_C +  9)	// ((PAD_GPIO_C +  9) | PAD_FUNC_ALT1)
+	#define	CFG_IO_I2C0_SDA	(PAD_GPIO_C + 10)	// ((PAD_GPIO_C + 10) | PAD_FUNC_ALT1)
 
 	#define CONFIG_SW_UBC_DETECT							/* need with CONFIG_FASTBOOT. */
 
-//	#define CONFIG_HAVE_BATTERY
+	//#define CONFIG_HAVE_BATTERY
 
-//	#define CONFIG_ENABLE_INIT_VOLTAGE						/* enable set voltage(ARM, CORE)  */
+	//#define CONFIG_ENABLE_INIT_VOLTAGE						/* enable set voltage(ARM, CORE)  */
 
-//	#define CONFIG_PMIC_REG_DUMP
+	//#define CONFIG_PMIC_REG_DUMP
 #endif
 
 #if defined(CONFIG_HAVE_BATTERY)

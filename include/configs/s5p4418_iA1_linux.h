@@ -277,9 +277,13 @@
 #if defined(CONFIG_CMD_EEPROM)
 
 	#if defined(CONFIG_SPI)
-		#define CONFIG_SPI_MODULE_0
-		#define CONFIG_SPI0_TYPE				1 /* 1: EEPROM, 0: SPI device */
-// 		#define CONFIG_EEPROM_SPI_MODULE_NUM	0
+ 		#define CONFIG_SPI_MODULE_0
+ 		#define CONFIG_SPI_MODULE_1
+ 		#define CONFIG_SPI_MODULE_2
+
+ 		#define CONFIG_SPI0_TYPE				1 /* 1: EEPROM, 0: SPI device */
+ 		#define CONFIG_SPI1_TYPE				0 /* 1: EEPROM, 0: SPI device */
+ 		#define CONFIG_SPI2_TYPE				0 /* 1: EEPROM, 0: SPI device */
 
 		#define CONFIG_EEPROM_ERASE_SIZE		32*1024
 		#define CONFIG_EEPROM_WRITE_PAGE_SIZE	256
@@ -342,12 +346,12 @@
     #endif
     #if defined (CONFIG_SPI_MODULE_1)
 		#define CONFIG_SPI_MODULE_1_SOURCE_CLOCK    CFG_SPI1_SRC_CLK
-        #define CONFIG_SPI_MODULE_1_CLOCK           CFG_SPI0_OUT_CLK
+        #define CONFIG_SPI_MODULE_1_CLOCK           CFG_SPI1_OUT_CLK
         #define CONFIG_SPI_MODULE_1_EEPROM          CONFIG_SPI1_TYPE    /* 1: EEPROM, 0: SPI device */
     #endif
     #if defined (CONFIG_SPI_MODULE_2)
 		#define CONFIG_SPI_MODULE_2_SOURCE_CLOCK    CFG_SPI2_SRC_CLK
-        #define CONFIG_SPI_MODULE_2_CLOCK           CFG_SPI0_OUT_CLK
+        #define CONFIG_SPI_MODULE_2_CLOCK           CFG_SPI2_OUT_CLK
         #define CONFIG_SPI_MODULE_2_EEPROM          CONFIG_SPI2_TYPE    /* 1: EEPROM, 0: SPI device */
     #endif
 #endif

@@ -270,16 +270,22 @@
  * EEPROM
  */
 
-//#define CONFIG_CMD_EEPROM
-//#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
+#define CONFIG_CMD_EEPROM
+#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
 //#define CONFIG_ENV_IS_IN_EEPROM
 
 #if defined(CONFIG_CMD_EEPROM)
 
 	#if defined(CONFIG_SPI)
-		#define CONFIG_SPI_MODULE_0
-		#define CONFIG_SPI0_TYPE				1 /* 1: EEPROM, 0: SPI device */
-// 		#define CONFIG_EEPROM_SPI_MODULE_NUM	0
+ 		#define CONFIG_SPI_MODULE_0
+ 		#define CONFIG_SPI_MODULE_1
+ 		#define CONFIG_SPI_MODULE_2
+
+ 		#define CONFIG_SPI0_TYPE				1 /* 1: EEPROM, 0: SPI device */
+ 		#define CONFIG_SPI1_TYPE				1 /* 1: EEPROM, 0: SPI device */
+ 		#define CONFIG_SPI2_TYPE				1 /* 1: EEPROM, 0: SPI device */
+
+		#define CONFIG_SYS_I2C_MULTI_EEPROMS
 
 		#define CONFIG_EEPROM_ERASE_SIZE		32*1024
 		#define CONFIG_EEPROM_WRITE_PAGE_SIZE	256
@@ -297,7 +303,7 @@
 		#define CMD_SPI_DP				0xB9		// Deep Power-down
 		#define CMD_SPI_RES				0xAB		// Release from Deep Power-down
 
-		#define CONFIG_SPI_EEPROM_WRITE_PROTECT
+		//#define CONFIG_SPI_EEPROM_WRITE_PROTECT
 		#if defined(CONFIG_SPI_EEPROM_WRITE_PROTECT)
 			#define	CONFIG_SPI_EEPROM_WP_PAD			CFG_IO_SPI_EEPROM_WP
 			#define	CONFIG_SPI_EEPROM_WP_ALT			CFG_IO_SPI_EEPROM_WP_ALT
@@ -650,8 +656,8 @@
 #endif
 
 
-#define CONFIG_SILENT_CONSOLE
-#define CONFIG_SYS_CONSOLE_INFO_QUIET	/* print u-boot logo */
+//#define CONFIG_SILENT_CONSOLE
+//#define CONFIG_SYS_CONSOLE_INFO_QUIET	/* print u-boot logo */
 #ifdef CONFIG_SILENT_CONSOLE
 #define CONFIG_SILENT_U_BOOT_ONLY		/* for bootm command, if not defined fail bootm command */
 #endif

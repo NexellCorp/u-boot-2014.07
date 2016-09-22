@@ -3,7 +3,7 @@
 # =========================================================================
 ARCH_CFLAGS += -D__SUPPORT_MIO_UBOOT__
 
-obj-y	+= cmd.o
+obj-y	+= cmd.o cmd_spi_read_test.o cmd_uart_test.o
 obj-$(CONFIG_LOGO_NEXELL)			+= cmd_draw_logo.o cmd_load_logo.o draw_lcd.o
 obj-$(CONFIG_CMD_SPI_EEPROM_UPDATE)	+= cmd_spi_eeprom.o
 obj-$(CONFIG_CMD_UPDATE_NAND)   	+= cmd_update_nand.o

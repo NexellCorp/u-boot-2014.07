@@ -175,6 +175,10 @@ static void WP_EN(void)
 }
 #endif
 
+static ulong time_start_us=0;
+static ulong time_us = 0;
+static ulong time_out_us = 1000000;
+
 static void CS_ON(void)
 {
     NX_GPIO_SetOutputValue(_spi_pad[0].fss.pad /32, _spi_pad[0].fss.pad % 32 , 0);
@@ -290,7 +294,7 @@ void spi_init_f (void)
 		    /* RSTCON Control */
 
 			NX_SSP_SetBaseAddress( ModuleIndex, (U32)NX_SSP_GetPhysicalAddress(ModuleIndex) );
-			sprintf(name,"nxp-spi%d",ModuleIndex);
+			sprintf(name,"nxp-spi.%d",ModuleIndex);
 			clk= clk_get(NULL, name);
 			hz = _spi_param[ModuleIndex].hz;
 			rate = clk_set_rate(clk,hz);
@@ -361,13 +365,22 @@ ssize_t spi_read  (uchar *addr, int alen, uchar *buffer, int len)
 	NX_SSP_SetEnable( device, CTRUE );
 
 	//len = lencnt;
-
+	time_start_us = timer_get_us();
 	while( len + dummycount)
 	{
 		if(!(NX_SSP_IsTxFIFOFull(device)))	// check receive buffer is not empty
 		{
 			NX_SSP_PutByte(device, 0); //send dummy data for read			// send dummy data for receive read data.
-			while(NX_SSP_IsRxFIFOEmpty(device)) ;
+			while(NX_SSP_IsRxFIFOEmpty(device)){
+				if (time_out_us > 0) {
+					time_us = timer_get_us();
+					if ((time_us - time_start_us) > time_out_us) {
+						printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
+						len = -1;
+						goto spi_exit;
+					}
+				}
+			}
 
 			if(dummycount != 0)
 			{
@@ -382,12 +395,34 @@ ssize_t spi_read  (uchar *addr, int alen, uchar *buffer, int len)
 		}
 	}
 
-	while(!(NX_SSP_IsTxFIFOEmpty(device)));		// wait until tx buffer
+	time_start_us = timer_get_us();
+	while(!(NX_SSP_IsTxFIFOEmpty(device))){
+		if (time_out_us > 0) {
+			time_us = timer_get_us();
+			if ((time_us - time_start_us) > time_out_us) {
+				printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
+				len = -1;
+				goto spi_exit;
+			}
+		}
+	}
 
+	time_start_us = timer_get_us();
 	do{
 		tmp = NX_SSP_GetByte(device);
-	}while(!(NX_SSP_IsRxFIFOEmpty(device)));			// wait until reception buffer is not empty
+		{
+			if (time_out_us > 0) {
+				time_us = timer_get_us();
+				if ((time_us - time_start_us) > time_out_us) {
+					printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
+					len = -1;
+					goto spi_exit;
+				}
+			}
+		}
+	}while(!(NX_SSP_IsRxFIFOEmpty(device)));
 
+spi_exit:
 	NX_SSP_SetEnable( device, CFALSE );
 	CS_OFF();
 	
@@ -409,18 +444,40 @@ static int eeprom_write_enable (unsigned dev_addr, int state)
 		cmd = CMD_SPI_WREN;
 	else
 		cmd = CMD_SPI_WRDI;
-		NX_SSP_PutByte(device, cmd);
 
-		CS_ON();
-		NX_SSP_SetEnable( device, CTRUE );
+	NX_SSP_PutByte(device, cmd);
 
-		while(!(NX_SSP_IsTxFIFOEmpty(device)));
-		while((NX_SSP_IsRxFIFOEmpty(device)));
-		tmp = NX_SSP_GetByte(device );
-		NX_SSP_SetEnable( device, CFALSE );
-		CS_OFF();
+	CS_ON();
+	NX_SSP_SetEnable( device, CTRUE );
 
-		return 0;
+	time_start_us = timer_get_us();
+	while(!(NX_SSP_IsTxFIFOEmpty(device))){
+		if (time_out_us > 0) {
+			time_us = timer_get_us();
+			if ((time_us - time_start_us) > time_out_us) {
+				printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
+				goto spi_exit;
+			}
+		}
+	}
+
+	time_start_us = timer_get_us();
+	while((NX_SSP_IsRxFIFOEmpty(device))){
+		if (time_out_us > 0) {
+			time_us = timer_get_us();
+			if ((time_us - time_start_us) > time_out_us) {
+				printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
+				goto spi_exit;
+			}
+		}
+	}
+	tmp = NX_SSP_GetByte(device );
+
+spi_exit:
+	NX_SSP_SetEnable( device, CFALSE );
+	CS_OFF();
+
+	return 0;
 }
 
 static void flash_sector_erase(U32 eraseaddr, int alen)
@@ -447,15 +504,36 @@ static void flash_sector_erase(U32 eraseaddr, int alen)
 	CS_ON();
 	NX_SSP_SetEnable( device, CTRUE );
 
-	while(!(NX_SSP_IsTxFIFOEmpty(device))); // Wait until send data done.
+	time_start_us = timer_get_us();
+	while(!(NX_SSP_IsTxFIFOEmpty(device))) {
+		if (time_out_us > 0) {
+			time_us = timer_get_us();
+			if ((time_us - time_start_us) > time_out_us) {
+				printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
+				goto spi_exit;
+			}
+		}
+	}
 
+	time_start_us = timer_get_us();
 	while(!(NX_SSP_IsRxFIFOEmpty(device)))
 	{
 		tmp = NX_SSP_GetByte(device);
+		{
+			if (time_out_us > 0) {
+				time_us = timer_get_us();
+				if ((time_us - time_start_us) > time_out_us) {
+					printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
+					goto spi_exit;
+				}
+			}
+		}
 	}
 
+spi_exit:
 	NX_SSP_SetEnable( device, CFALSE );
 	CS_OFF();
+
 }
 
 static U8 flash_page_program(U32 dwFlashAddr, int alen, uchar * databuffer, U32 dwDataSize)
@@ -483,10 +561,18 @@ static U8 flash_page_program(U32 dwFlashAddr, int alen, uchar * databuffer, U32 
 		return -1;
 	}
 
+	time_start_us = timer_get_us();
 	do {
 		eeprom_write_enable(dwFlashAddr,1);
 		udelay(1000);
 		temp = is_flash_ready(SER_SR_READY);
+		if (time_out_us > 0) {
+			time_us = timer_get_us();
+			if ((time_us - time_start_us) > time_out_us) {
+				printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
+				goto spi_exit;
+			}
+		}
 	} while( !((temp & SER_SR_WEN) == SER_SR_WEN) || (temp & SER_SR_READY));
 	
 	CS_ON();
@@ -498,10 +584,31 @@ static U8 flash_page_program(U32 dwFlashAddr, int alen, uchar * databuffer, U32 
 	}
 	
 	NX_SSP_SetEnable( device, CTRUE );
-	while(!NX_SSP_IsTxFIFOEmpty(device));// ready to Fifo Empty
+
+	time_start_us = timer_get_us();
+	while(!NX_SSP_IsTxFIFOEmpty(device)){
+		if (time_out_us > 0) {
+			time_us = timer_get_us();
+			if ((time_us - time_start_us) > time_out_us) {
+				printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
+				goto spi_exit;
+			}
+		}
+	}
+
+	time_start_us = timer_get_us();
 	while(!(NX_SSP_IsRxFIFOEmpty(device)))
 	{
 		temp = NX_SSP_GetByte(device);	//read dummy data
+		{
+			if (time_out_us > 0) {
+				time_us = timer_get_us();
+				if ((time_us - time_start_us) > time_out_us) {
+					printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
+					goto spi_exit;
+				}
+			}
+		}
 	}
 
 	while(dwDataSize)
@@ -510,23 +617,74 @@ static U8 flash_page_program(U32 dwFlashAddr, int alen, uchar * databuffer, U32 
 		{
 			NX_SSP_PutByte(device, databuffer[index++]); //send addr
 			dwDataSize--;
-			while(NX_SSP_IsTxRxEnd(device));
-			//while(!NX_SSP_IsTxFIFOEmpty(device));// ready to Fifo Empty
-			//while(!NX_SSP_IsTxFIFOEmpty(device));// ready to Fifo Empty
+			time_start_us = timer_get_us();
+			while(NX_SSP_IsTxRxEnd(device)){
+				if (time_out_us > 0) {
+					time_us = timer_get_us();
+					if ((time_us - time_start_us) > time_out_us) {
+						printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
+						goto spi_exit;
+					}
+				}
+			}
+
+			time_start_us = timer_get_us();
 			while(!(NX_SSP_IsRxFIFOEmpty(device))){
 				temp = NX_SSP_GetByte(device);	//read dummy data
+				{
+					if (time_out_us > 0) {
+						time_us = timer_get_us();
+						if ((time_us - time_start_us) > time_out_us) {
+							printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
+							goto spi_exit;
+						}
+					}
+				}
 			}
 		}
 	}
 
-	while(!NX_SSP_IsTxFIFOEmpty(device));// ready to Fifo Empty
+	time_start_us = timer_get_us();
+	while(!NX_SSP_IsTxFIFOEmpty(device)){
+		if (time_out_us > 0) {
+			time_us = timer_get_us();
+			if ((time_us - time_start_us) > time_out_us) {
+				printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
+				goto spi_exit;
+			}
+		}
+	}
+
+	time_start_us = timer_get_us();
 	while(!(NX_SSP_IsRxFIFOEmpty(device))){
 		temp = NX_SSP_GetByte(device);	//read dummy data
+		{
+			if (time_out_us > 0) {
+				time_us = timer_get_us();
+				if ((time_us - time_start_us) > time_out_us) {
+					printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
+					goto spi_exit;
+				}
+			}
+		}
 	}
+
+	time_start_us = timer_get_us();
 	while(!(NX_SSP_IsRxFIFOEmpty(device)))
 	{
 		temp = NX_SSP_GetByte(device);	//read dummy data
+		{
+			if (time_out_us > 0) {
+				time_us = timer_get_us();
+				if ((time_us - time_start_us) > time_out_us) {
+					printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
+					goto spi_exit;
+				}
+			}
+		}
 	}
+
+spi_exit:
 	NX_SSP_SetEnable( device, CFALSE );
 	CS_OFF();
 
@@ -553,18 +711,44 @@ static U8 is_flash_ready(U8 status)
 		CS_ON();
 		NX_SSP_SetEnable( device, CTRUE );
 
-		while(!(NX_SSP_IsTxFIFOEmpty(device)));
-		while((NX_SSP_IsRxFIFOEmpty(device)));
-		
+		time_start_us = timer_get_us();
+		while(!(NX_SSP_IsTxFIFOEmpty(device))){
+			if (time_out_us > 0) {
+				time_us = timer_get_us();
+				if ((time_us - time_start_us) > time_out_us) {
+					printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
+					goto spi_exit;
+				}
+			}
+		}
+
+		time_start_us = timer_get_us();
+		while((NX_SSP_IsRxFIFOEmpty(device))){
+			if (time_out_us > 0) {
+				time_us = timer_get_us();
+				if ((time_us - time_start_us) > time_out_us) {
+					printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
+					goto spi_exit;
+				}
+			}
+		}
 		tmp = NX_SSP_GetByte(device);
 
-		while((NX_SSP_IsRxFIFOEmpty(device)));
-
+		time_start_us = timer_get_us();
+		while((NX_SSP_IsRxFIFOEmpty(device))){
+			if (time_out_us > 0) {
+				time_us = timer_get_us();
+				if ((time_us - time_start_us) > time_out_us) {
+					printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
+					goto spi_exit;
+				}
+			}
+		}
 		ret = NX_SSP_GetByte(device);
 
 		while(!(NX_SSP_IsRxFIFOEmpty(device)));
 
-		
+spi_exit:		
 		NX_SSP_SetEnable( device, CFALSE );
 		CS_OFF();
 //	}	while(!(ret & status) );
@@ -576,9 +760,19 @@ static void SPIFifoReset(void)
 	U32 device = cur_module ;
 	U8 tmp =0;
 
+	time_start_us = timer_get_us();
 	while(!(NX_SSP_IsRxFIFOEmpty(device)))
 	{
 		tmp = NX_SSP_GetByte(device);	//read dummy data
+		{
+			if (time_out_us > 0) {
+				time_us = timer_get_us();
+				if ((time_us - time_start_us) > time_out_us) {
+					printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
+					break;
+				}
+			}
+		}
 	}
 }
 
@@ -671,18 +865,41 @@ ssize_t spi_write (uchar *addr, int alen, uchar *buffer, int len)
 						pWBuffer = pDatBuffer;
 					}
 				}
+
+				time_start_us = timer_get_us();
 				do {
 					eeprom_write_enable(FlashAddr,1);
 					udelay(1000);
 					tmp = is_flash_ready(SER_SR_WEN);
-
+					{
+						if (time_out_us > 0) {
+							time_us = timer_get_us();
+							if ((time_us - time_start_us) > time_out_us) {
+								printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
+								len = -1;
+								goto spi_exit;
+							}
+						}
+					}
 				} while(!(tmp & SER_SR_WEN)) ;
 
 				flash_sector_erase(FlashAddr,alen);
 				mdelay(10);
+
+				time_start_us = timer_get_us();
 				do {
 					tmp = is_flash_ready(SER_SR_READY);
 					udelay(1000);
+					{
+						if (time_out_us > 0) {
+							time_us = timer_get_us();
+							if ((time_us - time_start_us) > time_out_us) {
+								printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
+								len = -1;
+								goto spi_exit;
+							}
+						}
+					}
 				} while((tmp & SER_SR_READY));
 
 				BlockCnt -= 1;
@@ -710,6 +927,7 @@ ssize_t spi_write (uchar *addr, int alen, uchar *buffer, int len)
 					break;
 			}
 		}
+spi_exit:
 		free(pTmpBuffer);
 		printf("\n");
 		#ifdef CONFIG_SPI_EEPROM_WRITE_PROTECT
@@ -719,4 +937,127 @@ ssize_t spi_write (uchar *addr, int alen, uchar *buffer, int len)
 	return len;
 }
 
+static U8 cur_loop_module = 0;
+static U32 interrupt_req = 0;
+
+static void spi_slave_set_int_req(int high)
+{
+	U32 grp, bit;
+
+	grp = PAD_GET_GROUP(interrupt_req);
+	bit = PAD_GET_BITNO(interrupt_req);
+
+	if (high)
+		NX_GPIO_SetOutputValue(grp, bit, CTRUE);
+	else
+		NX_GPIO_SetOutputValue(grp, bit, CFALSE);
+}
+
+void spi_slave_int_req_init(U32 int_req)
+{
+	U32 grp , bit, pad;
+
+	interrupt_req = int_req;
+
+	grp = PAD_GET_GROUP(interrupt_req);
+	bit = PAD_GET_BITNO(interrupt_req);
+	pad = PAD_GET_FUNC(interrupt_req);
+
+	NX_GPIO_SetPadFunction(grp, bit, pad);
+	NX_GPIO_SetOutputValue(grp, bit, 1);
+	NX_GPIO_SetOutputEnable(grp, bit, CTRUE);
+}
+
+ssize_t spi_slave_read  (uchar *buffer, int len)
+{
+	U32 device = cur_loop_module ;
+	U32 index = 0;
+
+	NX_SSP_SetEnable( device, CTRUE );
+
+	spi_slave_set_int_req(0);
+	spi_slave_set_int_req(1);
+
+	time_start_us = timer_get_us();
+	while(len) {
+		NX_SSP_PutByte(device, 0x00);
+		while(NX_SSP_IsRxFIFOEmpty(device)) {
+			if (time_out_us > 0) {
+				time_us = timer_get_us();
+				if ((time_us - time_start_us) > time_out_us) {
+					//printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
+					goto spi_exit;
+				}
+			}
+		}
+
+		if(len != 0) {
+			buffer[index++] = NX_SSP_GetByte(device);
+			len--;
+		}
+	}
+
+spi_exit:
+	NX_SSP_SetEnable( device, CFALSE );
+
+	return index;
+}
+
+void spi_slave_init(int Index, int Slave)
+{
+	struct clk *clk = NULL;
+	struct ssp_clock_params clk_freq = {0};
+	char name[10]= {0, };
+	unsigned long hz  = 10* 1000 * 1000;
+	unsigned long rate = 0;
+	int ModuleIndex =Index;
+
+	flush_dcache_all();
+	NX_SSP_Initialize();
+
+	cur_loop_module = Index;
+
+	if(_spi_param[ModuleIndex].clkgenEnable == 1 ) {
+
+	    NX_GPIO_SetPadFunction(_spi_pad[ModuleIndex].clkio.pad /32, _spi_pad[ModuleIndex].clkio.pad % 32, _spi_pad[ModuleIndex].clkio.alt);
+	    NX_GPIO_SetPadFunction(_spi_pad[ModuleIndex].rxd.pad /32, _spi_pad[ModuleIndex].rxd.pad % 32 , _spi_pad[ModuleIndex].rxd.alt);
+	    NX_GPIO_SetPadFunction(_spi_pad[ModuleIndex].txd.pad /32, _spi_pad[ModuleIndex].txd.pad % 32, _spi_pad[ModuleIndex].txd.alt);
+		NX_GPIO_SetPadFunction(_spi_pad[ModuleIndex].fss.pad /32, _spi_pad[ModuleIndex].fss.pad % 32 , _spi_pad[ModuleIndex].fss.alt);
+
+		NX_SSP_SetBaseAddress( ModuleIndex, (U32)NX_SSP_GetPhysicalAddress(ModuleIndex) );
+		sprintf(name,"nxp-spi.%d",ModuleIndex);
+		clk= clk_get(NULL, name);
+		hz = _spi_param[ModuleIndex].hz;
+		rate = clk_set_rate(clk,hz);
+		clk_enable(clk);
+					
+	    NX_RSTCON_SetnRST(NX_SSP_GetResetNumber( ModuleIndex, NX_SSP_PRESETn ), RSTCON_nDISABLE);
+		NX_RSTCON_SetnRST(NX_SSP_GetResetNumber( ModuleIndex, NX_SSP_nSSPRST ), RSTCON_nDISABLE);
+	    NX_RSTCON_SetnRST(NX_SSP_GetResetNumber( ModuleIndex, NX_SSP_PRESETn ), RSTCON_nENABLE);
+	   	NX_RSTCON_SetnRST(NX_SSP_GetResetNumber( ModuleIndex, NX_SSP_nSSPRST ), RSTCON_nENABLE);
+
+		calculate_effective_freq(clk, _spi_param[ModuleIndex].req, &clk_freq);
+		NX_SSP_SetClockPrescaler( ModuleIndex, clk_freq.cpsdvsr, clk_freq.scr );
+
+		NX_SSP_SetEnable( ModuleIndex, CTRUE ); 			// SSP operation disable
+		NX_SSP_SetProtocol( ModuleIndex, 0); 				// Protocol : Motorola SPI
+
+		NX_SSP_SetClockPolarityInvert( ModuleIndex, 1);
+		NX_SSP_SetClockPhase( ModuleIndex, 1);
+
+		NX_SSP_SetBitWidth( ModuleIndex, 8 ); 				// 8 bit
+		NX_SSP_SetSlaveOutputEnable( ModuleIndex, CFALSE);
+
+		if(Slave)
+			NX_SSP_SetSlaveMode( ModuleIndex, CTRUE ); 		// slave mode
+		else
+			NX_SSP_SetSlaveMode( ModuleIndex, CFALSE ); 		// master mode
+
+		NX_SSP_SetInterruptEnable( ModuleIndex,0, CFALSE );
+		NX_SSP_SetInterruptEnable( ModuleIndex,1, CFALSE );
+		NX_SSP_SetInterruptEnable( ModuleIndex,2, CFALSE );
+		NX_SSP_SetInterruptEnable( ModuleIndex,3, CFALSE );
+		NX_SSP_SetDMATransferMode( ModuleIndex, CFALSE );   //DMA_Not use
+	}
+}
 

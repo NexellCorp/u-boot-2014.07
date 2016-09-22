@@ -29,6 +29,15 @@
 /*-----------------------------------------------------------------------
  * soc headers
  */
+
+#define DISP_ENABLE		0	// 1
+#if DISP_ENABLE
+	/* 0 : CVBS
+	 * 1 : HDMI
+	 */
+ 	#define DISP_TYPE	0	// 1
+#endif
+
 #ifndef	__ASM_STUB_PROCESSOR_H__
 #include <platform.h>
 #endif
@@ -54,8 +63,7 @@
 #define CONFIG_MEM_MALLOC_LENGTH		32*1024*1024
 
 /* when CONFIG_LCD */
-#define CONFIG_FB_ADDR					0x58000000
-#define CONFIG_FB_ADDR_FASTBOOT         0x46000000
+#define CONFIG_FB_ADDR 					0x46000000
 #define CONFIG_BMP_ADDR					0x47000000
 
 /* Download OFFSET */
@@ -110,7 +118,7 @@
  *	U-Boot Environments
  */
 /* refer to common/env_common.c	*/
-#define CONFIG_BOOTDELAY				0
+#define CONFIG_BOOTDELAY				5
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 //#define CONFIG_ETHADDR		   			00:e2:1c:ba:e8:60
 //#define CONFIG_NETMASK		   			255.255.255.0
@@ -119,7 +127,7 @@
 //#define CONFIG_GATEWAYIP					192.168.1.254
 //#define CONFIG_BOOTFILE					"uImage"  		[> File to load	<]
 
-#if 0
+#if 1
 #define CONFIG_BOOTCOMMAND "mmc dev 0;mmc read 48000000 800 2800; mmc read 49000000 3800 18000; bootm 48000000"
 #else
 #define CONFIG_BOOTCOMMAND "eeprom read 0x48000000 0x40000 0x400000;eeprom read 0x49000000 0x440000 0xBA0000;bootm 0x48000000"
@@ -273,9 +281,9 @@
  * EEPROM
  */
 
-#define CONFIG_CMD_EEPROM
-#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
-#define CONFIG_ENV_IS_IN_EEPROM
+//#define CONFIG_CMD_EEPROM
+//#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
+//#define CONFIG_ENV_IS_IN_EEPROM
 
 #if defined(CONFIG_CMD_EEPROM)
 
@@ -460,8 +468,8 @@
  * #> fatload mmc 0  0x.....	"file"
  *
  */
-//#define CONFIG_CMD_MMC
-//#define CONFIG_ENV_IS_IN_MMC
+#define CONFIG_CMD_MMC
+#define CONFIG_ENV_IS_IN_MMC
 
 #if defined(CONFIG_CMD_MMC)
 
@@ -557,7 +565,7 @@
 #define CFG_FASTBOOT_TRANSFER_BUFFER        CONFIG_MEM_LOAD_ADDR
 #define CFG_FASTBOOT_TRANSFER_BUFFER_SIZE	(CFG_MEM_PHY_SYSTEM_SIZE - CFG_FASTBOOT_TRANSFER_BUFFER)
 
-#if 1
+#if 0
 #define FASTBOOT_PARTS_DEFAULT      \
             "flash=eeprom,0:2ndboot:2nd:0x0,0x4000;"\
             "flash=eeprom,0:bootloader:boot:0x10000,0x30000;" \
@@ -576,7 +584,9 @@
 /*-----------------------------------------------------------------------
  * Logo command
  */
-//#define CONFIG_DISPLAY_OUT
+#if DISP_ENABLE
+	#define CONFIG_DISPLAY_OUT
+#endif
 
 #define CONFIG_LOGO_DEVICE_MMC
 
@@ -587,24 +597,20 @@
 #if	defined(CONFIG_DISPLAY_OUT)
 	#define	CONFIG_PWM			/* backlight */
 	/* display out device */
-//	#define	CONFIG_DISPLAY_OUT_LVDS
-//	#define	CONFIG_DISPLAY_OUT_HDMI
+	#if DISP_TYPE
+		#define	CONFIG_DISPLAY_OUT_HDMI
+	#endif
 
 	/* display logo */
 	#define CONFIG_LOGO_NEXELL				/* Draw loaded bmp file to FB or fill FB */
 //	#define CONFIG_CMD_LOGO_LOAD
 
 	/* Logo command: board.c */
-	#if defined(CONFIG_LOGO_DEVICE_NAND)
-	/* From NAND */
-    #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
-	#else
-	/* From MMC */
-    #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
+	#if defined(CONFIG_LOGO_DEVICE_MMC)
+		/* From MMC */
+	    #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
+	    #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
+	    #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
 	#endif
 #endif
 

@@ -81,7 +81,10 @@
 /*------------------------------------------------------------------------------
  * 	Display (DPC and MLC)
  */
-#if 1
+#if DISP_ENABLE
+#if DISP_TYPE
+ // HDMI
+#define HDMI_PRESET							1	// 0 : 720P, 1 : 1080P
 #define CFG_DISP_OUTPUT_MODOLE				0	// 0 : Primary, 1 : Secondary
 #define CFG_DISP_PRI_SCREEN_LAYER			0
 #define CFG_DISP_PRI_SCREEN_RGB_FORMAT		MLC_RGBFMT_R8G8B8
@@ -96,28 +99,6 @@
 #define CFG_DISP_PRI_RESOL_WIDTH			1920	// X Resolution
 #define CFG_DISP_PRI_RESOL_HEIGHT			1080	// Y Resolution
 
-#define CFG_DISP_PRI_HSYNC_SYNC_WIDTH		14
-#define CFG_DISP_PRI_HSYNC_BACK_PORCH		90
-#define CFG_DISP_PRI_HSYNC_FRONT_PORCH		90
-#define CFG_DISP_PRI_HSYNC_ACTIVE_HIGH		CTRUE
-#define CFG_DISP_PRI_VSYNC_SYNC_WIDTH		3
-#define CFG_DISP_PRI_VSYNC_BACK_PORCH		23
-#define CFG_DISP_PRI_VSYNC_FRONT_PORCH		12
-#define CFG_DISP_PRI_VSYNC_ACTIVE_HIGH		CTRUE
-
-#define CFG_DISP_PRI_CLKGEN0_SOURCE			DPC_VCLK_SRC_PLL0
-#define CFG_DISP_PRI_CLKGEN0_DIV			10 // even divide
-#define CFG_DISP_PRI_CLKGEN0_DELAY			0
-#define CFG_DISP_PRI_CLKGEN0_INVERT			1
-#define CFG_DISP_PRI_CLKGEN1_SOURCE			DPC_VCLK_SRC_VCLK2
-#define CFG_DISP_PRI_CLKGEN1_DIV			1
-#define CFG_DISP_PRI_CLKGEN1_DELAY			0
-#define CFG_DISP_PRI_CLKGEN1_INVERT			0
-#define CFG_DISP_PRI_CLKSEL1_SELECT			0
-#define CFG_DISP_PRI_PADCLKSEL				DPC_PADCLKSEL_VCLK2	/* VCLK=CLKGEN1, VCLK2=CLKGEN0 */
-
-#define	CFG_DISP_PRI_PIXEL_CLOCK			76000000
-
 #define	CFG_DISP_PRI_OUT_SWAPRB				CFALSE
 #define CFG_DISP_PRI_OUT_FORMAT				DPC_FORMAT_RGB888
 #define CFG_DISP_PRI_OUT_YCORDER			DPC_YCORDER_CbYCrY
@@ -125,6 +106,7 @@
 #define CFG_DISP_PRI_OUT_INVERT_FIELD		CFALSE
 
 #else
+// CVBS
 #define CFG_DISP_OUTPUT_MODOLE              0   // 0 : Primary, 1 : Secondary
 
 #define CFG_DISP_PRI_SCREEN_LAYER           0
@@ -167,6 +149,7 @@
 #define CFG_DISP_PRI_OUT_YCORDER            DPC_YCORDER_CbYCrY
 #define CFG_DISP_PRI_OUT_INTERLACE          CTRUE
 #define CFG_DISP_PRI_OUT_INVERT_FIELD       CTRUE
+#endif
 #endif
 
 /*------------------------------------------------------------------------------

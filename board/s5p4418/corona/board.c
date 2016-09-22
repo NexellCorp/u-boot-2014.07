@@ -337,8 +337,10 @@ void bd_display_run(char *cmd, int bl_duty, int bl_on)
 
 	if (cmd) {
 		run_command(cmd, 0);
+#if defined(CONFIG_DISPLAY_OUT)		
 		lcd_draw_boot_logo(CONFIG_FB_ADDR, CFG_DISP_PRI_RESOL_WIDTH,
 			CFG_DISP_PRI_RESOL_HEIGHT, CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
+#endif
 	}
 
 	if (!display_init) {
@@ -371,7 +373,9 @@ int board_late_init(void)
         writel((-1UL), SCR_RESET_SIG_RESET); /* clear */
 
         printf("RECOVERY BOOT\n");
+#if defined(CONFIG_DISPLAY_OUT)		
         bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+#endif
         run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
     }
 #endif /* CONFIG_RECOVERY_BOOT */
@@ -381,7 +385,9 @@ int board_late_init(void)
         writel((-1UL), SCR_RESET_SIG_RESET); /* clear */
 
         printf("UPDATE BOOT\n");
+#if defined(CONFIG_DISPLAY_OUT)
         bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+#endif
         run_command(CONFIG_CMD_UPDATE_BOOT, 0);        /* recovery boot */
     }
 #endif /* CONFIG_RECOVERY_BOOT */

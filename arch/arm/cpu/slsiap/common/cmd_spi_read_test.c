@@ -71,17 +71,6 @@ int do_spi_read(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 			ret, buf[0], buf[1], buf[2], buf[3],
 			buf[4], buf[5], buf[6], buf[7]);
 
-	{
-		uchar upgrade = 2;
-		eeprom_init ();
-
-		eeprom_write(CONFIG_SYS_DEF_EEPROM_ADDR, 0x4000,&upgrade, 1);
-
-		upgrade = 1;
-		eeprom_read(CONFIG_SYS_DEF_EEPROM_ADDR, 0x4000, &upgrade, 1);
-		printf("upgrade down flag[0x%x]\n",upgrade);
-	}
-
 	return 0;
 }
 

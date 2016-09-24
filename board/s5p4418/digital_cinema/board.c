@@ -366,9 +366,6 @@ void bd_display_run(char *cmd, int bl_duty, int bl_on)
 
 	if (!display_init) {
 		bd_display();
-#ifdef CFG_IO_LED_PWR_ENB		
-		NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LED_PWR_ENB), PAD_GET_BITNO(CFG_IO_LED_PWR_ENB), CTRUE);	// LED Power Enable
-#endif
 		pwm_init(CFG_LCD_PRI_PWM_CH, 0, 0);
 		display_init = 1;
 	}
@@ -377,8 +374,13 @@ void bd_display_run(char *cmd, int bl_duty, int bl_on)
 		TO_DUTY_NS(bl_duty, CFG_LCD_PRI_PWM_FREQ),
 		TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
 
-	if (bl_on)
+	if (bl_on) {
 		pwm_enable(CFG_LCD_PRI_PWM_CH);
+#ifdef CFG_IO_LED_PWR_ENB
+		mdelay(100);
+		NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LED_PWR_ENB), PAD_GET_BITNO(CFG_IO_LED_PWR_ENB), CTRUE);	// LED Power Enable
+#endif
+	}
 }
 
 #define	UPDATE_KEY			(PAD_GPIO_ALV + 0)

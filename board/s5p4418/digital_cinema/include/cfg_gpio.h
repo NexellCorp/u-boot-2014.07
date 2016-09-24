@@ -93,7 +93,7 @@
 #define PAD_GPIOB22     (PAD_MODE_ALT | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: MCUS_SD[6]    ,1: GPIO                ,2:_                    ,3:_                    =
 #define PAD_GPIOB23     (PAD_MODE_ALT | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: MCUS_SD[7]    ,1: GPIO                ,2:_                    ,3:_                    =
 #define PAD_GPIOB24     (PAD_MODE_OUT | PAD_FUNC_ALT1 | PAD_LEVEL_LOW  | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: MCUS_SD[8]    ,1: GPIO                ,2: MPEGTSI0_TDATA[0]   ,3:_                    =
-#define PAD_GPIOB25     (PAD_MODE_OUT | PAD_FUNC_ALT1 | PAD_LEVEL_HIGH | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: MCUS_SD[9]    ,1: GPIO                ,2: MPEGTSI0_TDATA[1]   ,3:_                    =
+#define PAD_GPIOB25     (PAD_MODE_OUT | PAD_FUNC_ALT1 | PAD_LEVEL_LOW  | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: MCUS_SD[9]    ,1: GPIO                ,2: MPEGTSI0_TDATA[1]   ,3:_                    =
 #define PAD_GPIOB26     (PAD_MODE_OUT | PAD_FUNC_ALT1 | PAD_LEVEL_HIGH | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: MCUS_SD[10]   ,1: GPIO                ,2: MPEGTSI0_TDATA[2]   ,3: ECID_BONDING_ID[2]  =
 #define PAD_GPIOB27     (PAD_MODE_OUT | PAD_FUNC_ALT1 | PAD_LEVEL_LOW  | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: MCUS_SD[11]   ,1: GPIO                ,2: MPEGTSI0_TDATA[3]   ,3:_                    =
 #define PAD_GPIOB28     (PAD_MODE_OUT | PAD_FUNC_ALT1 | PAD_LEVEL_LOW  | PAD_PULL_OFF | PAD_STRENGTH_0)     // 0: MCUS_SD[12]   ,1: GPIO                ,2: MPEGTSI0_TDATA[4]   ,3: UART4_RXD           =
@@ -454,11 +454,12 @@
 #endif
 
 #if defined (CONFIG_PLAT_S5P4418_DC_NAP)
-#define CFG_IO_LCD_PWR_ENB                  ((PAD_GPIO_B + 28) | PAD_FUNC_ALT1)
-#define CFG_IO_LED_PWR_ENB                  ((PAD_GPIO_B + 27) | PAD_FUNC_ALT1)
-#define CFG_IO_NLCDRST						((PAD_GPIO_B + 24) | PAD_FUNC_ALT1)
+#define CFG_IO_LCD_GATE_ENB                 (PAD_GPIO_B + 25)
+#define CFG_IO_LCD_PWR_ENB   	            (PAD_GPIO_B + 28)
+#define CFG_IO_LED_PWR_ENB                  (PAD_GPIO_B + 27)
+#define CFG_IO_NLCDRST						(PAD_GPIO_B + 24)
 
-#define CFG_IO_HUB_NRST                     ((PAD_GPIO_A + 20) | PAD_FUNC_ALT0)
+#define CFG_IO_HUB_NRST                     (PAD_GPIO_A + 20)
 #endif
 
 #endif	/* __CFG_GPIO_H__ */

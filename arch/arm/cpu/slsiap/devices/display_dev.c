@@ -43,9 +43,6 @@ void disp_lcd_device(int io)
 	int bit = PAD_GET_BITNO(io);
 	int wait;
 	CBOOL Level = CTRUE;
-	#ifdef CFG_IO_LCD_PWR_ENB_LEVEL
-	Level = CFG_IO_LCD_PWR_ENB_LEVEL
-	#endif
 
 	NX_GPIO_SetOutputValue(grp, bit, Level);
 	for (wait=0; 100 > wait; wait++) { ; }

@@ -66,7 +66,7 @@
 /*-----------------------------------------------------------------------
  *  High Level System Configuration
  */
-#undef  CONFIG_USE_IRQ		     												/* Not used: not need IRQ/FIQ stuff	*/
+#undef CONFIG_USE_IRQ		     												/* Not used: not need IRQ/FIQ stuff	*/
 #define CONFIG_SYS_HZ	   				1000									/* decrementer freq: 1ms ticks */
 
 #define	CONFIG_SYS_SDRAM_BASE			CFG_MEM_PHY_SYSTEM_BASE					/* board_init_f */
@@ -91,26 +91,26 @@
 #define	CONFIG_DISPLAY_CPUINFO													/* board_init_f->init_sequence, call print_cpuinfo */
 #define	CONFIG_SYS_DCACHE_OFF													/* board_init_f, CONFIG_SYS_ICACHE_OFF */
 #define	CONFIG_ARCH_MISC_INIT													/* board_init_r, call arch_misc_init */
-//#define	CONFIG_SYS_ICACHE_OFF
+//#define CONFIG_SYS_ICACHE_OFF
 
 #define CONFIG_MMU_ENABLE
-#ifdef  CONFIG_MMU_ENABLE
-#undef  CONFIG_SYS_DCACHE_OFF
+#ifdef CONFIG_MMU_ENABLE
+#undef CONFIG_SYS_DCACHE_OFF
 #endif
 
 /*-----------------------------------------------------------------------
  *	U-Boot default cmd
  */
-#define CONFIG_CMD_MEMORY   /* md mm nm mw cp cmp crc base loop mtest */
+#define CONFIG_CMD_MEMORY   	/* md mm nm mw cp cmp crc base loop mtest */
 #define CONFIG_CMD_MEMTEST
 #if defined(CONFIG_CMD_MEMTEST)
  	#define CONFIG_SYS_ALT_MEMTEST
 #endif
-//#define CONFIG_CMD_NET      /* bootp, tftpboot, rarpboot    */
-#define CONFIG_CMD_RUN      /* run command in env variable  */
-#define CONFIG_CMD_SAVEENV  /* saveenv          */
-#define CONFIG_CMD_SOURCE   /* "source" command support */
-#define CONFIG_CMD_BOOTD	/* "boot" command support */
+//#define CONFIG_CMD_NET   		/* bootp, tftpboot, rarpboot */
+#define CONFIG_CMD_RUN      	/* run command in env variable */
+#define CONFIG_CMD_SAVEENV  	/* saveenv */
+#define CONFIG_CMD_SOURCE   	/* "source" command support */
+#define CONFIG_CMD_BOOTD		/* "boot" command support */
 
 /*-----------------------------------------------------------------------
  *	U-Boot Environments
@@ -130,29 +130,29 @@
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
  */
-#define CONFIG_SYS_PROMPT				"digital_cinema# "     								/* Monitor Command Prompt   */
-#define CONFIG_SYS_LONGHELP				       												/* undef to save memory	   */
-#define CONFIG_SYS_CBSIZE		   		1024		   										/* Console I/O Buffer Size  */
+#define CONFIG_SYS_PROMPT				"SAP# " 		    								/* Monitor Command Prompt */
+#define CONFIG_SYS_LONGHELP				       												/* undef to save memory	*/
+#define CONFIG_SYS_CBSIZE		   		1024		   										/* Console I/O Buffer Size */
 #define CONFIG_SYS_PBSIZE		   		(CONFIG_SYS_CBSIZE+sizeof(CONFIG_SYS_PROMPT)+16) 	/* Print Buffer Size */
-#define CONFIG_SYS_MAXARGS			   	16		       										/* max number of command args   */
-#define CONFIG_SYS_BARGSIZE			   	CONFIG_SYS_CBSIZE	       							/* Boot Argument Buffer Size    */
+#define CONFIG_SYS_MAXARGS			   	16		       										/* max number of command args */
+#define CONFIG_SYS_BARGSIZE			   	CONFIG_SYS_CBSIZE	       							/* Boot Argument Buffer Size */
 
 /*-----------------------------------------------------------------------
  * allow to overwrite serial and ethaddr
  */
 #define CONFIG_ENV_OVERWRITE
 #define CONFIG_SYS_HUSH_PARSER			/* use "hush" command parser	*/
-#ifdef 	CONFIG_SYS_HUSH_PARSER
+#ifdef CONFIG_SYS_HUSH_PARSER
 #define CONFIG_SYS_PROMPT_HUSH_PS2	"> "
 #endif
 
 /*-----------------------------------------------------------------------
  * Etc Command definition
  */
-#define	CONFIG_CMD_BDI					/* board info	*/
-#define	CONFIG_CMD_IMI					/* image info	*/
+#define	CONFIG_CMD_BDI					/* board info */
+#define	CONFIG_CMD_IMI					/* image info */
 #define	CONFIG_CMD_MEMORY
-#define	CONFIG_CMD_RUN					/* run commands in an environment variable	*/
+#define	CONFIG_CMD_RUN					/* run commands in an environment variable */
 #define CONFIG_CMDLINE_EDITING			/* add command line history	*/
 #define	CONFIG_CMDLINE_TAG				/* use bootargs commandline */
 //#define CONFIG_SETUP_MEMORY_TAGS
@@ -160,9 +160,9 @@
 //#define CONFIG_SERIAL_TAG
 //#define CONFIG_REVISION_TAG
 
-#undef	CONFIG_BOOTM_NETBSD
-#undef	CONFIG_BOOTM_RTEMS
-// #undef	CONFIG_GZIP
+#undef CONFIG_BOOTM_NETBSD
+#undef CONFIG_BOOTM_RTEMS
+//#undef CONFIG_GZIP
 
 /*-----------------------------------------------------------------------
  * serial console configuration
@@ -218,7 +218,7 @@
 
 	#define CONFIG_SYS_MAX_NAND_DEVICE		(1)
 	#define CONFIG_SYS_NAND_MAX_CHIPS   	(1)
-	#define CONFIG_SYS_NAND_BASE		   	PHY_BASEADDR_CS_NAND							/* Nand data register, nand->IO_ADDR_R/_W */
+	#define CONFIG_SYS_NAND_BASE		   	PHY_BASEADDR_CS_NAND						/* Nand data register, nand->IO_ADDR_R/_W */
 
 	#if defined(CONFIG_ENV_IS_IN_NAND)
 		#define	CONFIG_ENV_OFFSET			(0x1000000)									/* 4MB */
@@ -232,10 +232,10 @@
 	#define CONFIG_CMD_NAND_TRIMFFS
 
 	#define	CONFIG_MTD_NAND_NXP
-//	#define	CONFIG_MTD_NAND_ECC_BCH															/* sync kernel config */
+//	#define	CONFIG_MTD_NAND_ECC_BCH														/* sync kernel config */
 	#define	CONFIG_MTD_NAND_ECC_HW
 //	#define	CONFIG_MTD_NAND_VERIFY_WRITE
-//	#define	CONFIG_MTD_NAND_BMT_FIRST_LAST													/* Samsumg 8192 page nand write bad mark on 1st and last block */
+//	#define	CONFIG_MTD_NAND_BMT_FIRST_LAST												/* Samsumg 8192 page nand write bad mark on 1st and last block */
 
 	#define CONFIG_CMD_UPDATE_NAND
 
@@ -244,8 +244,7 @@
 		#define	CONFIG_NAND_ECC_BCH
 	#endif
 
-
-	#undef  CONFIG_CMD_IMLS
+	#undef CONFIG_CMD_IMLS
 
 	#define	CONFIG_CMD_MTDPARTS
 	#if defined(CONFIG_CMD_MTDPARTS)
@@ -256,8 +255,8 @@
 	#endif
 
 //	#define CONFIG_MTD_DEBUG
-	#ifdef  CONFIG_MTD_DEBUG
-		#define CONFIG_MTD_DEBUG_VERBOSE	0	/* For nand debug message = 0 ~ 3 *//* list all images found in flash	*/
+	#ifdef CONFIG_MTD_DEBUG
+		#define CONFIG_MTD_DEBUG_VERBOSE	0		/* For nand debug message = 0 ~ 3 *//* list all images found in flash */
 	#endif
 #endif	/* CONFIG_CMD_NAND */
 
@@ -266,20 +265,17 @@
  */
 #define	CONFIG_SYS_NO_FLASH
 
-
 /*-----------------------------------------------------------------------
  * EEPROM
  */
-
 //#define CONFIG_CMD_EEPROM
 //#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
 //#define CONFIG_ENV_IS_IN_EEPROM
 
 #if defined(CONFIG_CMD_EEPROM)
-
 	#if defined(CONFIG_SPI)
  		#define CONFIG_SPI_MODULE_0
- 		#define CONFIG_SPI0_TYPE				1 /* 1: EEPROM, 0: SPI device */
+ 		#define CONFIG_SPI0_TYPE				1	/* 1: EEPROM, 0: SPI device */
  		#define CONFIG_EEPROM_SPI_MODULE_NUM	0
 
 		#define CONFIG_EEPROM_ERASE_SIZE		32*1024
@@ -321,12 +317,12 @@
 			#define	CONFIG_UBOOT_SIZE				   (512-64)*1024
  	 	#endif
 		#if defined(CONFIG_ENV_IS_IN_EEPROM)
-			#define	CONFIG_ENV_OFFSET					32*1024	/* 248 ~ 256K Environment */
+			#define	CONFIG_ENV_OFFSET					32*1024				/* 248 ~ 256K Environment */
 			#define CONFIG_ENV_SIZE						32*1024
 			#define CONFIG_ENV_RANGE					CONFIG_ENV_SIZE
 			#define CONFIG_SYS_DEF_EEPROM_ADDR			0					/* Need 0, when SPI */
-			#define CONFIG_SYS_I2C_FRAM									/* To avoid max length limit when spi write */
-			//#define DEBUG_ENV
+			#define CONFIG_SYS_I2C_FRAM										/* To avoid max length limit when spi write */
+//			#define DEBUG_ENV
 		#endif
 	#endif
 #endif
@@ -334,8 +330,7 @@
 /*-----------------------------------------------------------------------
  * SPI
  */
-
-#if defined  (CONFIG_SPI)
+#if defined(CONFIG_SPI)
     #if defined (CONFIG_SPI_MODULE_0)
 		#define CONFIG_SPI_MODULE_0_SOURCE_CLOCK    CFG_SPI0_SRC_CLK
         #define CONFIG_SPI_MODULE_0_CLOCK           CFG_SPI0_OUT_CLK
@@ -366,11 +361,11 @@
 #if defined(CONFIG_CMD_USB)
 	#define CONFIG_USB_EHCI_SYNOPSYS
 	#define CONFIG_USB_EHCI_MODE
-	//#define CONFIG_USB_HSIC_MODE
+//	#define CONFIG_USB_HSIC_MODE
 	#define CONFIG_USB_STORAGE
 	#define CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS 2
 
-	#undef  CONFIG_PREBOOT
+	#undef CONFIG_PREBOOT
 	#define CONFIG_PREBOOT						"usb start"
 #endif
 
@@ -385,7 +380,6 @@
 /*-----------------------------------------------------------------------
  * PMIC
  */
-
 #define CONFIG_PMIC
 #if defined(CONFIG_PMIC)
 	#define CONFIG_CMD_I2C
@@ -414,16 +408,16 @@
 
 	#define CONFIG_PMIC_CHARGING_PATH	CONFIG_PMIC_CHARGING_PATH_ADP_UBC
 
-	#define	CFG_IO_I2C0_SCL	(PAD_GPIO_C +  9)	// ((PAD_GPIO_C +  9) | PAD_FUNC_ALT1)
-	#define	CFG_IO_I2C0_SDA	(PAD_GPIO_C + 10)	// ((PAD_GPIO_C + 10) | PAD_FUNC_ALT1)
+	#define	CFG_IO_I2C0_SCL	(PAD_GPIO_C +  9)
+	#define	CFG_IO_I2C0_SDA	(PAD_GPIO_C + 10)
 
-	#define CONFIG_SW_UBC_DETECT							/* need with CONFIG_FASTBOOT. */
+	#define CONFIG_SW_UBC_DETECT						/* need with CONFIG_FASTBOOT. */
 
-	//#define CONFIG_HAVE_BATTERY
+//	#define CONFIG_HAVE_BATTERY
 
-	//#define CONFIG_ENABLE_INIT_VOLTAGE						/* enable set voltage(ARM, CORE)  */
+//	#define CONFIG_ENABLE_INIT_VOLTAGE					/* enable set voltage(ARM, CORE) */
 
-	//#define CONFIG_PMIC_REG_DUMP
+//	#define CONFIG_PMIC_REG_DUMP
 #endif
 
 #if defined(CONFIG_HAVE_BATTERY)
@@ -472,7 +466,6 @@
 
 	#define	CONFIG_I2C2_NEXELL								/* 1 = i2c 1 */
 	#define	CONFIG_I2C2_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
-
 #endif
 
 /*-----------------------------------------------------------------------
@@ -510,7 +503,7 @@
 
 	#if defined(CONFIG_ENV_IS_IN_MMC)
 	#define	CONFIG_ENV_OFFSET			512*1024				/* 0x00080000 */
-	#define CONFIG_ENV_SIZE           	32*1024					/* N block size (512Byte Per Block)  */
+	#define CONFIG_ENV_SIZE           	32*1024					/* N block size (512Byte Per Block) */
 	#define CONFIG_ENV_RANGE			CONFIG_ENV_SIZE * 2 	/* avoid bad block */
 	#define CONFIG_SYS_MMC_ENV_DEV  	CONFIG_SYS_MMC_BOOT_DEV
 	#endif
@@ -529,7 +522,7 @@
 	#define CONFIG_ENV_IS_NOWHERE						/* default: CONFIG_ENV_IS_NOWHERE */
 	#define	CONFIG_ENV_OFFSET			  	  1024
 	#define CONFIG_ENV_SIZE           		4*1024		/* env size */
-	#undef	CONFIG_CMD_IMLS								/* imls - list all images found in flash, default enable so disable */
+	#undef CONFIG_CMD_IMLS								/* imls - list all images found in flash, default enable so disable */
 #endif
 
 /*-----------------------------------------------------------------------
@@ -563,7 +556,7 @@
 	#define	CONFIG_CMD_UBI
 	#define	CONFIG_LZO
 
-	//#define	CONFIG_UBIFS_FS_DEBUG
+//	#define CONFIG_UBIFS_FS_DEBUG
 	#if defined(CONFIG_UBIFS_FS_DEBUG)
 	#define	CONFIG_UBIFS_FS_DEBUG_MSG_LVL	1	/* For ubifs debug message = 0 ~ 3 */
 	#endif
@@ -578,11 +571,11 @@
 #define CFG_FASTBOOT_TRANSFER_BUFFER        CONFIG_MEM_LOAD_ADDR
 #define CFG_FASTBOOT_TRANSFER_BUFFER_SIZE	(CFG_MEM_PHY_SYSTEM_SIZE - CFG_FASTBOOT_TRANSFER_BUFFER)
 
-#define FASTBOOT_PARTS_DEFAULT      \
-            "flash=mmc,0:2ndboot:2nd:0x200,0x7E00;"\
-            "flash=mmc,0:bootloader:boot:0x8000,0x70000;" \
-            "flash=mmc,0:kernel:raw:0x100000,0x500000" \
-            "flash=mmc,0:ramdisk:raw:0x700000,0x3000000;" \
+#define FASTBOOT_PARTS_DEFAULT      						\
+            "flash=mmc,0:2ndboot:2nd:0x200,0x7E00;"			\
+            "flash=mmc,0:bootloader:boot:0x8000,0x70000;"	\
+            "flash=mmc,0:kernel:raw:0x100000,0x500000"		\
+            "flash=mmc,0:ramdisk:raw:0x700000,0x3000000;"	\
             "flash=mmc,0:userdata:ext4:0x3700000,0x0;"
 #endif
 
@@ -609,29 +602,28 @@
 	/* Logo command: board.c */
 	#if defined(CONFIG_LOGO_DEVICE_NAND)
 	/* From NAND */
-    #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_WALLPAPERS	""
+    #define CONFIG_CMD_LOGO_BATTERY		""
+    #define CONFIG_CMD_LOGO_UPDATE		""
 	#else
 	/* From MMC */
-    #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_WALLPAPERS	"ext4load mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_BATTERY		"ext4load mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_UPDATE		"ext4load mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
 	#endif
 #endif
-
 
 /*-----------------------------------------------------------------------
  * Recover boot
  */
 //#define CONFIG_RECOVERY_BOOT
 #if defined (CONFIG_RECOVERY_BOOT)
-	#define CONFIG_CMD_RECOVERY_BOOT "ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
+	#define CONFIG_CMD_RECOVERY_BOOT	"ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
 #endif
 
 //#define CONFIG_UPDATE_BOOT
 #if defined (CONFIG_UPDATE_BOOT)
-    #define CONFIG_CMD_UPDATE_BOOT "setenv bootargs console=ttyAMA0,115200n8 root=/dev/ram0 rw initrd=0x49000000,32M ramdisk=32768;ext4load mmc 0:1 0x48000000 uImage_update;ext4load mmc 0:1 0x49000000 ramdisk_update.gz;bootm 0x48000000"
+    #define CONFIG_CMD_UPDATE_BOOT		"setenv bootargs console=ttyAMA0,115200n8 root=/dev/ram0 rw initrd=0x49000000,32M ramdisk=32768;ext4load mmc 0:1 0x48000000 uImage_update;ext4load mmc 0:1 0x49000000 ramdisk_update.gz;bootm 0x48000000"
 #endif
 
 /*-----------------------------------------------------------------------

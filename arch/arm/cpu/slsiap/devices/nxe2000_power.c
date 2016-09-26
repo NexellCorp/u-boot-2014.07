@@ -52,6 +52,9 @@
 extern u32 chgctl_reg_val;
 #endif
 
+extern int  nxp_gpio_get_int_pend(int gpio);
+extern void nxp_gpio_set_int_clear(int gpio);
+
 static u_char nxe2000_cache_reg[256];
 
 static int nxe2000_i2c_read(u8 reg, u8 *value, struct nxe2000_power *power)

@@ -388,10 +388,9 @@ int board_late_init(void)
 #if defined(CONFIG_DISPLAY_OUT)
         bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 #endif
-        run_command(CONFIG_CMD_UPDATE_BOOT, 0);        /* recovery boot */
+        run_command(CONFIG_CMD_UPDATE_BOOT, 0);		/* update boot */
     }
-#endif /* CONFIG_RECOVERY_BOOT */
-
+#endif /* CONFIG_UPDATE_BOOT */
 
     writel((-1UL), SCR_RESET_SIG_RESET);
 

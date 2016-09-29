@@ -452,8 +452,8 @@
 	#define CONFIG_I2C3_NEXELL						/* 1 = i2c 3 */
 	#define CONFIG_I2C3_NO_STOP				1		/* when tx end, 0= generate stop signal , 1: skip stop signal */
 
-	#define CFG_IO_I2C3_SCL					((PAD_GPIO_E + 9) | PAD_FUNC_ALT0)	// AP_GPE9_PMIC_SCL
-	#define CFG_IO_I2C3_SDA					((PAD_GPIO_E + 8) | PAD_FUNC_ALT0)	// AP_GPE8_PMIC_SDA
+	#define CFG_IO_I2C3_SCL					(PAD_GPIO_E + 9)	// AP_GPE9_PMIC_SCL
+	#define CFG_IO_I2C3_SDA					(PAD_GPIO_E + 8)	// AP_GPE8_PMIC_SDA
 
 #endif
 
@@ -618,16 +618,15 @@
 /*-----------------------------------------------------------------------
  * Recover boot
  */
-//#define	CONFIG_RECOVERY_BOOT
+//#define CONFIG_RECOVERY_BOOT
 #if defined (CONFIG_RECOVERY_BOOT)
     #define CONFIG_CMD_RECOVERY_BOOT "setenv bootargs console=ttyAMA3,115200n8 androidboot.hardware=s5p4418_navi_ref androidboot.console=ttyAMA3 androidboot.serialno=12345 initrd=0x49000000,0x200000 init=/init;ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
 #endif
 
-//#define        CONFIG_UPDATE_BOOT
+#define CONFIG_UPDATE_BOOT
 #if defined (CONFIG_UPDATE_BOOT)
-    #define CONFIG_CMD_UPDATE_BOOT "setenv bootargs console=ttyAMA3,115200n8 root=/dev/ram0 rw initrd=0x49000000,32M ramdisk=32768;ext4load mmc 0:1 0x48000000 uImage_update;ext4load mmc 0:1 0x49000000 ramdisk_update.gz;bootm 0x48000000"
+    #define CONFIG_CMD_UPDATE_BOOT "console=ttyAMA3,115200n8 root=/dev/ram0 rw initrd=0x49000000,60M ramdisk_size=61440 quiet update"
 #endif
-
 
 #define CONFIG_SILENT_CONSOLE
 #define CONFIG_SYS_CONSOLE_INFO_QUIET	/* print u-boot logo */

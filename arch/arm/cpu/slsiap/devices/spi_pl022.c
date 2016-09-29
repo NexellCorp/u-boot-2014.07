@@ -54,6 +54,15 @@
 
 #define MAX_ADDR_LEN	8
 
+#define FEATURE_SPI_SLAVE
+// #define FEATURE_TIME_OUT
+
+#ifdef FEATURE_TIME_OUT
+static ulong time_start_us=0;
+static ulong time_us = 0;
+static ulong time_out_us = 1000000;
+#endif
+
 static U8 spi_type[3];
 static U8 cur_module = 0;
 
@@ -174,10 +183,6 @@ static void WP_EN(void)
 	NX_GPIO_SetOutputEnable(wp.pad /32 ,wp.pad % 32, 1);
 }
 #endif
-
-static ulong time_start_us=0;
-static ulong time_us = 0;
-static ulong time_out_us = 1000000;
 
 static void CS_ON(void)
 {
@@ -364,7 +369,7 @@ ssize_t spi_read  (uchar *addr, int alen, uchar *buffer, int len)
 
 	NX_SSP_SetEnable( device, CTRUE );
 
-	//len = lencnt;
+#ifdef FEATURE_TIME_OUT 
 	time_start_us = timer_get_us();
 	while( len + dummycount)
 	{
@@ -374,7 +379,7 @@ ssize_t spi_read  (uchar *addr, int alen, uchar *buffer, int len)
 			while(NX_SSP_IsRxFIFOEmpty(device)){
 				if (time_out_us > 0) {
 					time_us = timer_get_us();
-					if ((time_us - time_start_us) > time_out_us) {
+					if ((time_us - time_start_us) > 3000000) {
 						printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
 						len = -1;
 						goto spi_exit;
@@ -423,6 +428,36 @@ ssize_t spi_read  (uchar *addr, int alen, uchar *buffer, int len)
 	}while(!(NX_SSP_IsRxFIFOEmpty(device)));
 
 spi_exit:
+#else
+	//len = lencnt;
+
+	while( len + dummycount)
+	{
+		if(!(NX_SSP_IsTxFIFOFull(device)))	// check receive buffer is not empty
+		{
+			NX_SSP_PutByte(device, 0); //send dummy data for read			// send dummy data for receive read data.
+			while(NX_SSP_IsRxFIFOEmpty(device)) ;
+
+			if(dummycount != 0)
+			{
+				tmp =  NX_SSP_GetByte(device);
+				dummycount--;
+			}
+			else
+			{
+				buffer[index++] = NX_SSP_GetByte(device);
+				len--;
+			}
+		}
+	}
+
+	while(!(NX_SSP_IsTxFIFOEmpty(device)));		// wait until tx buffer
+
+	do{
+		tmp = NX_SSP_GetByte(device);
+	}while(!(NX_SSP_IsRxFIFOEmpty(device)));			// wait until reception buffer is not empty
+#endif
+
 	NX_SSP_SetEnable( device, CFALSE );
 	CS_OFF();
 	
@@ -444,12 +479,12 @@ static int eeprom_write_enable (unsigned dev_addr, int state)
 		cmd = CMD_SPI_WREN;
 	else
 		cmd = CMD_SPI_WRDI;
-
 	NX_SSP_PutByte(device, cmd);
 
 	CS_ON();
 	NX_SSP_SetEnable( device, CTRUE );
 
+#ifdef FEATURE_TIME_OUT 
 	time_start_us = timer_get_us();
 	while(!(NX_SSP_IsTxFIFOEmpty(device))){
 		if (time_out_us > 0) {
@@ -474,6 +509,12 @@ static int eeprom_write_enable (unsigned dev_addr, int state)
 	tmp = NX_SSP_GetByte(device );
 
 spi_exit:
+
+#else
+	while(!(NX_SSP_IsTxFIFOEmpty(device)));
+	while((NX_SSP_IsRxFIFOEmpty(device)));
+	tmp = NX_SSP_GetByte(device );
+#endif
 	NX_SSP_SetEnable( device, CFALSE );
 	CS_OFF();
 
@@ -504,6 +545,7 @@ static void flash_sector_erase(U32 eraseaddr, int alen)
 	CS_ON();
 	NX_SSP_SetEnable( device, CTRUE );
 
+#ifdef FEATURE_TIME_OUT
 	time_start_us = timer_get_us();
 	while(!(NX_SSP_IsTxFIFOEmpty(device))) {
 		if (time_out_us > 0) {
@@ -531,9 +573,18 @@ static void flash_sector_erase(U32 eraseaddr, int alen)
 	}
 
 spi_exit:
+
+#else
+	while(!(NX_SSP_IsTxFIFOEmpty(device))); // Wait until send data done.
+
+	while(!(NX_SSP_IsRxFIFOEmpty(device)))
+	{
+		tmp = NX_SSP_GetByte(device);
+	}
+#endif
+
 	NX_SSP_SetEnable( device, CFALSE );
 	CS_OFF();
-
 }
 
 static U8 flash_page_program(U32 dwFlashAddr, int alen, uchar * databuffer, U32 dwDataSize)
@@ -561,6 +612,7 @@ static U8 flash_page_program(U32 dwFlashAddr, int alen, uchar * databuffer, U32 
 		return -1;
 	}
 
+#ifdef FEATURE_TIME_OUT
 	time_start_us = timer_get_us();
 	do {
 		eeprom_write_enable(dwFlashAddr,1);
@@ -574,6 +626,13 @@ static U8 flash_page_program(U32 dwFlashAddr, int alen, uchar * databuffer, U32 
 			}
 		}
 	} while( !((temp & SER_SR_WEN) == SER_SR_WEN) || (temp & SER_SR_READY));
+#else
+	do {
+		eeprom_write_enable(dwFlashAddr,1);
+		udelay(1000);
+		temp = is_flash_ready(SER_SR_READY);
+	} while( !((temp & SER_SR_WEN) == SER_SR_WEN) || (temp & SER_SR_READY));
+#endif
 	
 	CS_ON();
 	NX_SSP_PutByte(device, cmd); 		//send WRITE COMMAND
@@ -585,6 +644,7 @@ static U8 flash_page_program(U32 dwFlashAddr, int alen, uchar * databuffer, U32 
 	
 	NX_SSP_SetEnable( device, CTRUE );
 
+#ifdef FEATURE_TIME_OUT
 	time_start_us = timer_get_us();
 	while(!NX_SSP_IsTxFIFOEmpty(device)){
 		if (time_out_us > 0) {
@@ -610,6 +670,13 @@ static U8 flash_page_program(U32 dwFlashAddr, int alen, uchar * databuffer, U32 
 			}
 		}
 	}
+#else
+	while(!NX_SSP_IsTxFIFOEmpty(device));// ready to Fifo Empty
+	while(!(NX_SSP_IsRxFIFOEmpty(device)))
+	{
+		temp = NX_SSP_GetByte(device);	//read dummy data
+	}
+#endif
 
 	while(dwDataSize)
 	{
@@ -617,6 +684,7 @@ static U8 flash_page_program(U32 dwFlashAddr, int alen, uchar * databuffer, U32 
 		{
 			NX_SSP_PutByte(device, databuffer[index++]); //send addr
 			dwDataSize--;
+#ifdef FEATURE_TIME_OUT
 			time_start_us = timer_get_us();
 			while(NX_SSP_IsTxRxEnd(device)){
 				if (time_out_us > 0) {
@@ -641,9 +709,18 @@ static U8 flash_page_program(U32 dwFlashAddr, int alen, uchar * databuffer, U32 
 					}
 				}
 			}
+#else
+			while(NX_SSP_IsTxRxEnd(device));
+			//while(!NX_SSP_IsTxFIFOEmpty(device));// ready to Fifo Empty
+			//while(!NX_SSP_IsTxFIFOEmpty(device));// ready to Fifo Empty
+			while(!(NX_SSP_IsRxFIFOEmpty(device))){
+				temp = NX_SSP_GetByte(device);	//read dummy data
+			}
+#endif
 		}
 	}
 
+#ifdef FEATURE_TIME_OUT
 	time_start_us = timer_get_us();
 	while(!NX_SSP_IsTxFIFOEmpty(device)){
 		if (time_out_us > 0) {
@@ -685,6 +762,17 @@ static U8 flash_page_program(U32 dwFlashAddr, int alen, uchar * databuffer, U32 
 	}
 
 spi_exit:
+
+#else
+	while(!NX_SSP_IsTxFIFOEmpty(device));// ready to Fifo Empty
+	while(!(NX_SSP_IsRxFIFOEmpty(device))){
+		temp = NX_SSP_GetByte(device);	//read dummy data
+	}
+	while(!(NX_SSP_IsRxFIFOEmpty(device)))
+	{
+		temp = NX_SSP_GetByte(device);	//read dummy data
+	}
+#endif
 	NX_SSP_SetEnable( device, CFALSE );
 	CS_OFF();
 
@@ -711,6 +799,7 @@ static U8 is_flash_ready(U8 status)
 		CS_ON();
 		NX_SSP_SetEnable( device, CTRUE );
 
+#ifdef FEATURE_TIME_OUT
 		time_start_us = timer_get_us();
 		while(!(NX_SSP_IsTxFIFOEmpty(device))){
 			if (time_out_us > 0) {
@@ -721,7 +810,6 @@ static U8 is_flash_ready(U8 status)
 				}
 			}
 		}
-
 		time_start_us = timer_get_us();
 		while((NX_SSP_IsRxFIFOEmpty(device))){
 			if (time_out_us > 0) {
@@ -732,8 +820,6 @@ static U8 is_flash_ready(U8 status)
 				}
 			}
 		}
-		tmp = NX_SSP_GetByte(device);
-
 		time_start_us = timer_get_us();
 		while((NX_SSP_IsRxFIFOEmpty(device))){
 			if (time_out_us > 0) {
@@ -744,11 +830,27 @@ static U8 is_flash_ready(U8 status)
 				}
 			}
 		}
+
 		ret = NX_SSP_GetByte(device);
 
 		while(!(NX_SSP_IsRxFIFOEmpty(device)));
 
-spi_exit:		
+spi_exit:
+
+#else
+		while(!(NX_SSP_IsTxFIFOEmpty(device)));
+		while((NX_SSP_IsRxFIFOEmpty(device)));
+		
+		tmp = NX_SSP_GetByte(device);
+
+		while((NX_SSP_IsRxFIFOEmpty(device)));
+
+		ret = NX_SSP_GetByte(device);
+
+		while(!(NX_SSP_IsRxFIFOEmpty(device)));
+#endif
+
+		
 		NX_SSP_SetEnable( device, CFALSE );
 		CS_OFF();
 //	}	while(!(ret & status) );
@@ -760,6 +862,7 @@ static void SPIFifoReset(void)
 	U32 device = cur_module ;
 	U8 tmp =0;
 
+#ifdef FEATURE_TIME_OUT
 	time_start_us = timer_get_us();
 	while(!(NX_SSP_IsRxFIFOEmpty(device)))
 	{
@@ -774,6 +877,12 @@ static void SPIFifoReset(void)
 			}
 		}
 	}
+#else
+	while(!(NX_SSP_IsRxFIFOEmpty(device)))
+	{
+		tmp = NX_SSP_GetByte(device);	//read dummy data
+	}
+#endif
 }
 
 ssize_t spi_write (uchar *addr, int alen, uchar *buffer, int len)
@@ -865,41 +974,18 @@ ssize_t spi_write (uchar *addr, int alen, uchar *buffer, int len)
 						pWBuffer = pDatBuffer;
 					}
 				}
-
-				time_start_us = timer_get_us();
 				do {
 					eeprom_write_enable(FlashAddr,1);
 					udelay(1000);
 					tmp = is_flash_ready(SER_SR_WEN);
-					{
-						if (time_out_us > 0) {
-							time_us = timer_get_us();
-							if ((time_us - time_start_us) > time_out_us) {
-								printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
-								len = -1;
-								goto spi_exit;
-							}
-						}
-					}
+
 				} while(!(tmp & SER_SR_WEN)) ;
 
 				flash_sector_erase(FlashAddr,alen);
 				mdelay(10);
-
-				time_start_us = timer_get_us();
 				do {
 					tmp = is_flash_ready(SER_SR_READY);
 					udelay(1000);
-					{
-						if (time_out_us > 0) {
-							time_us = timer_get_us();
-							if ((time_us - time_start_us) > time_out_us) {
-								printf("## \e[31m%s():%d, time out ! \e[0m \n", __FUNCTION__, __LINE__);
-								len = -1;
-								goto spi_exit;
-							}
-						}
-					}
 				} while((tmp & SER_SR_READY));
 
 				BlockCnt -= 1;
@@ -910,7 +996,6 @@ ssize_t spi_write (uchar *addr, int alen, uchar *buffer, int len)
 			SPIFifoReset();
 
 			WriteSize= CONFIG_EEPROM_ERASE_SIZE;
-
 			printf(".");
 			while(WriteSize > 0)
 			{
@@ -927,7 +1012,6 @@ ssize_t spi_write (uchar *addr, int alen, uchar *buffer, int len)
 					break;
 			}
 		}
-spi_exit:
 		free(pTmpBuffer);
 		printf("\n");
 		#ifdef CONFIG_SPI_EEPROM_WRITE_PROTECT
@@ -937,6 +1021,7 @@ spi_exit:
 	return len;
 }
 
+#ifdef FEATURE_SPI_SLAVE
 static U8 cur_loop_module = 0;
 static U32 interrupt_req = 0;
 
@@ -978,6 +1063,7 @@ ssize_t spi_slave_read  (uchar *buffer, int len)
 	spi_slave_set_int_req(0);
 	spi_slave_set_int_req(1);
 
+#ifdef FEATURE_TIME_OUT
 	time_start_us = timer_get_us();
 	while(len) {
 		NX_SSP_PutByte(device, 0x00);
@@ -998,6 +1084,20 @@ ssize_t spi_slave_read  (uchar *buffer, int len)
 	}
 
 spi_exit:
+
+#else
+
+	while(len) {
+		NX_SSP_PutByte(device, 0x00);
+		while(NX_SSP_IsRxFIFOEmpty(device));
+		if(len != 0) {
+			buffer[index++] = NX_SSP_GetByte(device);
+			len--;
+		}
+	}
+
+#endif
+
 	NX_SSP_SetEnable( device, CFALSE );
 
 	return index;
@@ -1060,4 +1160,5 @@ void spi_slave_init(int Index, int Slave)
 		NX_SSP_SetDMATransferMode( ModuleIndex, CFALSE );   //DMA_Not use
 	}
 }
+#endif
 

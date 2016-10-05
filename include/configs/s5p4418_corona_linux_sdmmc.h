@@ -614,18 +614,12 @@
 	#endif
 #endif
 
-
 /*-----------------------------------------------------------------------
- * Recover boot
+ * Update boot
  */
-//#define CONFIG_RECOVERY_BOOT
-#if defined (CONFIG_RECOVERY_BOOT)
-    #define CONFIG_CMD_RECOVERY_BOOT "setenv bootargs console=ttyAMA3,115200n8 androidboot.hardware=s5p4418_navi_ref androidboot.console=ttyAMA3 androidboot.serialno=12345 initrd=0x49000000,0x200000 init=/init;ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
-#endif
-
 #define CONFIG_UPDATE_BOOT
 #if defined (CONFIG_UPDATE_BOOT)
-    #define CONFIG_CMD_UPDATE_BOOT "console=ttyAMA3,115200n8 root=/dev/ram0 rw initrd=0x49000000,60M ramdisk_size=61440 quiet update"
+    #define CONFIG_CMD_UPDATE_BOOT "setenv bootargs console=ttyAMA3,115200n8 root=/dev/ram0 rw initrd=0x49000000,70M ramdisk_size=71680 update"
 #endif
 
 #define CONFIG_SILENT_CONSOLE

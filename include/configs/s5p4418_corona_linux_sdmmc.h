@@ -575,7 +575,7 @@
 #define	FASTBOOT_PARTS_DEFAULT		\
 			"flash=mmc,0:2ndboot:2nd:0x200,0x7E00;"\
 			"flash=mmc,0:bootloader:boot:0x8000,0x70000;" \
-			"flash=mmc,0:kernel:raw:0x100000,0x500000" \
+			"flash=mmc,0:kernel:raw:0x100000,0x500000;" \
 			"flash=mmc,0:ramdisk:raw:0x700000,0x3000000;" \
 			"flash=mmc,0:userdata:ext4:0x3700000,0x0;"
 #endif

@@ -619,7 +619,7 @@
  */
 #define CONFIG_UPDATE_BOOT
 #if defined(CONFIG_UPDATE_BOOT)
-    #define CONFIG_CMD_UPDATE_BOOT "console=ttyAMA3,115200n8 root=/dev/ram0 rw initrd=0x49000000,8M ramdisk_size=8192 quiet update"
+    #define CONFIG_CMD_UPDATE_BOOT "console=ttyAMA3,115200n8 root=/dev/ram0 rw initrd=0x49000000,8M ramdisk_size=8192 update"
 #endif
 
 #define CONFIG_SILENT_CONSOLE

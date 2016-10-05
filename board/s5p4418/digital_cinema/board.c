@@ -388,6 +388,14 @@ void bd_display_run(char *cmd, int bl_duty, int bl_on)
 
 int board_late_init(void)
 {
+#if defined(CONFIG_PLAT_S5P4418_DC_NAP)
+	// SAP PowerOn
+	printf("[NAP] SAP PowerOn..\n");
+	NX_ALIVE_SetOutputEnable(1, CFALSE);
+	mdelay(1200);
+	NX_ALIVE_SetOutputEnable(0, CFALSE);
+#endif
+
 	// USB HUB Reset
 #ifdef CFG_IO_HUB_NRST
 	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_HUB_NRST), PAD_GET_BITNO(CFG_IO_HUB_NRST), CTRUE);

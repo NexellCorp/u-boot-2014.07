@@ -228,11 +228,11 @@
  *	| MODE(IN/OUT/DETECT) | ALIVE OUT or ALIVE DETMODE0 | PullUp |
  *
  -----------------------------------------------------------------------------*/
-#define PAD_GPIOALV0    (PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_UP)           // AP_AGP0_PWRKEY
+#define PAD_GPIOALV0    (PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_OFF)          // AP_AGP0_PWRKEY
 #define PAD_GPIOALV1    (PAD_MODE_OUT | PAD_LEVEL_HIGH | PAD_PULL_OFF)			// AP_AGP1_SAP_PWRKEY
-#define PAD_GPIOALV2    (PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_UP)           // AP_AGP2_FPGA_GPIOA
-#define PAD_GPIOALV3    (PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_UP)           // AP_AGP3_LOWBAT_DET
-#define PAD_GPIOALV4    (PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_UP)           // AP_AGP4_PMIC_INT
+#define PAD_GPIOALV2    (PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_OFF)          // AP_AGP2_FPGA_GPIOA
+#define PAD_GPIOALV3    (PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_OFF)          // AP_AGP3_LOWBAT_DET
+#define PAD_GPIOALV4    (PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_OFF)          // AP_AGP4_PMIC_INT
 #define PAD_GPIOALV5    (PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_DN)
 
 #elif defined (CONFIG_PLAT_S5P4418_DC_SAP)
@@ -445,11 +445,11 @@
  *	| MODE(IN/OUT/DETECT) | ALIVE OUT or ALIVE DETMODE0 | PullUp |
  *
  -----------------------------------------------------------------------------*/
-#define PAD_GPIOALV0    (PAD_MODE_IN  | PAD_LEVEL_LOW | PAD_PULL_UP)             // AP_AGP0_PWRKEY
+#define PAD_GPIOALV0    (PAD_MODE_IN  | PAD_LEVEL_LOW | PAD_PULL_OFF)             // AP_AGP0_PWRKEY
 #define PAD_GPIOALV1    (PAD_MODE_IN  | PAD_LEVEL_LOW | PAD_PULL_DN)
-#define PAD_GPIOALV2    (PAD_MODE_IN  | PAD_LEVEL_LOW | PAD_PULL_UP)             // AP_AGP2_FPGA_GPIOA
+#define PAD_GPIOALV2    (PAD_MODE_IN  | PAD_LEVEL_LOW | PAD_PULL_OFF)             // AP_AGP2_FPGA_GPIOA
 #define PAD_GPIOALV3    (PAD_MODE_IN  | PAD_LEVEL_LOW | PAD_PULL_DN)
-#define PAD_GPIOALV4    (PAD_MODE_IN  | PAD_LEVEL_LOW | PAD_PULL_UP)             // AP_AGP4_PMIC_INT
+#define PAD_GPIOALV4    (PAD_MODE_IN  | PAD_LEVEL_LOW | PAD_PULL_OFF)             // AP_AGP4_PMIC_INT
 #define PAD_GPIOALV5    (PAD_MODE_IN  | PAD_LEVEL_LOW | PAD_PULL_DN)
 #endif
 

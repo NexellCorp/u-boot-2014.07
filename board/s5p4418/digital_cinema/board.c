@@ -334,7 +334,7 @@ static void auto_update(int io, int wait)
 	int level = 1, i = 0;
 	char *cmd = "fastboot";
 
-	printf("Entering auto_update!\n");
+	printf("Checking auto_update!\n");
 	for (i = 0; wait > i; i++) {
 		switch (io & ~(32-1)) {
 		case PAD_GPIO_A:
@@ -350,12 +350,14 @@ static void auto_update(int io, int wait)
 			break;
 		mdelay(1);
 	}
-	printf("Finish auto_update! : wait = %d\n", wait);
 
+	printf("auto_update condition : timeout = %d, wait limit = %d\n", i, wait);
 	if (i == wait) {
+		printf("auto_update : enable\n");
 		printf("Entering fastboot!\n");
 		run_command (cmd, 0);
-	}
+	} else
+		printf("auto_update : disable\n");
 }
 
 void bd_display_run(char *cmd, int bl_duty, int bl_on)
@@ -397,7 +399,7 @@ int board_late_init(void)
 	printf("[NAP] SAP PowerOn..\n");
 	NX_ALIVE_SetOutputEnable(1, CFALSE);
 	mdelay(1200);
-	NX_ALIVE_SetOutputEnable(0, CFALSE);
+	NX_ALIVE_SetOutputEnable(1, CTRUE);
 #endif
 
 	// USB HUB Reset

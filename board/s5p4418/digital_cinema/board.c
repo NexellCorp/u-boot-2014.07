@@ -334,6 +334,7 @@ static void auto_update(int io, int wait)
 	int level = 1, i = 0;
 	char *cmd = "fastboot";
 
+	printf("Entering auto_update!\n");
 	for (i = 0; wait > i; i++) {
 		switch (io & ~(32-1)) {
 		case PAD_GPIO_A:
@@ -349,9 +350,12 @@ static void auto_update(int io, int wait)
 			break;
 		mdelay(1);
 	}
+	printf("Finish auto_update! : wait = %d\n", wait);
 
-	if (i == wait)
+	if (i == wait) {
+		printf("Entering fastboot!\n");
 		run_command (cmd, 0);
+	}
 }
 
 void bd_display_run(char *cmd, int bl_duty, int bl_on)

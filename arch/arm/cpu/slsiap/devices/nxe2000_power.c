@@ -1016,7 +1016,7 @@ skip_bat_animation:
 	printf("## power_depth:%d, power_key_depth:%d, chrg:%s \n", power_depth, power_key_depth,
 						(chrg == CHARGER_USB ? "USB" : (chrg == CHARGER_TA ? (((chg_state>>6) & 0x2) ? "ADP(USB)" : "ADP"): "NONE")));
 	printf("## voltage_uV:%d, shutdown_ilim_uV:%d \n", pb->bat->voltage_uV, shutdown_ilim_uV);
-
+	printf("$$ ret = %d\n", ret);
 	return ret;
 
 

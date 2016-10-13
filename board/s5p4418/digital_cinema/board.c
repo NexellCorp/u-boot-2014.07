@@ -451,7 +451,7 @@ int board_late_init(void)
 
     writel((-1UL), SCR_RESET_SIG_RESET);
 #if defined(CONFIG_BAT_CHECK)
-	{
+	if (NX_GPIO_GetInputValue(PAD_GET_GROUP(CFG_IO_USEBAT_DET), PAD_GET_BITNO(CFG_IO_USEBAT_DET))) {
 		int ret =0;
 		int bat_check_skip = 1;
 
@@ -462,7 +462,17 @@ int board_late_init(void)
 #endif
 		if(ret == 1)
 			auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
+	} else {
+#if defined(CONFIG_DISPLAY_OUT)
+#if defined(CONFIG_PLAT_S5P4418_DC_NAP)
+    bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+#endif
+#endif
+
+	    /* Temp check gpio to update */
+	    auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
 	}
+
 #else /* CONFIG_BAT_CHECK */
 
 #if defined(CONFIG_DISPLAY_OUT)

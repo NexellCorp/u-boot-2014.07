@@ -48,6 +48,8 @@
 #define DBGOUT(msg...)		do {} while (0)
 #endif
 
+static int use_bat = 0;
+
 #if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
 extern u32 chgctl_reg_val;
 #endif
@@ -356,27 +358,28 @@ static int nxe2000_param_setup(struct nxe2000_power *power)
 
 	/* Set charge control register. */
 #if defined(CONFIG_HAVE_BATTERY)
-	cache[NXE2000_REG_CHGCTL1]  =  ((NXE2000_DEF_CHG_PRIORITY		<< NXE2000_POS_CHGCTL1_CHGP)		|
-									(NXE2000_DEF_CHG_COMPLETE_DIS	<< NXE2000_POS_CHGCTL1_CHGCMP_DIS)	|
-									(NXE2000_DEF_CHG_NOBAT_OVLIM_EN	<< NXE2000_POS_CHGCTL1_NOBATOVLIM)	|
-									(NXE2000_DEF_CHG_OTG_BOOST		<< NXE2000_POS_CHGCTL1_OTG_BOOST_EN)|
-									(NXE2000_DEF_CHG_SUSPEND		<< NXE2000_POS_CHGCTL1_SUSPEND)		|
-									(NXE2000_DEF_CHG_JEITAEN		<< NXE2000_POS_CHGCTL1_JEITAEN)		|
-									(NXE2000_DEF_CHG_USB_EN			<< NXE2000_POS_CHGCTL1_VUSBCHGEN)	|
-									(NXE2000_DEF_CHG_ADP_EN			<< NXE2000_POS_CHGCTL1_VADPCHGEN) );
+	if (use_bat) {
+		cache[NXE2000_REG_CHGCTL1]  =  ((NXE2000_DEF_CHG_PRIORITY		<< NXE2000_POS_CHGCTL1_CHGP)		|
+										(NXE2000_DEF_CHG_COMPLETE_DIS	<< NXE2000_POS_CHGCTL1_CHGCMP_DIS)	|
+										(NXE2000_DEF_CHG_NOBAT_OVLIM_EN	<< NXE2000_POS_CHGCTL1_NOBATOVLIM)	|
+										(NXE2000_DEF_CHG_OTG_BOOST		<< NXE2000_POS_CHGCTL1_OTG_BOOST_EN)|
+										(NXE2000_DEF_CHG_SUSPEND		<< NXE2000_POS_CHGCTL1_SUSPEND)		|
+										(NXE2000_DEF_CHG_JEITAEN		<< NXE2000_POS_CHGCTL1_JEITAEN)		|
+										(NXE2000_DEF_CHG_USB_EN			<< NXE2000_POS_CHGCTL1_VUSBCHGEN)	|
+										(NXE2000_DEF_CHG_ADP_EN			<< NXE2000_POS_CHGCTL1_VADPCHGEN) );
 
-	#if (CONFIG_PMIC_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP_UBC)
-		cache[NXE2000_REG_CHGCTL1] &= ~(1 << NXE2000_POS_CHGCTL1_CHGP);
-	#endif
-	#if (CONFIG_PMIC_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP)
-		cache[NXE2000_REG_CHGCTL1] &= ~(1 << NXE2000_POS_CHGCTL1_CHGP);
-		cache[NXE2000_REG_CHGCTL1] &= ~(1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
-	#endif
+		#if (CONFIG_PMIC_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP_UBC)
+			cache[NXE2000_REG_CHGCTL1] &= ~(1 << NXE2000_POS_CHGCTL1_CHGP);
+		#endif
+		#if (CONFIG_PMIC_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP)
+			cache[NXE2000_REG_CHGCTL1] &= ~(1 << NXE2000_POS_CHGCTL1_CHGP);
+			cache[NXE2000_REG_CHGCTL1] &= ~(1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
+		#endif
 
-	#if (CONFIG_PMIC_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_UBC)
-		cache[NXE2000_REG_CHGCTL1] &= ~(1 << NXE2000_POS_CHGCTL1_VADPCHGEN);
-	#endif
-
+		#if (CONFIG_PMIC_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_UBC)
+			cache[NXE2000_REG_CHGCTL1] &= ~(1 << NXE2000_POS_CHGCTL1_VADPCHGEN);
+		#endif
+	}
 #else
 
 	#if (CONFIG_PMIC_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP)
@@ -449,11 +452,11 @@ static int nxe2000_device_setup(struct nxe2000_power *power)
 	int		bus = power->i2c_bus;
 #if defined(CONFIG_PMIC_REG_DUMP)
 	int i;
-	s32 ret=0;
+	s32 ret = 0;
 #endif
 
 	DBGOUT("%s\n", __func__);
-
+	
 	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
 	i2c_set_bus_num(bus);
 
@@ -486,12 +489,14 @@ static int nxe2000_device_setup(struct nxe2000_power *power)
 
 	/* Set fuel gauge enable */
 #if defined(CONFIG_HAVE_BATTERY)
-	nxe2000_i2c_write(NXE2000_REG_CHGCTL1	, cache[NXE2000_REG_CHGCTL1]	, power);
-	nxe2000_i2c_write(NXE2000_REG_FG_CTRL	, cache[NXE2000_REG_FG_CTRL]	, power);
+	if (use_bat) {
+		nxe2000_i2c_write(NXE2000_REG_CHGCTL1	, cache[NXE2000_REG_CHGCTL1]	, power);
+		nxe2000_i2c_write(NXE2000_REG_FG_CTRL	, cache[NXE2000_REG_FG_CTRL]	, power);
 
-	do {
-		nxe2000_i2c_read(NXE2000_REG_FG_CTRL, &cache[NXE2000_REG_FG_CTRL]	, power);
-	} while(cache[NXE2000_REG_FG_CTRL] & 0xC0);
+		do {
+			nxe2000_i2c_read(NXE2000_REG_FG_CTRL, &cache[NXE2000_REG_FG_CTRL]	, power);
+		} while(cache[NXE2000_REG_FG_CTRL] & 0xC0);
+	}
 #endif
 
 	/* Set DCDC voltage register */
@@ -555,15 +560,17 @@ static int nxe2000_device_setup(struct nxe2000_power *power)
 	nxe2000_i2c_write(NXE2000_REG_LDOEN2	, cache[NXE2000_REG_LDOEN2]		, power);
 
 #if defined(CONFIG_HAVE_BATTERY)
-	/* Set charge control register. */
-	//nxe2000_i2c_write(NXE2000_REG_CHGCTL1	, cache[NXE2000_REG_CHGCTL1]	, power);
-	nxe2000_i2c_write(NXE2000_REG_CHGCTL2	, cache[NXE2000_REG_CHGCTL2]	, power);
-	nxe2000_i2c_write(NXE2000_REG_VSYSSET	, cache[NXE2000_REG_VSYSSET]	, power);
+	if (use_bat) {
+		/* Set charge control register. */
+		//nxe2000_i2c_write(NXE2000_REG_CHGCTL1	, cache[NXE2000_REG_CHGCTL1]	, power);
+		nxe2000_i2c_write(NXE2000_REG_CHGCTL2	, cache[NXE2000_REG_CHGCTL2]	, power);
+		nxe2000_i2c_write(NXE2000_REG_VSYSSET	, cache[NXE2000_REG_VSYSSET]	, power);
 
-	/* Charge current setting register. */
-	nxe2000_i2c_write(NXE2000_REG_REGISET1	, cache[NXE2000_REG_REGISET1]	, power);
-	nxe2000_i2c_write(NXE2000_REG_REGISET2	, cache[NXE2000_REG_REGISET2]	, power);
-	nxe2000_i2c_write(NXE2000_REG_CHGISET	, cache[NXE2000_REG_CHGISET]	, power);
+		/* Charge current setting register. */
+		nxe2000_i2c_write(NXE2000_REG_REGISET1	, cache[NXE2000_REG_REGISET1]	, power);
+		nxe2000_i2c_write(NXE2000_REG_REGISET2	, cache[NXE2000_REG_REGISET2]	, power);
+		nxe2000_i2c_write(NXE2000_REG_CHGISET	, cache[NXE2000_REG_CHGISET]	, power);
+	}
 #endif
 
 	nxe2000_i2c_write(NXE2000_REG_TIMSET	, cache[NXE2000_REG_TIMSET]		, power);
@@ -1057,8 +1064,10 @@ int power_pmic_function_init(void)
 
 	ret = power_pmic_init(i2c_bus);
 #if defined(CONFIG_BAT_CHECK)
-	ret |= power_nxe2000_init();
-	ret |= power_nxe2000_bat_init(i2c_bus);
+	if (use_bat) {
+		ret |= power_nxe2000_init();
+		ret |= power_nxe2000_bat_init(i2c_bus);
+	}
 #endif
 #if defined(CONFIG_POWER_FG_NXE2000)
 	ret |= power_nxe2000_fg_init(i2c_bus);
@@ -1076,6 +1085,9 @@ int bd_pmic_init(void)
 		.i2c_addr = NXE2000_I2C_ADDR,
 		.i2c_bus = CONFIG_PMIC_I2C_BUS,
 	};
+
+	if (NX_GPIO_GetInputValue(PAD_GET_GROUP(CFG_IO_USEBAT_DET), PAD_GET_BITNO(CFG_IO_USEBAT_DET)))
+		use_bat = 1;
 
 	nxe2000_device_setup(&nxe_power_config);
 	return 0;

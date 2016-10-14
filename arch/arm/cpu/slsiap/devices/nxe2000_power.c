@@ -48,7 +48,11 @@
 #define DBGOUT(msg...)		do {} while (0)
 #endif
 
+#if defined(CFG_IO_USEBAT_DET)
 static int use_bat = 0;
+#else
+static int use_bat = 1;
+#endif
 
 #if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
 extern u32 chgctl_reg_val;
@@ -1086,9 +1090,12 @@ int bd_pmic_init(void)
 		.i2c_bus = CONFIG_PMIC_I2C_BUS,
 	};
 
+#if defined(CONFIG_BAT_CHECK)
+#if defined(CFG_IO_USEBAT_DET)
 	if (NX_GPIO_GetInputValue(PAD_GET_GROUP(CFG_IO_USEBAT_DET), PAD_GET_BITNO(CFG_IO_USEBAT_DET)))
 		use_bat = 1;
-
+#endif
+#endif
 	nxe2000_device_setup(&nxe_power_config);
 	return 0;
 }

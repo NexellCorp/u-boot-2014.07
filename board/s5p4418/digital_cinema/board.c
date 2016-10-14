@@ -451,7 +451,11 @@ int board_late_init(void)
 
     writel((-1UL), SCR_RESET_SIG_RESET);
 #if defined(CONFIG_BAT_CHECK)
+#if defined(CFG_IO_USEBAT_DET)
 	if (NX_GPIO_GetInputValue(PAD_GET_GROUP(CFG_IO_USEBAT_DET), PAD_GET_BITNO(CFG_IO_USEBAT_DET))) {
+#else
+	if (true) {
+#endif
 		int ret =0;
 		int bat_check_skip = 1;
 
@@ -472,7 +476,6 @@ int board_late_init(void)
 	    /* Temp check gpio to update */
 	    auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
 	}
-
 #else /* CONFIG_BAT_CHECK */
 
 #if defined(CONFIG_DISPLAY_OUT)

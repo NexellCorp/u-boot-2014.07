@@ -402,8 +402,8 @@ int board_late_init(void)
 	NX_ALIVE_SetOutputEnable(1, CTRUE);
 #endif
 
-	// USB HUB Reset
 #ifdef CFG_IO_HUB_NRST
+	// USB HUB Reset
 	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_HUB_NRST), PAD_GET_BITNO(CFG_IO_HUB_NRST), CTRUE);
 #endif
 
@@ -465,7 +465,7 @@ int board_late_init(void)
 	} else {
 #if defined(CONFIG_DISPLAY_OUT)
 #if defined(CONFIG_PLAT_S5P4418_DC_NAP)
-    bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+	    bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 #endif
 #endif
 

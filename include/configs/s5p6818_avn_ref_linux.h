@@ -123,7 +123,7 @@
  *	U-Boot Environments
  */
 /* refer to common/env_common.c	*/
-#define CONFIG_BOOTDELAY	   			0
+#define CONFIG_BOOTDELAY	   			3
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 //#define CONFIG_ETHADDR		   			00:e2:1c:ba:e8:60
 //#define CONFIG_NETMASK		   			255.255.255.0
@@ -132,7 +132,7 @@
 //#define CONFIG_GATEWAYIP				192.168.1.254
 //#define CONFIG_BOOTFILE					"uImage"  		[> File to load	<]
 
-#define CONFIG_BOOTCOMMAND "mmc dev 2;mmc read 48000000 800 2800; mmc read 49000000 3800 18000; bootm 48000000"
+//#define CONFIG_BOOTCOMMAND "mmc dev 2;mmc read 48000000 800 2800; mmc read 49000000 3800 18000; bootm 48000000"
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
  */
@@ -494,7 +494,7 @@
  *
  */
 #define	CONFIG_CMD_MMC
-#define CONFIG_ENV_IS_IN_MMC
+//#define CONFIG_ENV_IS_IN_MMC
 
 #if defined(CONFIG_CMD_MMC)
 
@@ -589,7 +589,10 @@
 
 #if defined(CONFIG_FASTBOOT) & defined(CONFIG_USB_GADGET)
 #define CFG_FASTBOOT_TRANSFER_BUFFER        CONFIG_MEM_LOAD_ADDR
-#define CFG_FASTBOOT_TRANSFER_BUFFER_SIZE	(CFG_MEM_PHY_SYSTEM_SIZE - CFG_FASTBOOT_TRANSFER_BUFFER)
+#define CFG_FASTBOOT_TRANSFER_BUFFER_OFFSET \
+	(CONFIG_MEM_LOAD_ADDR - CFG_MEM_PHY_SYSTEM_BASE)
+#define CFG_FASTBOOT_TRANSFER_BUFFER_SIZE \
+	(CFG_MEM_PHY_SYSTEM_SIZE - CFG_FASTBOOT_TRANSFER_BUFFER_OFFSET)
 
 #define	FASTBOOT_PARTS_DEFAULT		\
 			"flash=mmc,2:2ndboot:2nd:0x200,0x7e00;"\
@@ -602,9 +605,9 @@
 /*-----------------------------------------------------------------------
  * Logo command
  */
-#define CONFIG_DISPLAY_OUT
+//#define CONFIG_DISPLAY_OUT
 
-#define CONFIG_LOGO_DEVICE_MMC
+//#define CONFIG_LOGO_DEVICE_MMC
 
 #if defined(CONFIG_LOGO_DEVICE_MMC) && defined(CONFIG_LOGO_DEVICE_NAND)
 #error "Duplicated config for logo device!!!"
@@ -649,7 +652,7 @@
 #endif
 
 
-#define CONFIG_SILENT_CONSOLE
+//#define CONFIG_SILENT_CONSOLE
 #define CONFIG_SYS_CONSOLE_INFO_QUIET	/* print u-boot logo */
 #ifdef CONFIG_SILENT_CONSOLE
 #define CONFIG_SILENT_U_BOOT_ONLY		/* for bootm command, if not defined fail bootm command */

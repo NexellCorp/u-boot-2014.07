@@ -566,7 +566,7 @@ static int nand_part_write(struct fastboot_part *fpart, void *buf, uint64_t leng
 		int repeat = CFG_BOOTIMG_REPEAT;
 
 		/* erase */
-		nand_part_ftl(start, length, buf, MIO_NAND_ERASE);
+		nand_part_ftl(start, (uint64_t)offset * repeat, buf, MIO_NAND_ERASE);
 
 		start = fpart->start;
 
@@ -1489,7 +1489,7 @@ static int fboot_cmd_getvar(const char *cmd, f_cmd_inf *inf, struct f_trans_stat
 
 	if (!strncmp(cmd, "max-download-size", strlen("max-download-size"))) {
 		if (inf->transfer_buffer_size)
-			sprintf(p, "%08x", inf->transfer_buffer_size);
+			sprintf(p, "%ld", inf->transfer_buffer_size);
 		goto done_getvar;
 	}
 
@@ -1612,6 +1612,7 @@ static int fboot_cmd_flash(const char *cmd, f_cmd_inf *inf, struct f_trans_stat 
 			if (!strcmp(fp->partition, cmd)) {
 
 				if ((fst->down_bytes > fp->length) && (fp->length != 0)) {
+					debug("[down: %lld, length: %lld]\n", fst->down_bytes, fp->length);
 					print_response(resp, "FAIL image too large for partition");
 					goto err_flash;
 				}

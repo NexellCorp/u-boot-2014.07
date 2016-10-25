@@ -207,6 +207,12 @@ int disp_syncgen_setup(int module, struct disp_vsync_info *psync, struct disp_sy
 	/* MLC top screen size */
    	NX_MLC_SetScreenSize(module, psync->h_active_len, psync->v_active_len);
 
+#ifdef CONFIG_MACH_S5P6818
+	if (module == 0 && par->clk_inv_lv0)
+		NX_DISPLAYTOP_SetPADClock(PADMUX_PrimaryMLC, PADCLK_CLK);
+	if (module == 1 && par->clk_inv_lv1)
+		NX_DISPLAYTOP_SetPADClock(PADMUX_SecondaryMLC, PADCLK_CLK);
+#endif
    	return 0;
 }
 

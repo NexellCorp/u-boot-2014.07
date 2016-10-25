@@ -112,7 +112,7 @@ static void cpu_bus_init(void)
 	STATIC_BUS_CONFIGUTATION( 1);
 }
 
-#ifdef CONFIG_ARM64
+#ifdef CONFIG_ARM64_EL3
 static void cpu_tzpc_init(void)
 {
 	// TZPC
@@ -175,7 +175,7 @@ void nxp_before_linux(void)
     // enable hw watchdog
 	hw_watchdog_restart();
 #endif
-#ifdef CONFIG_ARM64
+#ifdef CONFIG_ARM64_EL3
 	void __iomem *base = (void*)0xC0009000;
 	int i;
 

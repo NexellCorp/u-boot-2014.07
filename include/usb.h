@@ -151,7 +151,7 @@ enum usb_init_type {
 	defined(CONFIG_USB_BLACKFIN) || defined(CONFIG_USB_AM35X) || \
 	defined(CONFIG_USB_MUSB_DSPS) || defined(CONFIG_USB_MUSB_AM35X) || \
 	defined(CONFIG_USB_MUSB_OMAP2PLUS) || defined(CONFIG_USB_XHCI) || \
-	defined(CONFIG_USB_EHCI_SYNOPSYS) || defined(CONFIG_NXP_DWC_OTG_HCD) 
+	defined(CONFIG_USB_EHCI_SYNOPSYS)
 
 int usb_lowlevel_init(int index, enum usb_init_type init, void **controller);
 int usb_lowlevel_stop(int index);

@@ -14,6 +14,14 @@
 #include <asm-generic/errno.h>
 
 #define PAGE_SIZE 4096
+#ifdef CONFIG_MMU_ENABLE
+#if defined (CONFIG_MACH_S5P4418)
+#define CACHE_LINE_SIZE 32
+#elif defined (CONFIG_MACH_S5P6818)
+#define CACHE_LINE_SIZE 64
+#endif
+#endif
+#define CACHE_LINE_ALIGN(a, x) (a & ~(x-1))
 
 static int dwmci_wait_reset(struct dwmci_host *host, u32 value)
 {
@@ -41,7 +49,7 @@ static void dwmci_set_idma_desc(struct dwmci_idmac *idmac,
 	desc->next_addr = (uintptr_t)desc + sizeof(struct dwmci_idmac);
 }
 
-static void dwmci_prepare_data(struct dwmci_host *host,
+void dwmci_prepare_data(struct dwmci_host *host,
 		struct mmc_data *data)
 {
 	unsigned long ctrl;
@@ -82,12 +90,27 @@ static void dwmci_prepare_data(struct dwmci_host *host,
 	} while(1);
 
 	data_end = (ulong)cur_idmac;
-#if 0
-	flush_dcache_range(data_start, data_end + ARCH_DMA_MINALIGN);
+#ifdef CONFIG_MMU_ENABLE
+#ifdef CONFIG_MACH_S5P6818
+	debug("s=0x%08lx, (0x%08lx), e 0x%08lx, (0x%08lx)\n", 
+			start_addr, CACHE_LINE_ALIGN(start_addr, CACHE_LINE_SIZE), 
+			start_addr + (data->blocks *512),
+			roundup(start_addr + (data->blocks *512), CACHE_LINE_SIZE));
+
+	flush_dcache_range(CACHE_LINE_ALIGN(data_start,CACHE_LINE_SIZE), 
+			roundup(data_end + ARCH_DMA_MINALIGN, CACHE_LINE_SIZE));
+	if(data->flags == MMC_DATA_READ)
+		invalidate_dcache_range(CACHE_LINE_ALIGN(start_addr, CACHE_LINE_SIZE), 
+			roundup(start_addr + (data->blocks *512), CACHE_LINE_SIZE));
+	else	
+		flush_dcache_range(CACHE_LINE_ALIGN(start_addr, CACHE_LINE_SIZE), 
+			roundup(start_addr + (data->blocks *512), CACHE_LINE_SIZE));
 #else
 	/*bok */
 	flush_dcache_all();
 #endif
+#endif
+
 	ctrl = dwmci_readl(host, DWMCI_CTRL);
 	ctrl |= DWMCI_IDMAC_EN | DWMCI_DMA_EN;
 	dwmci_writel(host, DWMCI_CTRL, ctrl);

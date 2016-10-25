@@ -329,9 +329,9 @@ void lcd_draw_boot_logo(unsigned int framebase, int x_resol, int y_resol, int pi
 		 	BMPBase, framebase, BMPInfo.biWidth * BMPInfo.biHeight * BMPPixelByte);
 	}
 
-	/*printf("DONE: Logo bmp %d by %d (%dbpp), len=%d \r\n",*/
-		/*BMPInfo.biWidth, BMPInfo.biHeight, BMPPixelByte, BMPFile.bfSize);*/
-	/*printf("DRAW: 0x%08x -> 0x%08x \r\n", BMP_BASE, framebase);*/
+	printf("DONE: Logo bmp %d by %d (%dbpp), len=%d \r\n",
+		BMPInfo.biWidth, BMPInfo.biHeight, BMPPixelByte, BMPFile.bfSize);
+	printf("DRAW: 0x%08x -> 0x%08x \r\n", BMP_BASE, framebase);
 
 	if (BMPInfo.biWidth  > x_resol) {
 		bmpsx = (BMPInfo.biWidth - x_resol)/2;

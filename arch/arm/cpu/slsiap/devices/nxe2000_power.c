@@ -497,9 +497,10 @@ static int nxe2000_device_setup(struct nxe2000_power *power)
 	nxe2000_i2c_write(NXE2000_REG_DC2VOL	, cache[NXE2000_REG_DC2VOL]		, power);
 #endif
 	nxe2000_i2c_write(NXE2000_REG_DC3VOL	, cache[NXE2000_REG_DC3VOL]		, power);
+#ifdef CONFIG_ENABLE_INIT_VOLTAGE
 	nxe2000_i2c_write(NXE2000_REG_DC4VOL	, cache[NXE2000_REG_DC4VOL]		, power);
 	nxe2000_i2c_write(NXE2000_REG_DC5VOL	, cache[NXE2000_REG_DC5VOL]		, power);
-
+#endif
 	nxe2000_i2c_write(NXE2000_REG_DC1VOL_SLP, cache[NXE2000_REG_DC1VOL_SLP]	, power);
 	nxe2000_i2c_write(NXE2000_REG_DC2VOL_SLP, cache[NXE2000_REG_DC2VOL_SLP]	, power);
 	nxe2000_i2c_write(NXE2000_REG_DC3VOL_SLP, cache[NXE2000_REG_DC3VOL_SLP]	, power);
@@ -667,8 +668,8 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 	u32 time_key_pev = 0, sum_voltage = 0, avg_voltage = 0, ilim_adp = 0, ilim_usb = 0, ichg = 0;
 	u8 power_depth = 3;
 
-	power_key_depth = gpio_get_int_pend(GPIO_POWER_KEY_DET);
-	gpio_set_int_clear(GPIO_POWER_KEY_DET);
+	power_key_depth = nxp_gpio_get_int_pend(GPIO_POWER_KEY_DET);
+	nxp_gpio_set_int_clear(GPIO_POWER_KEY_DET);
 	if (power_key_depth)
 		time_key_pev = nxp_rtc_get();
 
@@ -904,12 +905,12 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 
 			if(show_bat_state != 3)
 			{
-				if (gpio_get_int_pend(GPIO_POWER_KEY_DET))
+				if (nxp_gpio_get_int_pend(GPIO_POWER_KEY_DET))
 					power_key_depth++;
 				else
 					power_key_depth = 0;
 
-				gpio_set_int_clear(GPIO_POWER_KEY_DET);
+				nxp_gpio_set_int_clear(GPIO_POWER_KEY_DET);
 
 #if 0
 				p_fg->fg->fg_battery_check(p_fg, p_bat);

@@ -316,6 +316,7 @@ static int nexell_nand_timing_set(struct mtd_info *mtd)
 }
 
 
+#if 0
 /*
  * Enable NAND write protect
  */
@@ -331,6 +332,7 @@ static void nxp_wp_disable(void)
 {
 	gpio_set_value(CFG_IO_NAND_nWP, 1);
 }
+#endif
 
 
 static int nand_dev_ready(struct mtd_info *mtd)
@@ -340,6 +342,51 @@ static int nand_dev_ready(struct mtd_info *mtd)
 	DBGOUT("[%s, RnB=%d]\n", ret?"READY":"BUSY", NX_MCUS_IsNFReady());
 	return ret;
 }
+
+#ifdef CONFIG_ARM64
+void __mtd_read_burst(const void __iomem *addr, void *data, int len);
+void __mtd_write_burst(const void __iomem *addr, void *data, int len);
+
+static void _nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
+{
+	struct nand_chip *chip = mtd->priv;
+
+	__mtd_read_burst(chip->IO_ADDR_R, (void *)buf, len);
+}
+
+static void _nand_write_buf(struct mtd_info *mtd, const uint8_t *buf, int len)
+{
+	struct nand_chip *chip = mtd->priv;
+
+	__mtd_read_burst(chip->IO_ADDR_W, (void *)buf, len);
+}
+#else
+void __mtd_readsb(const void __iomem *addr, void *data, int bytelen);
+void __mtd_readsl(const void __iomem *addr, void *data, int longlen);
+void __mtd_writesb(void __iomem *addr, const void *data, int bytelen);
+void __mtd_writesl(void __iomem *addr, const void *data, int longlen);
+
+static void _nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
+{
+	struct nand_chip *chip = mtd->priv;
+	int burst_len = len & ~(4-1);
+
+	//printk("nfcShadowI: %p, burst_len: %d, len: %d\n", nfcShadowI, burst_len, len);
+	__mtd_readsl(chip->IO_ADDR_R, buf, burst_len/4);
+	__mtd_readsb(chip->IO_ADDR_R, buf+ burst_len, len-burst_len);
+}
+
+static void _nand_write_buf(struct mtd_info *mtd, const uint8_t *buf, int len)
+{
+	struct nand_chip *chip = mtd->priv;
+	int burst_len = len & ~(4-1);
+
+	//printk("nfcShadowI: %p, burst_len: %d, len: %d\n", nfcShadowI, burst_len, len);
+	__mtd_writesl(chip->IO_ADDR_W, buf, burst_len/4);
+	__mtd_writesb(chip->IO_ADDR_W, buf+ burst_len, len-burst_len);
+
+}
+#endif
 
 static void nand_dev_init(struct mtd_info *mtd)
 {
@@ -482,6 +529,8 @@ int board_nand_init(struct nand_chip *chip)
 	chip->dev_ready 	= nand_dev_ready;
 	chip->select_chip 	= nand_select_chip;
 	chip->chip_delay 	= 15;
+	chip->read_buf 		= _nand_read_buf;
+	chip->write_buf 	= _nand_write_buf;
 #if defined (CONFIG_MTD_NAND_ECC_BCH)
 	chip->write_page	= nand_bch_write_page;
 #endif

@@ -77,6 +77,19 @@ ARCH_CFLAGS += -D__LINUX__ -DNX_RELEASE
 endif
 
 # =========================================================================
+#   EWS FTL Build Option
+# =========================================================================
+ARCH_CFLAGS += -D__SUPPORT_MIO_UBOOT__
+ifeq ($(CONFIG_MACH_S5P4418),y)
+    ARCH_CFLAGS += -D__SUPPORT_MIO_UBOOT_CHIP_S5P4418__
+else
+    ifeq ($(CONFIG_MACH_S5P6818),y)
+        ARCH_CFLAGS += -D__SUPPORT_MIO_UBOOT_CHIP_S5P6818__
+    else
+        ARCH_CFLAGS += -D__SUPPORT_MIO_UBOOT_CHIP_NXP4330__
+    endif
+endif
+# =========================================================================
 #	Build options for HOSTCC
 # =========================================================================
 PLATFORM_RELFLAGS  += $(ARCH_CFLAGS)

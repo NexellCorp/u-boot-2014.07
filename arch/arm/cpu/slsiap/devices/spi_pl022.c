@@ -55,7 +55,7 @@
 #define MAX_ADDR_LEN	8
 
 static U8 spi_type[3];
-static U8 cur_module = 0;
+static U8 cur_module = CONFIG_EEPROM_SPI_MODULE_NUM;
 
 static void flash_sector_erase(U32 eraseaddr, int alen);
 static U8 is_flash_ready(U8 status);
@@ -126,8 +126,8 @@ struct spi_param _spi_param[3] = {
 	{
 		#ifdef	CONFIG_SPI_MODULE_1
 		/* SPI_CLOCK */
-		.hz 			= CONFIG_SPI_MODULE_0_SOURCE_CLOCK,
-		.req 			= CONFIG_SPI_MODULE_0_CLOCK,
+		.hz 			= CONFIG_SPI_MODULE_1_SOURCE_CLOCK,
+		.req 			= CONFIG_SPI_MODULE_1_CLOCK,
 		/* CLOCK GEN */
 		.clkgenEnable   = CTRUE,
 		/* SPI_ClOCK Set */
@@ -177,14 +177,34 @@ static void WP_EN(void)
 
 static void CS_ON(void)
 {
+#ifdef CONFIG_SPI_MODULE_0
     NX_GPIO_SetOutputValue(_spi_pad[0].fss.pad /32, _spi_pad[0].fss.pad % 32 , 0);
   	NX_GPIO_SetOutputEnable(_spi_pad[0].fss.pad /32, _spi_pad[0].fss.pad % 32 , 1);
+#endif
+#ifdef CONFIG_SPI_MODULE_1
+    NX_GPIO_SetOutputValue(_spi_pad[1].fss.pad /32, _spi_pad[1].fss.pad % 32 , 0);
+  	NX_GPIO_SetOutputEnable(_spi_pad[1].fss.pad /32, _spi_pad[1].fss.pad % 32 , 1);
+#endif
+#ifdef CONFIG_SPI_MODULE_2
+    NX_GPIO_SetOutputValue(_spi_pad[2].fss.pad /32, _spi_pad[2].fss.pad % 32 , 0);
+  	NX_GPIO_SetOutputEnable(_spi_pad[2].fss.pad /32, _spi_pad[2].fss.pad % 32 , 1);
+#endif
 }
 
 static void CS_OFF(void)
 {
+#ifdef CONFIG_SPI_MODULE_0
 	NX_GPIO_SetOutputValue(_spi_pad[0].fss.pad /32, _spi_pad[0].fss.pad % 32 , 1);
 	NX_GPIO_SetOutputEnable(_spi_pad[0].fss.pad /32, _spi_pad[0].fss.pad % 32 , 1);
+#endif
+#ifdef CONFIG_SPI_MODULE_1
+	NX_GPIO_SetOutputValue(_spi_pad[1].fss.pad /32, _spi_pad[1].fss.pad % 32 , 1);
+	NX_GPIO_SetOutputEnable(_spi_pad[1].fss.pad /32, _spi_pad[1].fss.pad % 32 , 1);
+#endif
+#ifdef CONFIG_SPI_MODULE_2
+	NX_GPIO_SetOutputValue(_spi_pad[2].fss.pad /32, _spi_pad[2].fss.pad % 32 , 1);
+	NX_GPIO_SetOutputEnable(_spi_pad[2].fss.pad /32, _spi_pad[2].fss.pad % 32 , 1);
+#endif
 }
 
 static u32 spi_rate(u32 rate, u16 cpsdvsr, u16 scr)
@@ -290,7 +310,7 @@ void spi_init_f (void)
 		    /* RSTCON Control */
 
 			NX_SSP_SetBaseAddress( ModuleIndex, (U32)NX_SSP_GetPhysicalAddress(ModuleIndex) );
-			sprintf(name,"nxp-spi%d",ModuleIndex);
+			sprintf(name,"nxp-spi.%d",ModuleIndex);
 			clk= clk_get(NULL, name);
 			hz = _spi_param[ModuleIndex].hz;
 			rate = clk_set_rate(clk,hz);

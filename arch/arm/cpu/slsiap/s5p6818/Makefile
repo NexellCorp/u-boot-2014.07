@@ -23,6 +23,7 @@ obj-y 	+= device.o
 obj-$(CONFIG_MMU_ENABLE) += mmu.o mmu_asm.o
 obj-$(CONFIG_SMP) += ../devices/gic.o
 
+obj-$(CONFIG_NAND_FTL) += ../devices/mio/
 
 include $(srctree)/arch/arm/cpu/$(CPU)/$(SOC)/prototype.mk
 include $(srctree)/arch/arm/cpu/$(CPU)/$(SOC)/devices.mk

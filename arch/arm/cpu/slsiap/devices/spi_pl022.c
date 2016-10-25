@@ -784,7 +784,7 @@ static U8 is_flash_ready(U8 status)
 {
 	U32 device = cur_module;
 	U8 cmd = 0x05;//CMD_SPI_SE;
-	volatile U8 tmp, ret;
+	volatile U8 tmp, ret = 0;
 
 	if( _spi_param[device].spi_type != SPI_TYPE_EEPROM )	//if EEPROM send CMD_SPI_READ
 	{
@@ -847,7 +847,15 @@ spi_exit:
 
 		ret = NX_SSP_GetByte(device);
 
+#if 1
+		udelay(10);
+		do { 
+			tmp = NX_SSP_IsRxFIFOEmpty(device);
+			NX_SSP_GetByte(device);
+		} while(!tmp);
+#else
 		while(!(NX_SSP_IsRxFIFOEmpty(device)));
+#endif 
 #endif
 
 		
@@ -974,6 +982,8 @@ ssize_t spi_write (uchar *addr, int alen, uchar *buffer, int len)
 						pWBuffer = pDatBuffer;
 					}
 				}
+
+				SPIFifoReset();
 				do {
 					eeprom_write_enable(FlashAddr,1);
 					udelay(1000);

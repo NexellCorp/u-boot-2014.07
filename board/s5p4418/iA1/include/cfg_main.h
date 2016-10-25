@@ -136,7 +136,7 @@
 /*------------------------------------------------------------------------------
  *  SPI
  */
-#define CFG_SPI0_SRC_CLK				80*1000*1000
+#define CFG_SPI0_SRC_CLK				240*1000*1000
 #define CFG_SPI0_OUT_CLK				20*1000*1000
 
 #define CFG_SPI1_SRC_CLK				100*1000*1000

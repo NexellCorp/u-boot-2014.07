@@ -39,5 +39,6 @@ obj-$(CONFIG_NXP_RTC_USE)			+= ../devices/rtc_nxp.o
 obj-$(CONFIG_NXP_DWC_OTG) 			+= ../devices/dwc_otg_hs.o
 obj-$(CONFIG_NXP_DWC_OTG_PHY)		+= ../devices/dwc_otg_phy.o
 obj-$(CONFIG_USB_EHCI_SYNOPSYS)		+= ../devices/ehci-hcd-hsic.o ../devices/ehci-synop.o
+obj-$(CONFIG_USB_HUB_USB2514)		+= ../devices/usb2514.o
 obj-$(CONFIG_VIP)					+= ../devices/vip.o
 obj-$(CONFIG_MLC_VIDEO)				+= ../devices/mlc.o

@@ -1489,7 +1489,7 @@ static int fboot_cmd_getvar(const char *cmd, f_cmd_inf *inf, struct f_trans_stat
 
 	if (!strncmp(cmd, "max-download-size", strlen("max-download-size"))) {
 		if (inf->transfer_buffer_size)
-			sprintf(p, "%08x", inf->transfer_buffer_size);
+			sprintf(p, "%ld", inf->transfer_buffer_size);
 		goto done_getvar;
 	}
 

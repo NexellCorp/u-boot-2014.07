@@ -1,6 +1,6 @@
 /*
- * (C) Copyright 2009 Nexell Co.,
- * jung hyun kim<jhkim@nexell.co.kr>
+ * (C) Copyright 2015 Nexell Co.,
+ * park jin ho<allan.park@nexell.co.kr>
  *
  * Configuation settings for the Nexell board.
  *
@@ -33,30 +33,20 @@
 
 //#define	debug	printf
 
-#define	UPDATE_SDCARD_MMC_MAX		3
-#define	UPDATE_SDCARD_EEPROM_MAX	1
-#define	UPDATE_SDCARD_NAND_MAX		1
-#define	UPDATE_SDCARD_MEM_MAX		1
 
-#define	UPDATE_SDCARD_DEV_PART_MAX	(16)				/* each device max partition max num */
-
-/* device types */
-#define	UPDATE_SDCARD_DEV_EEPROM	(1<<0)	/*  name "eeprom" */
-#define	UPDATE_SDCARD_DEV_NAND		(1<<1)	/*  name "nand" */
-#define	UPDATE_SDCARD_DEV_MMC		(1<<2)	/*  name "mmc" */
-#define	UPDATE_SDCARD_DEV_MEM		(1<<3)	/*  name "mem" */
+#define	UPDATE_USBHOST_DEV_PART_MAX	(16)				/* each device max partition max num */
 
 /* filesystem types */
-#define	UPDATE_SDCARD_FS_2NDBOOT	(1<<0)	/*  name "boot" <- bootable */
-#define	UPDATE_SDCARD_FS_BOOT		(1<<1)	/*  name "boot" <- bootable */
-#define	UPDATE_SDCARD_FS_RAW		(1<<2)	/*  name "raw" */
-#define	UPDATE_SDCARD_FS_FAT		(1<<4)	/*  name "fat" */
-#define	UPDATE_SDCARD_FS_EXT4		(1<<5)	/*  name "ext4" */
-#define	UPDATE_SDCARD_FS_UBI		(1<<6)	/*  name "ubi" */
-#define	UPDATE_SDCARD_FS_UBIFS		(1<<7)	/*  name "ubifs" */
-#define	UPDATE_SDCARD_FS_RAW_PART	(1<<8)	/*  name "emmc" */
+#define	UPDATE_USBHOST_FS_2NDBOOT	(1<<0)	/*  name "boot" <- bootable */
+#define	UPDATE_USBHOST_FS_BOOT		(1<<1)	/*  name "boot" <- bootable */
+#define	UPDATE_USBHOST_FS_RAW		(1<<2)	/*  name "raw" */
+#define	UPDATE_USBHOST_FS_FAT		(1<<4)	/*  name "fat" */
+#define	UPDATE_USBHOST_FS_EXT4		(1<<5)	/*  name "ext4" */
+#define	UPDATE_USBHOST_FS_UBI		(1<<6)	/*  name "ubi" */
+#define	UPDATE_USBHOST_FS_UBIFS		(1<<7)	/*  name "ubifs" */
+#define	UPDATE_USBHOST_FS_RAW_PART	(1<<8)	/*  name "emmc" */
 
-#define UPDATE_SDCARD_FS_MASK        (UPDATE_SDCARD_FS_EXT4 | UPDATE_SDCARD_FS_FAT | UPDATE_SDCARD_FS_UBI | UPDATE_SDCARD_FS_UBIFS | UPDATE_SDCARD_FS_RAW_PART)
+#define UPDATE_USBHOST_FS_MASK        (UPDATE_USBHOST_FS_EXT4 | UPDATE_USBHOST_FS_FAT | UPDATE_USBHOST_FS_UBI | UPDATE_USBHOST_FS_UBIFS | UPDATE_USBHOST_FS_RAW_PART)
 
 #define	TCLK_TICK_HZ				(1000000)
 
@@ -69,24 +59,24 @@ extern void fboot_lcd_flash(char *part, char *stat);
 extern void fboot_lcd_status(char *stat);
 
 
-struct update_sdcard_fs_type {
+struct update_usbhost_fs_type {
 	char *name;
 	unsigned int fs_type;
 };
 
 /* support fs type */
-static struct update_sdcard_fs_type f_part_fs[] = {
-	{ "2nd"		, UPDATE_SDCARD_FS_2NDBOOT  	},
-	{ "boot"	, UPDATE_SDCARD_FS_BOOT  	},
-	{ "raw"		, UPDATE_SDCARD_FS_RAW		},
-	{ "fat"		, UPDATE_SDCARD_FS_FAT		},
-	{ "ext4"	, UPDATE_SDCARD_FS_EXT4		},
-	{ "emmc"	, UPDATE_SDCARD_FS_RAW_PART	},
-	{ "ubi"		, UPDATE_SDCARD_FS_UBI		},
-	{ "ubifs"	, UPDATE_SDCARD_FS_UBIFS		},
+static struct update_usbhost_fs_type f_part_fs[] = {
+	{ "2nd"		, UPDATE_USBHOST_FS_2NDBOOT  	},
+	{ "boot"	, UPDATE_USBHOST_FS_BOOT  	},
+	{ "raw"		, UPDATE_USBHOST_FS_RAW		},
+	{ "fat"		, UPDATE_USBHOST_FS_FAT		},
+	{ "ext4"	, UPDATE_USBHOST_FS_EXT4		},
+	{ "emmc"	, UPDATE_USBHOST_FS_RAW_PART	},
+	{ "ubi"		, UPDATE_USBHOST_FS_UBI		},
+	{ "ubifs"	, UPDATE_USBHOST_FS_UBIFS		},
 };
 
-struct update_sdcard_part {
+struct update_usbhost_part {
     char device[32];
     int dev_no;
     char partition_name[32];
@@ -98,12 +88,12 @@ struct update_sdcard_part {
 	struct list_head link;
 };
 
-static struct update_sdcard_part f_sdcard_part[UPDATE_SDCARD_DEV_PART_MAX];
+static struct update_usbhost_part f_usbhost_part[UPDATE_USBHOST_DEV_PART_MAX];
 
 
-static int update_sdcard_mmc_check_part_table(block_dev_desc_t *desc, struct update_sdcard_part *fpart)
+static int update_usbhost_mmc_check_part_table(block_dev_desc_t *desc, struct update_usbhost_part *fpart)
 {
-	uint64_t parts[UPDATE_SDCARD_DEV_PART_MAX][2] = { {0,0}, };
+	uint64_t parts[UPDATE_USBHOST_DEV_PART_MAX][2] = { {0,0}, };
 	int i = 0, num = 0;
 	int ret = 1;
 
@@ -128,7 +118,7 @@ static int update_sdcard_mmc_check_part_table(block_dev_desc_t *desc, struct upd
 	return ret;
 }
 
-static inline void update_sdcard_parse_comment(const char *str, const char **ret)
+static inline void update_usbhost_parse_comment(const char *str, const char **ret)
 {
 	const char *p = str, *r;
 
@@ -148,7 +138,7 @@ static inline void update_sdcard_parse_comment(const char *str, const char **ret
 	*ret = p;
 }
 
-static inline int update_sdcard_parse_string(const char *s, const char *e, char *b, int len)
+static inline int update_usbhost_parse_string(const char *s, const char *e, char *b, int len)
 {
 	int l, a = 0;
 
@@ -169,7 +159,7 @@ static inline int update_sdcard_parse_string(const char *s, const char *e, char 
 	return l;
 }
 
-static inline void update_sdcard_sort_string(char *p, int len)
+static inline void update_usbhost_sort_string(char *p, int len)
 {
 	int i, j;
 	for (i = 0, j = 0; len > i; i++) {
@@ -180,7 +170,7 @@ static inline void update_sdcard_sort_string(char *p, int len)
 }
 
 
-static int update_sdcard_parse_part_head(const char *parts, const char **ret)
+static int update_usbhost_parse_part_head(const char *parts, const char **ret)
 {
 	const char *p = parts;
 	int len = strlen("flash=");
@@ -194,7 +184,7 @@ static int update_sdcard_parse_part_head(const char *parts, const char **ret)
 }
 
 
-static const char *update_sdcard_get_string(const char *ptable_str, int search_c, char * buf, int buf_size)
+static const char *update_usbhost_get_string(const char *ptable_str, int search_c, char * buf, int buf_size)
 {
 	const char *id, *c;
 
@@ -202,15 +192,15 @@ static const char *update_sdcard_get_string(const char *ptable_str, int search_c
 	c = strchr(id, search_c);
 
 	memset(buf, 0x0, buf_size);
-	update_sdcard_parse_string(id, c, buf, buf_size);
+	update_usbhost_parse_string(id, c, buf, buf_size);
 
 	return c+1;
 }
 
 
-static int update_sdcard_part_lists_make(const char *ptable_str, int ptable_str_len)
+static int update_usbhost_part_lists_make(const char *ptable_str, int ptable_str_len)
 {
-	struct update_sdcard_part *fp = f_sdcard_part;
+	struct update_usbhost_part *fp = f_usbhost_part;
 	const char *p;
 	char str[32];
 	int i = 0, j = 0;
@@ -219,34 +209,34 @@ static int update_sdcard_part_lists_make(const char *ptable_str, int ptable_str_
 
 	p = ptable_str;
 
-	update_sdcard_parse_comment(p, &p);
-	update_sdcard_sort_string((char*)p, ptable_str_len);
+	update_usbhost_parse_comment(p, &p);
+	update_usbhost_sort_string((char*)p, ptable_str_len);
 
-	for(i=0; i<UPDATE_SDCARD_DEV_PART_MAX; i++, fp++)
+	for(i=0; i<UPDATE_USBHOST_DEV_PART_MAX; i++, fp++)
 	{
-		struct update_sdcard_fs_type *fs = f_part_fs;
+		struct update_usbhost_fs_type *fs = f_part_fs;
 
-		if (update_sdcard_parse_part_head(p, &p)) {
+		if (update_usbhost_parse_part_head(p, &p)) {
 			break;
 		}
 
-		p = update_sdcard_get_string(p, ',', str, sizeof(str));
+		p = update_usbhost_get_string(p, ',', str, sizeof(str));
 		strcpy(fp->device, str);
 
-		p = update_sdcard_get_string(p, ':', str, sizeof(str));
+		p = update_usbhost_get_string(p, ':', str, sizeof(str));
 		fp->dev_no = simple_strtoul(str, NULL, 10);
 
-		p = update_sdcard_get_string(p, ':', str, sizeof(str));
+		p = update_usbhost_get_string(p, ':', str, sizeof(str));
 		strcpy(fp->partition_name, str);
 
 
-		p = update_sdcard_get_string(p, ':', str, sizeof(str));
+		p = update_usbhost_get_string(p, ':', str, sizeof(str));
 
 		for (j=0; ARRAY_SIZE(f_part_fs) > j; j++, fs++) {
 			if (strcmp(fs->name, str) == 0) {
 				fp->fs_type = fs->fs_type;
 
-				if(fp->fs_type & UPDATE_SDCARD_FS_MASK)
+				if(fp->fs_type & UPDATE_USBHOST_FS_MASK)
 				{
 					part_num++;
 					fp->part_num = part_num;
@@ -255,13 +245,13 @@ static int update_sdcard_part_lists_make(const char *ptable_str, int ptable_str_
 			}
 		}
 
-		p = update_sdcard_get_string(p, ',', str, sizeof(str));
+		p = update_usbhost_get_string(p, ',', str, sizeof(str));
 		fp->start = simple_strtoull(str, NULL, 16);
 
-		p = update_sdcard_get_string(p, ':', str, sizeof(str));
+		p = update_usbhost_get_string(p, ':', str, sizeof(str));
 		fp->length = simple_strtoull(str, NULL, 16);
 
-		p = update_sdcard_get_string(p, ';', str, sizeof(str));
+		p = update_usbhost_get_string(p, ';', str, sizeof(str));
 		strcpy(fp->file_name, str);
 
 		err = 0;
@@ -271,26 +261,26 @@ static int update_sdcard_part_lists_make(const char *ptable_str, int ptable_str_
 	return err;
 }
 
-static void update_sdcard_part_lists_print(void)
+static void update_usbhost_part_lists_print(void)
 {
-	struct update_sdcard_part *fp = f_sdcard_part;
+	struct update_usbhost_part *fp = f_usbhost_part;
 	int i;
 
 	printf("\nPartitions:\n");
 
-	for(i=0; i<UPDATE_SDCARD_DEV_PART_MAX; i++, fp++)
+	for(i=0; i<UPDATE_USBHOST_DEV_PART_MAX; i++, fp++)
 	{
 		if(!strcmp(fp->device, ""))	break;
 
 		printf("  %s.%d : %s : %s : 0x%llx, 0x%llx : %s , %d\n", 
 					fp->device, fp->dev_no, 
-					fp->partition_name, UPDATE_SDCARD_FS_MASK&fp->fs_type?"fs":"img", 
+					fp->partition_name, UPDATE_USBHOST_FS_MASK&fp->fs_type?"fs":"img", 
 					fp->start, fp->length, 
 					fp->file_name, fp->part_num);
 	}
 }
 
-int update_sd_do_load(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[],int fstype, int cmdline_base)
+int update_usb_do_load(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[],int fstype, int cmdline_base)
 {
 	unsigned long addr;
 	const char *addr_str;
@@ -357,16 +347,16 @@ int update_sd_do_load(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[],
 	return len_read;
 }
 
-static int update_sd_fdisk(int dev, struct update_sdcard_part *fp)
+static int update_sd_fdisk(int dev, struct update_usbhost_part *fp)
 {
-    struct update_sdcard_part *fp_1 = fp;
+    struct update_usbhost_part *fp_1 = fp;
     int i=0,p=0,j=0,l=0, cnt=0;
-    uint64_t part_start[UPDATE_SDCARD_DEV_PART_MAX];
-    uint64_t part_length[UPDATE_SDCARD_DEV_PART_MAX];
+    uint64_t part_start[UPDATE_USBHOST_DEV_PART_MAX];
+    uint64_t part_length[UPDATE_USBHOST_DEV_PART_MAX];
     char args[256];
     printf("Warn  : make new partitions ....\n");
-    for (j=i; j<UPDATE_SDCARD_DEV_PART_MAX; j++, fp_1++) {
-		if(!(fp_1->fs_type & UPDATE_SDCARD_FS_MASK)) continue;
+    for (j=i; j<UPDATE_USBHOST_DEV_PART_MAX; j++, fp_1++) {
+		if(!(fp_1->fs_type & UPDATE_USBHOST_FS_MASK)) continue;
         part_start[cnt] = fp_1->start;
         part_length[cnt] = fp_1->length;
         cnt++;
@@ -384,35 +374,9 @@ static int update_sd_fdisk(int dev, struct update_sdcard_part *fp)
     else
         printf("fdisk : %s\n", "DONE");
 }
-static int do_fdisk_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
-{
-	char *p;
-	unsigned long addr;
-	int len_read = 0;
-	int err = 0;
-	memset(f_sdcard_part, 0x0, sizeof(f_sdcard_part));
-	len_read = update_sd_do_load(cmdtp, flag, argc, argv, FS_TYPE_FAT, 16);
-	addr = simple_strtoul(argv[3], NULL, 16);
-	p = (char*)addr;
-	p[len_read+1] = '\0';
-	update_sdcard_sort_string((char*)p, len_read);
-	setenv("fastboot", (char *)p);
-	saveenv();
-	err = update_sdcard_part_lists_make(p, strlen(p));
-	if (err >= 0)
-	{
-		struct update_sdcard_part *fp = f_sdcard_part;
-		update_sdcard_part_lists_print();
-		printf("\n");
-		update_sd_fdisk(fp->dev_no, fp);
-	}
-}
-static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
-{
-	//struct update_sdcard_device *fd = f_devices;
-	//struct update_sdcard_part *fp;
-	//struct list_head *entry, *n;
 
+static int do_update_usbhost(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
 	char *p;
 	unsigned long addr;
 	unsigned long time;
@@ -427,9 +391,9 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 		goto ret_error;
 	}
 
-	memset(f_sdcard_part, 0x0, sizeof(f_sdcard_part));
+	memset(f_usbhost_part, 0x0, sizeof(f_usbhost_part));
 
-	len_read = update_sd_do_load(cmdtp, flag, argc, argv, FS_TYPE_FAT, 16);
+	len_read = update_usb_do_load(cmdtp, flag, argc, argv, FS_TYPE_FAT, 16);
 
 	if(len_read > 0)
 	{
@@ -440,22 +404,22 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 
 		p = (char*)addr;
 		p[len_read+1] = '\0';
-		update_sdcard_sort_string((char*)p, len_read);
+		update_usbhost_sort_string((char*)p, len_read);
 
 		setenv("fastboot", (char *)p);
 		saveenv();
 
-		err = update_sdcard_part_lists_make(p, strlen(p));
+		err = update_usbhost_part_lists_make(p, strlen(p));
 
 		if (err >= 0)
 		{
-			struct update_sdcard_part *fp = f_sdcard_part;
+			struct update_usbhost_part *fp = f_usbhost_part;
 
-			update_sdcard_part_lists_print();
+			update_usbhost_part_lists_print();
 			printf("\n");
 			update_sd_fdisk(fp->dev_no, fp);
 
-			for(i=0; i<UPDATE_SDCARD_DEV_PART_MAX; i++, fp++)
+			for(i=0; i<UPDATE_USBHOST_DEV_PART_MAX; i++, fp++)
 			{
 				if(!strcmp(fp->device, ""))	break;
 				if(!strcmp(fp->file_name, ""))	continue;
@@ -489,7 +453,7 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 
 				debug("  %s.%d : %s : %s : 0x%llx, 0x%llx : %s\n", 
 							fp->device, fp->dev_no, 
-							fp->partition_name, UPDATE_SDCARD_FS_MASK&fp->fs_type?"fs":"img", 
+							fp->partition_name, UPDATE_USBHOST_FS_MASK&fp->fs_type?"fs":"img", 
 							fp->start, fp->length, 
 							fp->file_name);
 
@@ -521,9 +485,9 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 					{
 						p = sprintf(cmd, "update_eeprom ");
 
-						if (fs_type & UPDATE_SDCARD_FS_BOOT)
+						if (fs_type & UPDATE_USBHOST_FS_BOOT)
 							l = sprintf(&cmd[p], "%s", "uboot");
-						else if (fs_type & UPDATE_SDCARD_FS_2NDBOOT)
+						else if (fs_type & UPDATE_USBHOST_FS_2NDBOOT)
 							l = sprintf(&cmd[p], "%s", "2ndboot");
 						else
 							l = sprintf(&cmd[p], "%s", "raw");
@@ -542,7 +506,7 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 					{
 						sprintf(cmd, "mmc dev %d", dev);
 						//printf("** mmc.%d partition %s (%s)**\n",
-						//	dev, partition_name, fs_type&UPDATE_SDCARD_FS_EXT4?"FS":"Image");
+						//	dev, partition_name, fs_type&UPDATE_USBHOST_FS_EXT4?"FS":"Image");
 
 						/* set mmc devicee */
 						if (0 > get_device("mmc", simple_itoa(dev), &desc)) {
@@ -573,16 +537,16 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 
 						memset(cmd, 0x0, sizeof(cmd));
 
-						if (fs_type == UPDATE_SDCARD_FS_2NDBOOT ||
-							fs_type == UPDATE_SDCARD_FS_BOOT ||  
-							fs_type == UPDATE_SDCARD_FS_RAW) {
+						if (fs_type == UPDATE_USBHOST_FS_2NDBOOT ||
+							fs_type == UPDATE_USBHOST_FS_BOOT ||  
+							fs_type == UPDATE_USBHOST_FS_RAW) {
 
 
-							if (fs_type == UPDATE_SDCARD_FS_2NDBOOT)
+							if (fs_type == UPDATE_USBHOST_FS_2NDBOOT)
 								p = sprintf(cmd, "update_mmc %d 2ndboot", dev);
-							else if(fs_type == UPDATE_SDCARD_FS_BOOT)
+							else if(fs_type == UPDATE_USBHOST_FS_BOOT)
 								p = sprintf(cmd, "update_mmc %d boot", dev);
-							else if(fs_type == UPDATE_SDCARD_FS_RAW)
+							else if(fs_type == UPDATE_USBHOST_FS_RAW)
 								p = sprintf(cmd, "update_mmc %d raw", dev);
 
 							l = sprintf(&cmd[p], " 0x%x 0x%llx 0x%llx", (unsigned int)addr, start, length);
@@ -590,11 +554,11 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 							cmd[p] = 0;
 
 						}
-						else if (fs_type & UPDATE_SDCARD_FS_MASK) 
+						else if (fs_type & UPDATE_USBHOST_FS_MASK) 
 						{
-							if (update_sdcard_mmc_check_part_table(desc, fp) > 0) {
+							if (update_usbhost_mmc_check_part_table(desc, fp) > 0) {
 
-                                struct update_sdcard_part *fp_1 = f_sdcard_part;
+                                struct update_usbhost_part *fp_1 = f_usbhost_part;
 
 
 
@@ -640,7 +604,6 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 
 	fboot_lcd_status("exit");
 
-
 	fboot_lcd_stop();
 	do_reset (NULL, 0, 0, NULL);
 
@@ -655,26 +618,14 @@ ret_error:
 
 
 U_BOOT_CMD(
-	update_sdcard,	5,	1,	do_update_sdcard,
-	"update_sdcard - Image Update from SDCard \n",
-	"update_sdcard <interface> [<dev[:part]>] <addr> <filename> \n"
-	"  ex> update_sdcard mmc 0:1 48000000 partmap.txt\n"
-	"    - interface : mmc \n"
-	"    - dev       : mmc channel \n"
+	update_usbhost,	5,	1,	do_update_usbhost,
+	"update_usbhost - Image Update from SDCard \n",
+	"update_usbhost <interface> [<dev[:part]>] <addr> <filename> \n"
+	"  ex> update_usbhost usb 0:1 48000000 partmap_burning.txt\n"
+	"    - interface : usb \n"
+	"    - dev       : usb channel \n"
 	"    - part      : partition number \n"
 	"    - addr      : image load address \n"
 	"    - filename  : partition map file \n"
-);
-
-U_BOOT_CMD(
-    fdisk_sdcard,  5,  1,  do_fdisk_sdcard,
-    "fdisk_sdcard - fdisk SDCard through text file\n",
-    "fdisk_sdcard <interface> [<dev[:part]>] <addr> <filename> \n"
-    "  ex> fdisk_sdcard mmc 0:1 48000000 partmap_fdisk.txt\n"
-    "    - interface : mmc \n"
-    "    - dev       : mmc channel \n"
-    "    - part      : partition number \n"
-    "    - addr      : image load address \n"
-    "    - filename  : partition map file \n"
 );
 

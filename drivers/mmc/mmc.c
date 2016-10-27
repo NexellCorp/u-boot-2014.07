@@ -393,8 +393,10 @@ int mmc_send_op_cond(struct mmc *mmc)
 			return err;
 
 		/* exit if not busy (flag seems to be inverted) */
-		if (mmc->op_cond_response & OCR_BUSY)
+		if (mmc->op_cond_response & OCR_BUSY) {
+			mmc->op_cond_pending = 0;
 			return 0;
+		}
 	}
 	return IN_PROGRESS;
 }

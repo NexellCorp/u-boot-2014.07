@@ -119,7 +119,8 @@
 //#define CONFIG_GATEWAYIP				192.168.1.254
 //#define CONFIG_BOOTFILE					"uImage"  		[> File to load	<]
 
-//#define CONFIG_BOOTCOMMAND "mmc dev 2;mmc read 48000000 800 2800; mmc read 49000000 3800 18000; bootm 48000000"
+#define CONFIG_BOOTCOMMAND "mmc dev 2;mmc read 48000000 800 2800; mmc read 49000000 3800 18000; bootm 48000000"
+
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
  */

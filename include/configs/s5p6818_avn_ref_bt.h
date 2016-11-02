@@ -132,8 +132,7 @@
 //#define CONFIG_GATEWAYIP				192.168.1.254
 //#define CONFIG_BOOTFILE					"uImage"  		[> File to load	<]
 
-//#define CONFIG_BOOTCOMMAND "ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 root.img.gz;bootm 0x48000000"
-#define CONFIG_BOOTCOMMAND "ext4load mmc 2:1 0x40008000 Image;goimage 0x40008000"
+#define CONFIG_BOOTCOMMAND "ext4load mmc 2:1 0x40008000 Image;ext4load mmc 2:1 0x49000000 root.img.gz;goimage 0x40008000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -589,12 +588,15 @@
 #define CFG_FASTBOOT_TRANSFER_BUFFER_SIZE \
 	(CFG_MEM_PHY_SYSTEM_SIZE - CFG_FASTBOOT_TRANSFER_BUFFER_OFFSET)
 
-#define	FASTBOOT_PARTS_DEFAULT		\
-			"flash=mmc,2:2ndboot:2nd:0x200,0x7e00;" \
-			"flash=mmc,2:bootloader:boot:0x8000,0x77000;" \
-			"flash=mmc,2:boot:ext4:0x00100000,0x04000000;" \
-			"flash=mmc,2:system:ext4:0x04100000,0x2F200000;" \
-			"flash=mmc,2:root:ext4:0x33300000,0x0;"
+#define FASTBOOT_PARTS_DEFAULT      \
+	"flash=mmc,2:2ndboot:2nd:0x200,0x4000;" \
+	"flash=mmc,2:bootloader:boot:0x8000,0x70000;"   \
+	"flash=mmc,2:boot:ext4:0x00100000,0x04000000;"      \
+	"flash=mmc,2:system:ext4:0x04100000,0x28E00000;"    \
+	"flash=mmc,2:cache:ext4:0x2CF00000,0x21000000;"     \
+	"flash=mmc,2:misc:emmc:0x4E000000,0x00800000;"      \
+	"flash=mmc,2:0recovery:emmc:0x4E900000,0x01600000;"  \
+	"flash=mmc,2:userdata:ext4:0x50000000,0x0;"
 #endif
 
 /*-----------------------------------------------------------------------

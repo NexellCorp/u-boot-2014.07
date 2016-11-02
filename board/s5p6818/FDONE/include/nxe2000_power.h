@@ -232,7 +232,7 @@
 
 #define NXE2000_DEF_DIE_RETURN_TEMP			0		/* VAL(C)= 0: 80, 1: 100, default(OTP) = 80' */
 #define NXE2000_DEF_DIE_ERROR_TEMP			0		/* VAL(C)= 0: 100, 1: 120 */
-#define NXE2000_DEF_DIE_SHUTDOWN_TEMP		1		/* VAL(C)= 0: 100, 1: 120, 2: 135, 3: 135, default(OTP) = 120'  */
+#define NXE2000_DEF_DIE_SHUTDOWN_TEMP		2		/* VAL(C)= 0: 100, 1: 120, 2: 135, 3: 135, default(OTP) = 120'  */
 
 #define NXE2000_DEF_CHG_READY_CUR			0		/* VAL(mA)= 0:0(deefault), 1:10 */
 #define NXE2000_DEF_CHG_SUSPENDB			1

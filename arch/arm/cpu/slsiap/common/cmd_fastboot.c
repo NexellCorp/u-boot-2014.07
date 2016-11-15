@@ -56,6 +56,26 @@ extern unsigned int GetADDR(const char *a);
 
 static const char *const f_parts_default = FASTBOOT_PARTS_DEFAULT;
 
+struct f_trans_stat {
+    unsigned long long image_size;  /* Image size */
+    unsigned long long down_bytes;  /* Downloaded size */
+    int down_percent;
+    unsigned int error;
+};
+static struct f_trans_stat f_status;
+typedef struct cmd_fastboot_interface f_cmd_inf;
+static int fboot_rx_handler(const unsigned char *buffer, unsigned int length);
+
+static void fboot_reset_handler(void);
+static f_cmd_inf f_interface= {
+    .rx_handler = fboot_rx_handler,
+    .reset_handler = fboot_reset_handler,
+    .product_name = NULL,
+    .serial_no = NULL,
+    .transfer_buffer = (unsigned char *)CFG_FASTBOOT_TRANSFER_BUFFER,
+    .transfer_buffer_size = CFG_FASTBOOT_TRANSFER_BUFFER_SIZE,
+};
+
 #define	FASTBOOT_MMC_MAX		3
 #define	FASTBOOT_EEPROM_MAX		1
 #define	FASTBOOT_NAND_MAX		1
@@ -79,6 +99,7 @@ static const char *const f_parts_default = FASTBOOT_PARTS_DEFAULT;
 #define	FASTBOOT_FS_UBIFS		(1<<7)	/*  name "ubifs" */
 #define	FASTBOOT_FS_RAW_PART	(1<<8)	/*  name "emmc" */
 #define FASTBOOT_FS_FACTORY		(1<<9)	/*  name "factory" */
+#define FASTBOOT_FS_FILE		(1<<10)	/*  name "file" */
 
 #define	FASTBOOT_FS_MASK		(FASTBOOT_FS_EXT4 | FASTBOOT_FS_FAT | FASTBOOT_FS_UBI | FASTBOOT_FS_UBIFS | FASTBOOT_FS_RAW_PART)
 
@@ -145,6 +166,7 @@ static struct fastboot_fs_type f_part_fs[] = {
 	{ "nand"		, FASTBOOT_FS_RAW_PART	},
 	{ "ubi"			, FASTBOOT_FS_UBI		},
 	{ "ubifs"		, FASTBOOT_FS_UBIFS		},
+	{ "file"		, FASTBOOT_FS_FILE		},
 };
 
 /* Reserved partition names
@@ -243,6 +265,8 @@ static int mmc_part_write(struct fastboot_part *fpart, void *buf, uint64_t lengt
 	int blk_size = 512;
 	char cmd[32];
 	int ret = 0;
+	f_cmd_inf *inf = &f_interface;
+	struct f_trans_stat *fst = &f_status;
 
 	sprintf(cmd, "mmc dev %d", dev);
 
@@ -262,6 +286,15 @@ static int mmc_part_write(struct fastboot_part *fpart, void *buf, uint64_t lengt
 
 	if (0 > get_device("mmc", simple_itoa(dev), &desc))
 		return -1;
+
+#if defined (CONFIG_PLAT_S5P4418_DC_SAP) && defined (CONFIG_CMD_MMC_FILE_WRITE)
+    if (fpart->fs_type == FASTBOOT_FS_FILE) {
+        char args[64];
+        int p = 0;
+        p = sprintf(args, "ext4write mmc %d:1 0x%p /product_info.txt 0x%llx", dev, inf->transfer_buffer, fst->down_bytes);
+        return run_command(args, 0);
+    }
+#endif
 
 	if (fpart->fs_type == FASTBOOT_FS_2NDBOOT ||
 		fpart->fs_type == FASTBOOT_FS_BOOT) {
@@ -693,7 +726,7 @@ static struct fastboot_device f_devices[] = {
 		.dev_max	= FASTBOOT_MMC_MAX,
 		.dev_type	= FASTBOOT_DEV_MMC,
 		.part_type	= PART_TYPE_DOS,
-		.fs_support	= (FASTBOOT_FS_2NDBOOT | FASTBOOT_FS_BOOT | FASTBOOT_FS_RAW |
+		.fs_support	= (FASTBOOT_FS_2NDBOOT | FASTBOOT_FS_BOOT | FASTBOOT_FS_RAW | FASTBOOT_FS_FILE |
 						FASTBOOT_FS_FAT | FASTBOOT_FS_EXT4 | FASTBOOT_FS_RAW_PART),
 	#ifdef CONFIG_CMD_MMC
 		.write_part	= mmc_part_write,
@@ -1278,27 +1311,6 @@ void fboot_lcd_status(char *s)			ALIAS("f_lcd_status");	void f_lcd_status(char *
  * FASTBOOT USB CONTROL
  *
  */
-struct f_trans_stat {
-	unsigned long long image_size;	/* Image size */
-	unsigned long long down_bytes;	/* Downloaded size */
-	int down_percent;
-	unsigned int error;
-};
-static struct f_trans_stat f_status;
-
-typedef struct cmd_fastboot_interface f_cmd_inf;
-static int fboot_rx_handler(const unsigned char *buffer, unsigned int length);
-static void fboot_reset_handler(void);
-
-static f_cmd_inf f_interface = {
-	.rx_handler = fboot_rx_handler,
-	.reset_handler = fboot_reset_handler,
-	.product_name = NULL,
-	.serial_no = NULL,
-	.transfer_buffer = (unsigned char *)CFG_FASTBOOT_TRANSFER_BUFFER,
-	.transfer_buffer_size = CFG_FASTBOOT_TRANSFER_BUFFER_SIZE,
-};
-
 static int parse_env_head(const char *env, const char **ret, char *str, int len)
 {
 	const char *p = env, *r = p;

@@ -30,11 +30,15 @@
  * soc headers
  */
 #define CONFIG_PLAT_S5P4418_DC_NAP
-//#define CONFIG_PLAT_S5P4418_DC_SAP
 
 #ifndef	__ASM_STUB_PROCESSOR_H__
 #include <platform.h>
 #endif
+
+/*-----------------------------------------------------------------------
+ * Burning feature
+ */
+//#define CONFIG_SYS_BURNING
 
 /*-----------------------------------------------------------------------
  *  u-boot-2014.07
@@ -424,7 +428,9 @@
 //	#define CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE
 //	#define CONFIG_POWER_BATTERY_SMALL
 	#ifndef CONFIG_POWER_BATTERY_SMALL
-		#define CONFIG_BAT_CHECK
+		#ifndef CONFIG_SYS_BURNING
+			#define CONFIG_BAT_CHECK
+		#endif
 		#define CONFIG_NXP_RTC_USE
 	#endif
 #endif
@@ -484,7 +490,6 @@
 #define CONFIG_ENV_IS_IN_MMC
 
 #if defined(CONFIG_CMD_MMC)
-
 	#define	CONFIG_MMC
 	#define CONFIG_GENERIC_MMC
 	#define HAVE_BLOCK_DEVICE

@@ -26,7 +26,6 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-
 /*-----------------------------------------------------------------------
  * soc headers
  */
@@ -46,7 +45,7 @@
 /*-----------------------------------------------------------------------
  * Burning feature
  */
-//#define CONFIG_SYS_BURNING
+#define CONFIG_SYS_BURNING
 
 /*-----------------------------------------------------------------------
  *  u-boot-2014.07
@@ -133,8 +132,8 @@
 //#define CONFIG_GATEWAYIP					192.168.1.254
 //#define CONFIG_BOOTFILE					"uImage"  		[> File to load	<]
 
-#if 1
-#define CONFIG_BOOTCOMMAND "mmc dev 0;mmc read 48000000 800 2800; mmc read 49000000 3800 E000; bootm 48000000"
+#if 0
+#define CONFIG_BOOTCOMMAND "mmc dev 0;mmc read 48000000 800 2800; mmc read 49000000 3800 18000; bootm 48000000"
 #else
 #define CONFIG_BOOTCOMMAND "eeprom read 0x48000000 0x40000 0x400000;eeprom read 0x49000000 0x440000 0xBA0000;bootm 0x48000000"
 #endif
@@ -287,9 +286,9 @@
  * EEPROM
  */
 
-//#define CONFIG_CMD_EEPROM
-//#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
-//#define CONFIG_ENV_IS_IN_EEPROM
+#define CONFIG_CMD_EEPROM
+#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
+#define CONFIG_ENV_IS_IN_EEPROM
 
 #if defined(CONFIG_CMD_EEPROM)
 
@@ -474,8 +473,8 @@
  * #> fatload mmc 0  0x.....	"file"
  *
  */
-#define CONFIG_CMD_MMC
-#define CONFIG_ENV_IS_IN_MMC
+//#define CONFIG_CMD_MMC
+//#define CONFIG_ENV_IS_IN_MMC
 
 #if defined(CONFIG_CMD_MMC)
 
@@ -571,7 +570,7 @@
 #define CFG_FASTBOOT_TRANSFER_BUFFER        CONFIG_MEM_LOAD_ADDR
 #define CFG_FASTBOOT_TRANSFER_BUFFER_SIZE	(CFG_MEM_PHY_SYSTEM_SIZE - CFG_FASTBOOT_TRANSFER_BUFFER)
 
-#if 0
+#if 1
 #define FASTBOOT_PARTS_DEFAULT      \
             "flash=eeprom,0:2ndboot:2nd:0x0,0x4000;"\
             "flash=eeprom,0:bootloader:boot:0x10000,0x30000;" \
@@ -581,7 +580,7 @@
 #define	FASTBOOT_PARTS_DEFAULT		\
 			"flash=mmc,0:2ndboot:2nd:0x200,0x7E00;"\
 			"flash=mmc,0:bootloader:boot:0x8000,0x70000;" \
-			"flash=mmc,0:kernel:raw:0x100000,0x500000;" \
+			"flash=mmc,0:kernel:raw:0x100000,0x500000" \
 			"flash=mmc,0:ramdisk:raw:0x700000,0x3000000;" \
 			"flash=mmc,0:userdata:ext4:0x3700000,0x0;"
 #endif
@@ -624,12 +623,12 @@
  * Update boot
  */
 #define CONFIG_UPDATE_BOOT
-#if defined (CONFIG_UPDATE_BOOT)
-    #define CONFIG_CMD_UPDATE_BOOT "setenv bootargs console=ttyAMA3,115200n8 root=/dev/ram0 rw initrd=0x49000000,70M ramdisk_size=71680 update"
+#if defined(CONFIG_UPDATE_BOOT)
+    #define CONFIG_CMD_UPDATE_BOOT "console=ttyAMA3,115200n8 root=/dev/ram0 rw initrd=0x49000000,8M ramdisk_size=8192 update"
 #endif
 
-#define CONFIG_SILENT_CONSOLE
-#define CONFIG_SYS_CONSOLE_INFO_QUIET	/* print u-boot logo */
+//#define CONFIG_SILENT_CONSOLE
+//#define CONFIG_SYS_CONSOLE_INFO_QUIET	/* print u-boot logo */
 #ifdef CONFIG_SILENT_CONSOLE
 #define CONFIG_SILENT_U_BOOT_ONLY		/* for bootm command, if not defined fail bootm command */
 #endif

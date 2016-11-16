@@ -46,7 +46,7 @@
 /*-----------------------------------------------------------------------
  * Burning feature
  */
-//#define CONFIG_SYS_BURNING
+#define CONFIG_SYS_BURNING
 
 /*-----------------------------------------------------------------------
  *  u-boot-2014.07
@@ -628,8 +628,8 @@
     #define CONFIG_CMD_UPDATE_BOOT "setenv bootargs console=ttyAMA3,115200n8 root=/dev/ram0 rw initrd=0x49000000,70M ramdisk_size=71680 update"
 #endif
 
-#define CONFIG_SILENT_CONSOLE
-#define CONFIG_SYS_CONSOLE_INFO_QUIET	/* print u-boot logo */
+//#define CONFIG_SILENT_CONSOLE
+//#define CONFIG_SYS_CONSOLE_INFO_QUIET	/* print u-boot logo */
 #ifdef CONFIG_SILENT_CONSOLE
 #define CONFIG_SILENT_U_BOOT_ONLY		/* for bootm command, if not defined fail bootm command */
 #endif

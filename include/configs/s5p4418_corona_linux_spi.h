@@ -43,6 +43,11 @@
 #endif
 
 /*-----------------------------------------------------------------------
+ * Burning feature
+ */
+//#define CONFIG_SYS_BURNING
+
+/*-----------------------------------------------------------------------
  *  u-boot-2014.07
  */
 #define CONFIG_SYS_LDSCRIPT "arch/arm/cpu/slsiap/u-boot.lds"

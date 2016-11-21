@@ -396,6 +396,9 @@ int board_late_init(void)
 	/* Temp check gpio to update */
 	auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
 
+#ifdef CONFIG_SYS_BURNING
+    run_command("fastboot nexell", 0);
+#endif
 	return 0;
 }
 

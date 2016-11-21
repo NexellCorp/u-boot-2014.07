@@ -84,7 +84,7 @@
 #if DISP_ENABLE
 #if DISP_TYPE
  // HDMI
-#define HDMI_PRESET							1	// 0 : 720P, 1 : 1080P
+#define HDMI_PRESET							0	// 0 : 720P, 1 : 1080P
 #define CFG_DISP_OUTPUT_MODOLE				0	// 0 : Primary, 1 : Secondary
 #define CFG_DISP_PRI_SCREEN_LAYER			0
 #define CFG_DISP_PRI_SCREEN_RGB_FORMAT		MLC_RGBFMT_R8G8B8

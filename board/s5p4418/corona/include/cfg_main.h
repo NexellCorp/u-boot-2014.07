@@ -96,8 +96,13 @@
 
 #define CFG_DISP_PRI_MLC_INTERLACE			CFALSE
 
+#if HDMI_PRESET
 #define CFG_DISP_PRI_RESOL_WIDTH			1920	// X Resolution
 #define CFG_DISP_PRI_RESOL_HEIGHT			1080	// Y Resolution
+#else
+#define CFG_DISP_PRI_RESOL_WIDTH			1280	// X Resolution
+#define CFG_DISP_PRI_RESOL_HEIGHT			720		// Y Resolution
+#endif
 
 #define	CFG_DISP_PRI_OUT_SWAPRB				CFALSE
 #define CFG_DISP_PRI_OUT_FORMAT				DPC_FORMAT_RGB888

@@ -492,6 +492,9 @@ int board_late_init(void)
 #ifdef CONFIG_SYS_BURNING
 	run_command("fastboot nexell", 0);
 #endif
+
+	run_command("env default -a", 0);
+
 	return 0;
 }
 

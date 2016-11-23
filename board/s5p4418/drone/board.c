@@ -455,6 +455,9 @@ int board_late_init(void)
 
 #endif /* CONFIG_BAT_CHECK */
 
+#ifdef CONFIG_SYS_BURNING
+    run_command("fastboot nexell", 0);
+#endif
 	return 0;
 }
 

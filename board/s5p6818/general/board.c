@@ -314,7 +314,7 @@ int board_late_init(void)
         run_command(CONFIG_CMD_UPDATE_BOOT, 0);        /* recovery boot */
     }
 #endif /* CONFIG_RECOVERY_BOOT */
-    
+
 	writel((-1UL), SCR_RESET_SIG_RESET);
 
 
@@ -326,6 +326,9 @@ int board_late_init(void)
 	/* Temp check gpio to update */
 	/*auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);*/
 
+#ifdef CONFIG_SYS_BURNING
+    run_command("fastboot nexell", 0);
+#endif
 	return 0;
 }
 

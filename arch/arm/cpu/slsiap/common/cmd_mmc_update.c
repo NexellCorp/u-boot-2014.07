@@ -86,10 +86,11 @@ int do_update_mmc(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 	if (! strcmp(argv[2], "2ndboot")) {
 		struct boot_dev_head *bh = (struct boot_dev_head *)((ulong)mem_addr);
 		struct boot_dev_mmc  *bd = (struct boot_dev_mmc *)&bh->bdi;
-
+#ifndef CONFIG_SECURE_BOOT
+323
 		bd->port_no = dev; /* set u-boot device port num */
 		printf("head boot dev  = %d\n", bd->port_no);
-
+#endif
 		goto do_write;
 	}
 

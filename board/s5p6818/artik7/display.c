@@ -268,6 +268,24 @@ static int MIPI_LCD_INIT(int width, int height, void *data)
 
 #endif
 
+#if defined(CONFIG_DISPLAY_OUT_HDMI)
+#define INIT_VIDEO_SYNC(name)                               \
+    struct disp_vsync_info name = {                         \
+        .h_active_len   = CFG_DISP_PRI_RESOL_WIDTH,         \
+        .v_active_len   = CFG_DISP_PRI_RESOL_HEIGHT,        \
+    };
+
+#define INIT_PARAM_SYNCGEN(name)                            \
+    struct disp_syncgen_param name = {                      \
+        .interlace      = CFG_DISP_PRI_MLC_INTERLACE,       \
+        .out_format     = CFG_DISP_PRI_OUT_FORMAT,          \
+        .lcd_mpu_type   = 0,                                \
+        .invert_field   = CFG_DISP_PRI_OUT_INVERT_FIELD,    \
+        .swap_RB        = CFG_DISP_PRI_OUT_SWAPRB,          \
+        .yc_order       = CFG_DISP_PRI_OUT_YCORDER,         \
+        .delay_mask     = 0,                                \
+    };
+#else
 #define	INIT_VIDEO_SYNC(name)								\
 	struct disp_vsync_info name = {							\
 		.h_active_len	= CFG_DISP_PRI_RESOL_WIDTH,         \
@@ -303,6 +321,7 @@ static int MIPI_LCD_INIT(int width, int height, void *data)
 		.clk_inv_lv1	= CFG_DISP_PRI_CLKGEN1_INVERT,      \
 		.clk_sel_div1	= CFG_DISP_PRI_CLKSEL1_SELECT,		\
 	};
+#endif
 
 #define	INIT_PARAM_MULTILY(name)					\
 	struct disp_multily_param name = {						\
@@ -353,6 +372,11 @@ int bd_display(void)
 
 	display_rgb(CFG_DISP_OUTPUT_MODOLE, CONFIG_FB_ADDR,
 		&vsync, &syncgen, &multily, &rgb);
+#endif
+
+#if defined(CONFIG_DISPLAY_OUT_HDMI)
+    display_hdmi(CFG_DISP_OUTPUT_MODOLE, HDMI_PRESET, CONFIG_FB_ADDR,
+        &vsync, &syncgen, &multily);
 #endif
 
 #if defined(CONFIG_DISPLAY_OUT_MIPI)

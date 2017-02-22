@@ -100,29 +100,29 @@
 #define CFG_DISP_PRI_RESOL_WIDTH				480	// X Resolution
 #define CFG_DISP_PRI_RESOL_HEIGHT				800	// Y Resolution
 
-#define CFG_DISP_PRI_HSYNC_SYNC_WIDTH           10
-#define CFG_DISP_PRI_HSYNC_BACK_PORCH           10
-#define CFG_DISP_PRI_HSYNC_FRONT_PORCH          10
-#define CFG_DISP_PRI_HSYNC_ACTIVE_HIGH          CTRUE
-#define CFG_DISP_PRI_VSYNC_SYNC_WIDTH           10
-#define CFG_DISP_PRI_VSYNC_BACK_PORCH           10
-#define CFG_DISP_PRI_VSYNC_FRONT_PORCH          10
-#define CFG_DISP_PRI_VSYNC_ACTIVE_HIGH 	        CTRUE
+#define CFG_DISP_PRI_HSYNC_SYNC_WIDTH           2
+#define CFG_DISP_PRI_HSYNC_BACK_PORCH           120
+#define CFG_DISP_PRI_HSYNC_FRONT_PORCH          140
+#define CFG_DISP_PRI_HSYNC_ACTIVE_HIGH          CFALSE
+#define CFG_DISP_PRI_VSYNC_SYNC_WIDTH           2
+#define CFG_DISP_PRI_VSYNC_BACK_PORCH           20
+#define CFG_DISP_PRI_VSYNC_FRONT_PORCH          20
+#define CFG_DISP_PRI_VSYNC_ACTIVE_HIGH 	        CFALSE
 
 #define CFG_DISP_PRI_CLKGEN0_SOURCE             DPC_VCLK_SRC_PLL2
-#define CFG_DISP_PRI_CLKGEN0_DIV                18 // even divide
+#define CFG_DISP_PRI_CLKGEN0_DIV                20 // even divide
 #define CFG_DISP_PRI_CLKGEN0_DELAY              0
 #define CFG_DISP_PRI_CLKGEN0_INVERT				0
 #define CFG_DISP_PRI_CLKGEN1_SOURCE             DPC_VCLK_SRC_VCLK2
 #define CFG_DISP_PRI_CLKGEN1_DIV                1
 #define CFG_DISP_PRI_CLKGEN1_DELAY              0
-#define CFG_DISP_PRI_CLKGEN1_INVERT		0
-#define CFG_DISP_PRI_CLKSEL1_SELECT		0
+#define CFG_DISP_PRI_CLKGEN1_INVERT				0
+#define CFG_DISP_PRI_CLKSEL1_SELECT				0
 #define CFG_DISP_PRI_PADCLKSEL                  DPC_PADCLKSEL_VCLK	/* VCLK=CLKGEN1, VCLK12=CLKGEN0 */
 
-#define	CFG_DISP_PRI_PIXEL_CLOCK		800000000/CFG_DISP_PRI_CLKGEN0_DIV
+#define	CFG_DISP_PRI_PIXEL_CLOCK				800000000/CFG_DISP_PRI_CLKGEN0_DIV
 
-#define	CFG_DISP_PRI_OUT_SWAPRB 		CFALSE
+#define	CFG_DISP_PRI_OUT_SWAPRB 				CTRUE //CFALSE
 #define CFG_DISP_PRI_OUT_FORMAT                 DPC_FORMAT_RGB888
 #define CFG_DISP_PRI_OUT_YCORDER                DPC_YCORDER_CbYCrY
 #define CFG_DISP_PRI_OUT_INTERLACE              CFALSE
@@ -137,7 +137,7 @@
  *  SPI
  */
 #define CFG_SPI0_SRC_CLK                            100*1000*1000
-#define CFG_SPI0_OUT_CLK                            20*1000*1000
+#define CFG_SPI0_OUT_CLK                            10*1000*1000
 
 #define CFG_SPI1_SRC_CLK                            100*1000*1000
 #define CFG_SPI1_OUT_CLK                            30*1000*1000

@@ -116,7 +116,7 @@ struct spi_param _spi_param[3] = {
 		/* CLOCK GEN */
 		.clkgenEnable    	= CTRUE,
 		/* SPI_ClOCK Set */
-	
+
 		.spi_type 		= CONFIG_SPI_MODULE_0_EEPROM,
 		#else
 		0,
@@ -219,7 +219,7 @@ static int calculate_effective_freq(struct clk *clk, int freq, struct
 	u16 cpsdvsr = CPSDVR_MIN, scr = SCR_MIN;
 	u32 rate, max_tclk, min_tclk, best_freq = 0, best_cpsdvsr = 0,
 		best_scr = 0, tmp, found = 0;
-	
+
 	rate = clk_get_rate(clk);
 	/* cpsdvscr = 2 & scr 0 */
 	max_tclk = spi_rate(rate, CPSDVR_MIN, SCR_MIN);
@@ -285,7 +285,7 @@ static int calculate_effective_freq(struct clk *clk, int freq, struct
 void spi_init_f (void)
 {
 	int ModuleIndex =0;
-	
+
 	struct clk *clk = NULL;
 	struct ssp_clock_params clk_freq = {0};
 	char name[10]= {0, };
@@ -315,7 +315,7 @@ void spi_init_f (void)
 			hz = _spi_param[ModuleIndex].hz;
 			rate = clk_set_rate(clk,hz);
 			clk_enable(clk);
-						
+
 		    NX_RSTCON_SetnRST(NX_SSP_GetResetNumber( ModuleIndex, NX_SSP_PRESETn ), RSTCON_nDISABLE);
 			NX_RSTCON_SetnRST(NX_SSP_GetResetNumber( ModuleIndex, NX_SSP_nSSPRST ), RSTCON_nDISABLE);
 		    NX_RSTCON_SetnRST(NX_SSP_GetResetNumber( ModuleIndex, NX_SSP_PRESETn ), RSTCON_nENABLE);
@@ -354,7 +354,7 @@ ssize_t spi_read  (uchar *addr, int alen, uchar *buffer, int len)
 	U32 index = 0,i=0;
 	volatile U8 tmp;
 	DBGOUT(" %s moudele = %d\n", __func__, device);
-	
+
 	spi_init_f();
 
 	if(alen > MAX_ADDR_LEN)
@@ -410,7 +410,7 @@ ssize_t spi_read  (uchar *addr, int alen, uchar *buffer, int len)
 
 	NX_SSP_SetEnable( device, CFALSE );
 	CS_OFF();
-	
+
 	return len;
 }
 
@@ -508,7 +508,7 @@ static U8 flash_page_program(U32 dwFlashAddr, int alen, uchar * databuffer, U32 
 		udelay(1000);
 		temp = is_flash_ready(SER_SR_READY);
 	} while( !((temp & SER_SR_WEN) == SER_SR_WEN) || (temp & SER_SR_READY));
-	
+
 	CS_ON();
 	NX_SSP_PutByte(device, cmd); 		//send WRITE COMMAND
 
@@ -516,7 +516,7 @@ static U8 flash_page_program(U32 dwFlashAddr, int alen, uchar * databuffer, U32 
 	{
 		NX_SSP_PutByte(device, addr[i]); //send addr
 	}
-	
+
 	NX_SSP_SetEnable( device, CTRUE );
 	while(!NX_SSP_IsTxFIFOEmpty(device));// ready to Fifo Empty
 	while(!(NX_SSP_IsRxFIFOEmpty(device)))
@@ -575,7 +575,7 @@ static U8 is_flash_ready(U8 status)
 
 		while(!(NX_SSP_IsTxFIFOEmpty(device)));
 		while((NX_SSP_IsRxFIFOEmpty(device)));
-		
+
 		tmp = NX_SSP_GetByte(device);
 
 		while((NX_SSP_IsRxFIFOEmpty(device)));
@@ -584,7 +584,7 @@ static U8 is_flash_ready(U8 status)
 
 		while(!(NX_SSP_IsRxFIFOEmpty(device)));
 
-		
+
 		NX_SSP_SetEnable( device, CFALSE );
 		CS_OFF();
 //	}	while(!(ret & status) );
@@ -623,7 +623,7 @@ ssize_t spi_write (uchar *addr, int alen, uchar *buffer, int len)
 		SPIMSG("fail : addrlen small than %d \n",MAX_ADDR_LEN);
 		return -1;
 	}
-	
+
 	if(spi_type[device] == SPI_TYPE_EEPROM )
 	{
 		WriteSize = len;
@@ -738,4 +738,198 @@ ssize_t spi_write (uchar *addr, int alen, uchar *buffer, int len)
 	return len;
 }
 
+#define FEATURE_SPI_MASTER
 
+#ifdef FEATURE_SPI_MASTER
+static U8 cur_loop_module = 0;
+static U32 interrupt_req = 0;
+
+static void set_cs_on(int channel)
+{
+	if (channel<3) {
+	    NX_GPIO_SetOutputValue(_spi_pad[channel].fss.pad /32, _spi_pad[channel].fss.pad % 32 , 0);
+  		NX_GPIO_SetOutputEnable(_spi_pad[channel].fss.pad /32, _spi_pad[channel].fss.pad % 32 , 1);
+	}
+}
+
+static void set_cs_off(int channel)
+{
+	if (channel<3) {
+		NX_GPIO_SetOutputValue(_spi_pad[channel].fss.pad /32, _spi_pad[channel].fss.pad % 32 , 1);
+		NX_GPIO_SetOutputEnable(_spi_pad[channel].fss.pad /32, _spi_pad[channel].fss.pad % 32 , 1);
+	}
+}
+
+ssize_t spi_master_read  (U16 Addr, U8 *buffer, int size)
+{
+	U32 device = cur_loop_module ;
+	U32 dummycount=0;
+	U32 index = 0,i=0;
+	volatile U8 tmp;
+	DBGOUT(" %s moudele = %d\n", __func__, device);
+
+
+	buffer[0] = 0x20;
+	buffer[1] = (Addr >> 8) & 0xff;
+	buffer[2] = 0;
+	buffer[3] = (Addr) & 0xff;
+	buffer[4] = 0xC0;
+	//buffer[5] = data & 0xff;
+
+	for (i=0; i<5; i++)
+		NX_SSP_PutByte(device, buffer[i]);
+
+	dummycount = 5;
+
+	set_cs_on(device);
+	NX_SSP_SetEnable( device, CTRUE );
+
+	while( size + dummycount) {
+		if(!(NX_SSP_IsTxFIFOFull(device))) {
+			NX_SSP_PutByte(device, 0);
+
+			while(NX_SSP_IsRxFIFOEmpty(device));
+
+			if(dummycount != 0) {
+				tmp =  NX_SSP_GetByte(device);
+				dummycount--;
+			} else {
+				buffer[index++] = NX_SSP_GetByte(device);
+				size--;
+			}
+		}
+	}
+
+	while(!(NX_SSP_IsTxFIFOEmpty(device)));		// wait until tx buffer
+
+	do{
+		tmp = NX_SSP_GetByte(device);
+	}while(!(NX_SSP_IsRxFIFOEmpty(device)));			// wait until reception buffer is not empty
+
+	NX_SSP_SetEnable( device, CFALSE );
+	set_cs_off(device);
+
+	return size;
+}
+
+ssize_t spi_master_write (U16 Addr, U8 data, U32 size)
+{
+	U32 device = cur_loop_module ;
+	U32 index = 0;
+
+	volatile U8 temp;
+	u8 buffer[6] ={0 , };
+	int i;
+
+	set_cs_on(device);
+
+	buffer[0] = 0x20;
+	buffer[1] = (Addr >> 8) & 0xff;
+	buffer[2] = 0;
+	buffer[3] = (Addr) & 0xff;
+	buffer[4] = 0x40;
+	buffer[5] = data & 0xff;
+
+#if 1
+	if (size > 0) {
+		for (i=0; i<6; i++) NX_SSP_PutByte(device, buffer[i]);
+	} else if (size == 0) {
+		for (i=0; i<4; i++) NX_SSP_PutByte(device, buffer[i]);
+	}
+
+	NX_SSP_SetEnable(device, CTRUE);
+
+	while(NX_SSP_IsTxRxEnd(device));
+	while(!(NX_SSP_IsRxFIFOEmpty(device))){
+		temp = NX_SSP_GetByte(device);
+	}
+
+#else
+
+	NX_SSP_SetEnable(device, CTRUE);
+
+	size = 6;
+
+	while(size)
+	{
+		if(!(NX_SSP_IsTxFIFOFull(device)))
+		{
+			NX_SSP_PutByte(device, buffer[index++]); //send addr
+			size--;
+			while(NX_SSP_IsTxRxEnd(device));
+			//while(!NX_SSP_IsTxFIFOEmpty(device));// ready to Fifo Empty
+			//while(!NX_SSP_IsTxFIFOEmpty(device));// ready to Fifo Empty
+			while(!(NX_SSP_IsRxFIFOEmpty(device))){
+				temp = NX_SSP_GetByte(device);	//read dummy data
+			}
+		}
+	}
+
+#endif
+
+
+	NX_SSP_SetEnable( device, CFALSE );
+
+	set_cs_off(device);
+
+	return index;
+}
+
+void spi_master_init(int Index, int Slave)
+{
+	struct clk *clk = NULL;
+	struct ssp_clock_params clk_freq = {0};
+	char name[10]= {0, };
+	unsigned long hz  = 10* 1000 * 1000;
+	unsigned long rate = 0;
+	int ModuleIndex =Index;
+
+	flush_dcache_all();
+	NX_SSP_Initialize();
+
+	cur_loop_module = Index;
+
+	if(_spi_param[ModuleIndex].clkgenEnable == 1 ) {
+
+	    NX_GPIO_SetPadFunction(_spi_pad[ModuleIndex].clkio.pad /32, _spi_pad[ModuleIndex].clkio.pad % 32, _spi_pad[ModuleIndex].clkio.alt);
+	    NX_GPIO_SetPadFunction(_spi_pad[ModuleIndex].rxd.pad /32, _spi_pad[ModuleIndex].rxd.pad % 32 , _spi_pad[ModuleIndex].rxd.alt);
+	    NX_GPIO_SetPadFunction(_spi_pad[ModuleIndex].txd.pad /32, _spi_pad[ModuleIndex].txd.pad % 32, _spi_pad[ModuleIndex].txd.alt);
+		//NX_GPIO_SetPadFunction(_spi_pad[ModuleIndex].fss.pad /32, _spi_pad[ModuleIndex].fss.pad % 32 , 0x0);//_spi_pad[ModuleIndex].fss.alt);
+
+		NX_SSP_SetBaseAddress( ModuleIndex, (U32)NX_SSP_GetPhysicalAddress(ModuleIndex) );
+		sprintf(name,"nxp-spi.%d",ModuleIndex);
+		clk= clk_get(NULL, name);
+		hz = _spi_param[ModuleIndex].hz;
+		rate = clk_set_rate(clk,hz);
+		clk_enable(clk);
+
+	    NX_RSTCON_SetnRST(NX_SSP_GetResetNumber( ModuleIndex, NX_SSP_PRESETn ), RSTCON_nDISABLE);
+		NX_RSTCON_SetnRST(NX_SSP_GetResetNumber( ModuleIndex, NX_SSP_nSSPRST ), RSTCON_nDISABLE);
+	    NX_RSTCON_SetnRST(NX_SSP_GetResetNumber( ModuleIndex, NX_SSP_PRESETn ), RSTCON_nENABLE);
+	   	NX_RSTCON_SetnRST(NX_SSP_GetResetNumber( ModuleIndex, NX_SSP_nSSPRST ), RSTCON_nENABLE);
+
+		calculate_effective_freq(clk, _spi_param[ModuleIndex].req, &clk_freq);
+		NX_SSP_SetClockPrescaler( ModuleIndex, clk_freq.cpsdvsr, clk_freq.scr );
+
+		NX_SSP_SetEnable( ModuleIndex, CTRUE ); 			// SSP operation disable
+		NX_SSP_SetProtocol( ModuleIndex, 0); 				// Protocol : Motorola SPI
+
+		NX_SSP_SetClockPolarityInvert( ModuleIndex, 0);
+		NX_SSP_SetClockPhase( ModuleIndex, 0);
+
+		NX_SSP_SetBitWidth( ModuleIndex, 8); 				// 8 bit
+		NX_SSP_SetSlaveOutputEnable( ModuleIndex, CFALSE);
+
+		if(Slave)
+			NX_SSP_SetSlaveMode( ModuleIndex, CTRUE ); 		// slave mode
+		else
+			NX_SSP_SetSlaveMode( ModuleIndex, CFALSE ); 		// master mode
+
+		NX_SSP_SetInterruptEnable( ModuleIndex,0, CFALSE );
+		NX_SSP_SetInterruptEnable( ModuleIndex,1, CFALSE );
+		NX_SSP_SetInterruptEnable( ModuleIndex,2, CFALSE );
+		NX_SSP_SetInterruptEnable( ModuleIndex,3, CFALSE );
+		NX_SSP_SetDMATransferMode( ModuleIndex, CFALSE );   //DMA_Not use
+	}
+}
+#endif

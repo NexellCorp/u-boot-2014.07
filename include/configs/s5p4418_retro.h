@@ -262,8 +262,8 @@
  * EEPROM
  */
 
-//#define CONFIG_CMD_EEPROM
-//#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
+#define CONFIG_CMD_EEPROM
+#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
 //#define CONFIG_ENV_IS_IN_EEPROM
 
 #if defined(CONFIG_CMD_EEPROM)
@@ -491,7 +491,7 @@
 	#define CONFIG_MMC1_ATTACH      	TRUE    /* 1 = MMC1 : none*/
 	#define CONFIG_MMC2_ATTACH      	FALSE   /* 2 = MMC2 : External */
 
-	#define CONFIG_MMC0_CLOCK			50000000
+	#define CONFIG_MMC0_CLOCK			25000000
 	#define CONFIG_MMC0_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0x1c) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(1)
 
 	#define CONFIG_MMC1_CLOCK			25000000

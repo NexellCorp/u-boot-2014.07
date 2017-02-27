@@ -28,8 +28,8 @@
 #include <asm/arch/fastboot.h>
 
 #define	LOGO_BGCOLOR	(0xffffff)
-static int _logo_left   = CFG_DISP_PRI_RESOL_WIDTH /2 -  50;
-static int _logo_top    = CFG_DISP_PRI_RESOL_HEIGHT/2 + 180;
+static int _logo_left   = CFG_DISP_PRI_RESOL_WIDTH /2 - 120;
+static int _logo_top    = CFG_DISP_PRI_RESOL_HEIGHT/2 + 300;
 static int _logo_width  = 8*24;
 static int _logo_height = 16;
 
@@ -58,7 +58,7 @@ void fboot_lcd_start(void)
 void fboot_lcd_stop(void)
 {
 	/* clear FB */
-	memset((void*)CONFIG_FB_ADDR, 0x00,
+	memset((void*)CONFIG_FB_ADDR, 0xFF,
 		CFG_DISP_PRI_RESOL_WIDTH * CFG_DISP_PRI_RESOL_HEIGHT * CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
 	run_command(CONFIG_CMD_LOGO_WALLPAPERS, 0);
 }

@@ -54,12 +54,6 @@ int do_spi_write(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 	//ret = spi_master_write(0xFFAA, 0x55, 1);
 	ret = spi_master_write(0xF001, 0xAA, 1);
 
-	mdelay(1);
-
-	ret = spi_master_read(0xF001, &buffer, 1);
-
-	printf("## \e[31m PJSMSG \e[0m [%s():%s:%d\t] buffer:0x%x \n", __FUNCTION__, strrchr(__FILE__, '/')+1, __LINE__, buffer);
-
 	return 0;
 }
 

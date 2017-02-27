@@ -899,7 +899,7 @@ void bd_display_run(char *cmd, int bl_duty, int bl_on)
 
 	if (cmd) {
 		/* clear FB */
-		memset((void*)CONFIG_FB_ADDR, 0x00,
+		memset((void*)CONFIG_FB_ADDR, 0xFF,
 			CFG_DISP_PRI_RESOL_WIDTH * CFG_DISP_PRI_RESOL_HEIGHT * CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
 		run_command(cmd, 0);
 		lcd_draw_boot_logo(CONFIG_FB_ADDR, CFG_DISP_PRI_RESOL_WIDTH,

@@ -375,10 +375,14 @@ static int nxe2000_param_setup(struct nxe2000_power *power)
 	#endif
 
 #else
-
-	#if (CONFIG_PMIC_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP)
-		cache[NXE2000_REG_CHGCTL1]	= (1 << NXE2000_POS_CHGCTL1_SUSPEND);
-	#endif
+	cache[NXE2000_REG_CHGCTL1]	= ((0 << NXE2000_POS_CHGCTL1_CHGP)			|
+									(0 << NXE2000_POS_CHGCTL1_CHGCMP_DIS)	|
+									(1 << NXE2000_POS_CHGCTL1_NOBATOVLIM)	|
+									(0 << NXE2000_POS_CHGCTL1_OTG_BOOST_EN)	|
+									(0 << NXE2000_POS_CHGCTL1_SUSPEND)		|
+									(0 << NXE2000_POS_CHGCTL1_JEITAEN)		|
+									(0 << NXE2000_POS_CHGCTL1_VUSBCHGEN)		|
+									(0 << NXE2000_POS_CHGCTL1_VADPCHGEN) );
 #endif	/* CONFIG_HAVE_BATTERY */
 
 	cache[NXE2000_REG_CHGCTL2]	= ( (NXE2000_DEF_CHG_USB_VCONTMASK	<< NXE2000_POS_CHGCTL2_USB_VCONTMASK) |
@@ -489,6 +493,12 @@ static int nxe2000_device_setup(struct nxe2000_power *power)
 	do {
 		nxe2000_i2c_read(NXE2000_REG_FG_CTRL, &cache[NXE2000_REG_FG_CTRL]	, power);
 	} while(cache[NXE2000_REG_FG_CTRL] & 0xC0);
+#else
+	nxe2000_i2c_write(NXE2000_REG_CHGCTL1	, cache[NXE2000_REG_CHGCTL1]	, power);
+	//nxe2000_i2c_write(NXE2000_REG_CHGCTL2	, cache[NXE2000_REG_CHGCTL2]	, power);
+	nxe2000_i2c_write(NXE2000_REG_VSYSSET	, cache[NXE2000_REG_VSYSSET]	, power);
+	//nxe2000_i2c_write(NXE2000_REG_REGISET1	, cache[NXE2000_REG_REGISET1]	, power);
+	//nxe2000_i2c_write(NXE2000_REG_REGISET2	, cache[NXE2000_REG_REGISET2]	, power);
 #endif
 
 	/* Set DCDC voltage register */

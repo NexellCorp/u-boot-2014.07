@@ -243,7 +243,7 @@ void spi_init_f (void)
 		    /* RSTCON Control */
 
 			NX_SSP_SetBaseAddress(ModuleIndex, (void*)IO_ADDRESS(NX_SSP_GetPhysicalAddress(ModuleIndex)));
-			sprintf(name,"nxp-spi%d",ModuleIndex);
+			sprintf(name,"nxp-spi.%d",ModuleIndex);
 			clk= clk_get(NULL, name);
 			clk_set_rate(clk, hz);
 			clk_get_rate(clk);

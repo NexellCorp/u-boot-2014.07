@@ -375,10 +375,14 @@ static int nxe2000_param_setup(struct nxe2000_power *power)
 	#endif
 
 #else
-
-	#if (CONFIG_PMIC_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP)
-		cache[NXE2000_REG_CHGCTL1]	= (1 << NXE2000_POS_CHGCTL1_SUSPEND);
-	#endif
+	cache[NXE2000_REG_CHGCTL1]	= ((0 << NXE2000_POS_CHGCTL1_CHGP)			|
+									(0 << NXE2000_POS_CHGCTL1_CHGCMP_DIS)	|
+									(1 << NXE2000_POS_CHGCTL1_NOBATOVLIM)	|
+									(0 << NXE2000_POS_CHGCTL1_OTG_BOOST_EN)	|
+									(0 << NXE2000_POS_CHGCTL1_SUSPEND)		|
+									(0 << NXE2000_POS_CHGCTL1_JEITAEN)		|
+									(0 << NXE2000_POS_CHGCTL1_VUSBCHGEN)		|
+									(0 << NXE2000_POS_CHGCTL1_VADPCHGEN) );
 #endif	/* CONFIG_HAVE_BATTERY */
 
 	cache[NXE2000_REG_CHGCTL2]	= ( (NXE2000_DEF_CHG_USB_VCONTMASK	<< NXE2000_POS_CHGCTL2_USB_VCONTMASK) |
@@ -454,6 +458,8 @@ static int nxe2000_device_setup(struct nxe2000_power *power)
 	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
 	i2c_set_bus_num(bus);
 
+	nxe2000_i2c_write(NXE2000_REG_BANKSEL, 0x00, power);
+
 #if defined(CONFIG_PMIC_REG_DUMP)
 	printf("##########################################################\n");
 	printf("##\e[31m PMIC OTP Value \e[0m \n");
@@ -487,6 +493,12 @@ static int nxe2000_device_setup(struct nxe2000_power *power)
 	do {
 		nxe2000_i2c_read(NXE2000_REG_FG_CTRL, &cache[NXE2000_REG_FG_CTRL]	, power);
 	} while(cache[NXE2000_REG_FG_CTRL] & 0xC0);
+#else
+	nxe2000_i2c_write(NXE2000_REG_CHGCTL1	, cache[NXE2000_REG_CHGCTL1]	, power);
+	//nxe2000_i2c_write(NXE2000_REG_CHGCTL2	, cache[NXE2000_REG_CHGCTL2]	, power);
+	nxe2000_i2c_write(NXE2000_REG_VSYSSET	, cache[NXE2000_REG_VSYSSET]	, power);
+	//nxe2000_i2c_write(NXE2000_REG_REGISET1	, cache[NXE2000_REG_REGISET1]	, power);
+	//nxe2000_i2c_write(NXE2000_REG_REGISET2	, cache[NXE2000_REG_REGISET2]	, power);
 #endif
 
 	/* Set DCDC voltage register */
@@ -495,9 +507,10 @@ static int nxe2000_device_setup(struct nxe2000_power *power)
 	nxe2000_i2c_write(NXE2000_REG_DC2VOL	, cache[NXE2000_REG_DC2VOL]		, power);
 #endif
 	nxe2000_i2c_write(NXE2000_REG_DC3VOL	, cache[NXE2000_REG_DC3VOL]		, power);
+#ifdef CONFIG_ENABLE_INIT_VOLTAGE
 	nxe2000_i2c_write(NXE2000_REG_DC4VOL	, cache[NXE2000_REG_DC4VOL]		, power);
 	nxe2000_i2c_write(NXE2000_REG_DC5VOL	, cache[NXE2000_REG_DC5VOL]		, power);
-
+#endif
 	nxe2000_i2c_write(NXE2000_REG_DC1VOL_SLP, cache[NXE2000_REG_DC1VOL_SLP]	, power);
 	nxe2000_i2c_write(NXE2000_REG_DC2VOL_SLP, cache[NXE2000_REG_DC2VOL_SLP]	, power);
 	nxe2000_i2c_write(NXE2000_REG_DC3VOL_SLP, cache[NXE2000_REG_DC3VOL_SLP]	, power);
@@ -767,7 +780,7 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 
 	printf("poweroff_his : 0x%02x \n", poweroff_his);
 	printf("poweron_his  : 0x%02x \n", poweron_his);
-	printf("chg_state    : 0x%02x,    chrg_type        : %s\n", 
+	printf("chg_state    : 0x%02x,    chrg_type        : %s\n",
 							chg_state, (chrg == CHARGER_USB ? "USB" : (chrg == CHARGER_TA ? (((chg_state>>6) & 0x2) ? "ADP(USB)" : "ADP"): "NONE")));
 	printf("avg_voltage  : %d, shutdown_ilim_uV : %d\n", avg_voltage, shutdown_ilim_uV);
 
@@ -1054,8 +1067,12 @@ int power_pmic_function_init(void)
 	ret |= power_nxe2000_init();
 	ret |= power_nxe2000_bat_init(i2c_bus);
 #endif
+#if defined(CONFIG_POWER_FG_NXE2000)
 	ret |= power_nxe2000_fg_init(i2c_bus);
+#endif
+#if defined(CONFIG_POWER_MUIC_NXE2000)
 	ret |= power_nxe2000_muic_init(i2c_bus);
+#endif
 
 	return ret;
 }

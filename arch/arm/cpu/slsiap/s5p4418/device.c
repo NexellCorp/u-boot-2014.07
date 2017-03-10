@@ -69,6 +69,36 @@
 #ifdef CFG_IO_I2C3_SDA
 	#define	I2C3_SDA	CFG_IO_I2C3_SDA
 #endif
+#ifdef CFG_IO_I2C4_SCL
+	#define	I2C4_SCL	CFG_IO_I2C4_SCL
+#endif
+#ifdef CFG_IO_I2C4_SDA
+	#define	I2C4_SDA	CFG_IO_I2C4_SDA
+#endif
+#ifdef CFG_IO_I2C5_SCL
+    #define I2C5_SCL    CFG_IO_I2C5_SCL
+#endif
+#ifdef CFG_IO_I2C5_SDA
+    #define I2C5_SDA    CFG_IO_I2C5_SDA
+#endif
+#ifdef CFG_IO_I2C6_SCL
+    #define I2C6_SCL    CFG_IO_I2C6_SCL
+#endif
+#ifdef CFG_IO_I2C6_SDA
+    #define I2C6_SDA    CFG_IO_I2C6_SDA
+#endif
+#ifdef CFG_IO_I2C7_SCL
+    #define I2C7_SCL    CFG_IO_I2C7_SCL
+#endif
+#ifdef CFG_IO_I2C7_SDA
+    #define I2C7_SDA    CFG_IO_I2C7_SDA
+#endif
+#ifdef CFG_IO_I2C8_SCL
+    #define I2C8_SCL    CFG_IO_I2C8_SCL
+#endif
+#ifdef CFG_IO_I2C8_SDA
+    #define I2C8_SDA    CFG_IO_I2C8_SDA
+#endif
 
 struct i2c_dev i2c_devices[] = {
 	{ .bus = 0, .scl = I2C0_SCL, .sda = I2C0_SDA, .speed = CONFIG_SYS_I2C_SPEED, .nostop = CONFIG_I2C0_NO_STOP, },
@@ -76,6 +106,21 @@ struct i2c_dev i2c_devices[] = {
 	{ .bus = 2, .scl = I2C2_SCL, .sda = I2C2_SDA, .speed = CONFIG_SYS_I2C_SPEED, .nostop = CONFIG_I2C2_NO_STOP, },
 #if defined (CFG_IO_I2C3_SCL) || defined (CFG_IO_I2C3_SDA)
 	{ .bus = 3, .scl = I2C3_SCL, .sda = I2C3_SDA, .speed = CONFIG_SYS_I2C_SPEED, .nostop = CONFIG_I2C3_NO_STOP, },
+#endif
+#if defined (CFG_IO_I2C4_SCL) || defined (CFG_IO_I2C4_SDA)
+	{ .bus = 4, .scl = I2C4_SCL, .sda = I2C4_SDA, .speed = CONFIG_SYS_I2C_SPEED, .nostop = CONFIG_I2C4_NO_STOP, },
+#endif
+#if defined (CFG_IO_I2C5_SCL) || defined (CFG_IO_I2C5_SDA)
+    { .bus = 5, .scl = I2C5_SCL, .sda = I2C5_SDA, .speed = CONFIG_SYS_I2C_SPEED, .nostop = CONFIG_I2C5_NO_STOP, },
+#endif
+#if defined (CFG_IO_I2C6_SCL) || defined (CFG_IO_I2C6_SDA)
+    { .bus = 6, .scl = I2C6_SCL, .sda = I2C6_SDA, .speed = CONFIG_SYS_I2C_SPEED, .nostop = CONFIG_I2C6_NO_STOP, },
+#endif
+#if defined (CFG_IO_I2C7_SCL) || defined (CFG_IO_I2C7_SDA)
+    { .bus = 7, .scl = I2C7_SCL, .sda = I2C7_SDA, .speed = CONFIG_SYS_I2C_SPEED, .nostop = CONFIG_I2C7_NO_STOP, },
+#endif
+#if defined (CFG_IO_I2C8_SCL) || defined (CFG_IO_I2C8_SDA)
+    { .bus = 8, .scl = I2C8_SCL, .sda = I2C8_SDA, .speed = CONFIG_SYS_I2C_SPEED, .nostop = CONFIG_I2C8_NO_STOP, },
 #endif
 };
 

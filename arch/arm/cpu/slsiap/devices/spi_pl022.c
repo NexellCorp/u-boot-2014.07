@@ -55,7 +55,7 @@
 #define MAX_ADDR_LEN	8
 
 static U8 spi_type[3];
-static U8 cur_module = 0;
+static U8 cur_module = CONFIG_EEPROM_SPI_MODULE_NUM;
 
 static void flash_sector_erase(U32 eraseaddr, int alen);
 static U8 is_flash_ready(U8 status);
@@ -116,7 +116,7 @@ struct spi_param _spi_param[3] = {
 		/* CLOCK GEN */
 		.clkgenEnable    	= CTRUE,
 		/* SPI_ClOCK Set */
-	
+
 		.spi_type 		= CONFIG_SPI_MODULE_0_EEPROM,
 		#else
 		0,
@@ -126,8 +126,8 @@ struct spi_param _spi_param[3] = {
 	{
 		#ifdef	CONFIG_SPI_MODULE_1
 		/* SPI_CLOCK */
-		.hz 			= CONFIG_SPI_MODULE_0_SOURCE_CLOCK,
-		.req 			= CONFIG_SPI_MODULE_0_CLOCK,
+		.hz 			= CONFIG_SPI_MODULE_1_SOURCE_CLOCK,
+		.req 			= CONFIG_SPI_MODULE_1_CLOCK,
 		/* CLOCK GEN */
 		.clkgenEnable   = CTRUE,
 		/* SPI_ClOCK Set */
@@ -177,14 +177,34 @@ static void WP_EN(void)
 
 static void CS_ON(void)
 {
+#ifdef CONFIG_SPI_MODULE_0
     NX_GPIO_SetOutputValue(_spi_pad[0].fss.pad /32, _spi_pad[0].fss.pad % 32 , 0);
   	NX_GPIO_SetOutputEnable(_spi_pad[0].fss.pad /32, _spi_pad[0].fss.pad % 32 , 1);
+#endif
+#ifdef CONFIG_SPI_MODULE_1
+    NX_GPIO_SetOutputValue(_spi_pad[1].fss.pad /32, _spi_pad[1].fss.pad % 32 , 0);
+  	NX_GPIO_SetOutputEnable(_spi_pad[1].fss.pad /32, _spi_pad[1].fss.pad % 32 , 1);
+#endif
+#ifdef CONFIG_SPI_MODULE_2
+    NX_GPIO_SetOutputValue(_spi_pad[2].fss.pad /32, _spi_pad[2].fss.pad % 32 , 0);
+  	NX_GPIO_SetOutputEnable(_spi_pad[2].fss.pad /32, _spi_pad[2].fss.pad % 32 , 1);
+#endif
 }
 
 static void CS_OFF(void)
 {
+#ifdef CONFIG_SPI_MODULE_0
 	NX_GPIO_SetOutputValue(_spi_pad[0].fss.pad /32, _spi_pad[0].fss.pad % 32 , 1);
 	NX_GPIO_SetOutputEnable(_spi_pad[0].fss.pad /32, _spi_pad[0].fss.pad % 32 , 1);
+#endif
+#ifdef CONFIG_SPI_MODULE_1
+	NX_GPIO_SetOutputValue(_spi_pad[1].fss.pad /32, _spi_pad[1].fss.pad % 32 , 1);
+	NX_GPIO_SetOutputEnable(_spi_pad[1].fss.pad /32, _spi_pad[1].fss.pad % 32 , 1);
+#endif
+#ifdef CONFIG_SPI_MODULE_2
+	NX_GPIO_SetOutputValue(_spi_pad[2].fss.pad /32, _spi_pad[2].fss.pad % 32 , 1);
+	NX_GPIO_SetOutputEnable(_spi_pad[2].fss.pad /32, _spi_pad[2].fss.pad % 32 , 1);
+#endif
 }
 
 static u32 spi_rate(u32 rate, u16 cpsdvsr, u16 scr)
@@ -199,7 +219,7 @@ static int calculate_effective_freq(struct clk *clk, int freq, struct
 	u16 cpsdvsr = CPSDVR_MIN, scr = SCR_MIN;
 	u32 rate, max_tclk, min_tclk, best_freq = 0, best_cpsdvsr = 0,
 		best_scr = 0, tmp, found = 0;
-	
+
 	rate = clk_get_rate(clk);
 	/* cpsdvscr = 2 & scr 0 */
 	max_tclk = spi_rate(rate, CPSDVR_MIN, SCR_MIN);
@@ -265,7 +285,7 @@ static int calculate_effective_freq(struct clk *clk, int freq, struct
 void spi_init_f (void)
 {
 	int ModuleIndex =0;
-	
+
 	struct clk *clk = NULL;
 	struct ssp_clock_params clk_freq = {0};
 	char name[10]= {0, };
@@ -290,12 +310,12 @@ void spi_init_f (void)
 		    /* RSTCON Control */
 
 			NX_SSP_SetBaseAddress( ModuleIndex, (U32)NX_SSP_GetPhysicalAddress(ModuleIndex) );
-			sprintf(name,"nxp-spi%d",ModuleIndex);
+			sprintf(name,"nxp-spi.%d",ModuleIndex);
 			clk= clk_get(NULL, name);
 			hz = _spi_param[ModuleIndex].hz;
 			rate = clk_set_rate(clk,hz);
 			clk_enable(clk);
-						
+
 		    NX_RSTCON_SetnRST(NX_SSP_GetResetNumber( ModuleIndex, NX_SSP_PRESETn ), RSTCON_nDISABLE);
 			NX_RSTCON_SetnRST(NX_SSP_GetResetNumber( ModuleIndex, NX_SSP_nSSPRST ), RSTCON_nDISABLE);
 		    NX_RSTCON_SetnRST(NX_SSP_GetResetNumber( ModuleIndex, NX_SSP_PRESETn ), RSTCON_nENABLE);
@@ -334,7 +354,7 @@ ssize_t spi_read  (uchar *addr, int alen, uchar *buffer, int len)
 	U32 index = 0,i=0;
 	volatile U8 tmp;
 	DBGOUT(" %s moudele = %d\n", __func__, device);
-	
+
 	spi_init_f();
 
 	if(alen > MAX_ADDR_LEN)
@@ -390,7 +410,7 @@ ssize_t spi_read  (uchar *addr, int alen, uchar *buffer, int len)
 
 	NX_SSP_SetEnable( device, CFALSE );
 	CS_OFF();
-	
+
 	return len;
 }
 
@@ -488,7 +508,7 @@ static U8 flash_page_program(U32 dwFlashAddr, int alen, uchar * databuffer, U32 
 		udelay(1000);
 		temp = is_flash_ready(SER_SR_READY);
 	} while( !((temp & SER_SR_WEN) == SER_SR_WEN) || (temp & SER_SR_READY));
-	
+
 	CS_ON();
 	NX_SSP_PutByte(device, cmd); 		//send WRITE COMMAND
 
@@ -496,7 +516,7 @@ static U8 flash_page_program(U32 dwFlashAddr, int alen, uchar * databuffer, U32 
 	{
 		NX_SSP_PutByte(device, addr[i]); //send addr
 	}
-	
+
 	NX_SSP_SetEnable( device, CTRUE );
 	while(!NX_SSP_IsTxFIFOEmpty(device));// ready to Fifo Empty
 	while(!(NX_SSP_IsRxFIFOEmpty(device)))
@@ -555,7 +575,7 @@ static U8 is_flash_ready(U8 status)
 
 		while(!(NX_SSP_IsTxFIFOEmpty(device)));
 		while((NX_SSP_IsRxFIFOEmpty(device)));
-		
+
 		tmp = NX_SSP_GetByte(device);
 
 		while((NX_SSP_IsRxFIFOEmpty(device)));
@@ -564,7 +584,7 @@ static U8 is_flash_ready(U8 status)
 
 		while(!(NX_SSP_IsRxFIFOEmpty(device)));
 
-		
+
 		NX_SSP_SetEnable( device, CFALSE );
 		CS_OFF();
 //	}	while(!(ret & status) );
@@ -603,7 +623,7 @@ ssize_t spi_write (uchar *addr, int alen, uchar *buffer, int len)
 		SPIMSG("fail : addrlen small than %d \n",MAX_ADDR_LEN);
 		return -1;
 	}
-	
+
 	if(spi_type[device] == SPI_TYPE_EEPROM )
 	{
 		WriteSize = len;

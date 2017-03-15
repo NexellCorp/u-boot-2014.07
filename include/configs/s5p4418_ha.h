@@ -54,8 +54,8 @@
 #define CONFIG_MEM_MALLOC_LENGTH		32*1024*1024
 
 /* when CONFIG_LCD */
-//#define CONFIG_FB_ADDR					0x46000000
-//#define CONFIG_BMP_ADDR				0x47000000
+#define CONFIG_FB_ADDR					0x44000000
+#define CONFIG_BMP_ADDR					0x45000000
 
 /* Download OFFSET */
 #define CONFIG_MEM_LOAD_ADDR			0x46000000//0x48000000
@@ -118,7 +118,7 @@
 #define CONFIG_GATEWAYIP				192.168.1.254
 #define CONFIG_BOOTFILE					"uImage"  		/* File to load	*/
 
-#define CONFIG_BOOTCOMMAND "mmc dev 0;mmc read 0x46000000 0x1000 0x7800;bootm 0x46000000"
+#define CONFIG_BOOTCOMMAND "mmc dev 0;mmc read 0x46000000 0x1000 0xA000;bootm 0x46000000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -389,7 +389,7 @@
 		#define CONFIG_POWER_MUIC_NXE2000
 		#define CONFIG_POWER_FG_NXE2000
 
-		#define CONFIG_PMIC_CHARGING_PATH	CONFIG_PMIC_CHARGING_PATH_ADP
+		#define CONFIG_PMIC_CHARGING_PATH	CONFIG_PMIC_CHARGING_PATH_ADP_UBC
 
 		#define CONFIG_SW_UBC_DETECT							/* need with CONFIG_FASTBOOT. */
 

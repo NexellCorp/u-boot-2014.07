@@ -641,7 +641,7 @@ static int power_nxe2000_init(void)
 
 int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 {
-#if defined(CONFIG_DISPLAY_OUT)
+#if	defined(CONFIG_DISPLAY_OUT)
 	lcd_info lcd = {
 		.fb_base		= CONFIG_FB_ADDR,
 		.bit_per_pixel	= CFG_DISP_PRI_SCREEN_PIXEL_BYTE * 8,
@@ -803,31 +803,38 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 	else
 	{
 		bl_duty = (CFG_LCD_PRI_PWM_DUTYCYCLE / 2);
-		show_bat_state = 1;
-		power_key_depth = 0;
+		show_bat_state = 0;
+		power_key_depth = 2;
 	}
 
 	/*===========================================================*/
 	if(skip)
 		power_key_depth = 2;
 
-#if defined(CONFIG_DISPLAY_OUT)
 	/*===========================================================*/
     if (power_key_depth > 1)
     {
-        bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, bl_duty, 1);
+#if	defined(CONFIG_DISPLAY_OUT)
+		if(bd_display_run != NULL)
+	        bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, bl_duty, 1);
+#endif
         goto skip_bat_animation;
     }
     else if (show_bat_state)
     {
-        memset((void*)lcd.fb_base, 0, lcd.lcd_width * lcd.lcd_height * (lcd.bit_per_pixel/8));
-        bd_display_run(CONFIG_CMD_LOGO_BATTERY, bl_duty, 1);
+#if	defined(CONFIG_DISPLAY_OUT)
+		if(bd_display_run != NULL) {
+	        memset((void*)lcd.fb_base, 0, lcd.lcd_width * lcd.lcd_height * (lcd.bit_per_pixel/8));
+	        bd_display_run(CONFIG_CMD_LOGO_BATTERY, bl_duty, 1);
+		}
+#endif
     }
 
 	/*===========================================================*/
 	// draw charing image
 	if (show_bat_state)
 	{
+#if	defined(CONFIG_DISPLAY_OUT)
 		int lcdw = lcd.lcd_width, lcdh = lcd.lcd_height;
 		int bmpw = 240, bmph = 320;
 		int bw = 82, bh = 55;
@@ -835,11 +842,14 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 		int sx, sy, dy, str_dy, clr_str_size;
 		unsigned int color = (54<<16) + (221 << 8) + (19);
 		int i = 0;
+#endif
 		u32 time_pwr_prev;
 		u32 back_reg;
 		u32 temp_reg;
 		u32 temp_chgstate;
 		int temp_ccaverage;
+
+#if	defined(CONFIG_DISPLAY_OUT)
 		char *str_charging		= " Charging...   ";
 		char *str_discharging	= " Discharging...";
 		char *str_lowbatt  		= " Low Battery...";
@@ -850,6 +860,7 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 		sy = (lcdh - bmph)/2 + by;
 		dy = sy + (bh+4)*3;
 		str_dy = dy;
+#endif
 
 		printf(".");
 		pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &back_reg);
@@ -878,6 +889,7 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 
 		pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, back_reg);
 
+#if	defined(CONFIG_DISPLAY_OUT)
 		lcd_debug_init(&lcd);
 
 		if(show_bat_state == 3)
@@ -891,6 +903,7 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 			else
 				lcd_draw_text(str_charging, (lcdw - strlen(str_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
 		}
+#endif
 
 		time_pwr_prev = nxp_rtc_get();
 
@@ -903,14 +916,20 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 				bl_duty = (bl_duty >> 1);
 				if(power_depth > 0)
 				{
-					bd_display_run(NULL, bl_duty, 1);
+#if	defined(CONFIG_DISPLAY_OUT)
+					if(bd_display_run != NULL)
+						bd_display_run(NULL, bl_duty, 1);
+#endif
 					power_depth--;
 				}
+#if	defined(CONFIG_DISPLAY_OUT)
 				else
 				{
-					bd_display_run(NULL, 0, 0);
+					if(bd_display_run != NULL)
+						bd_display_run(NULL, 0, 0);
 					memset((void*)lcd.fb_base, 0, lcd.lcd_width * lcd.lcd_height * (lcd.bit_per_pixel/8));
 				}
+#endif
 			}
 
 			if(show_bat_state != 3)
@@ -922,28 +941,6 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 
 				gpio_set_int_clear(GPIO_POWER_KEY_DET);
 
-#if 0
-				p_fg->fg->fg_battery_check(p_fg, p_bat);
-
-				if(p_muic)
-					chrg = p_muic->chrg->chrg_type(p_muic, 0);
-				else
-					chrg = p_chrg->chrg->chrg_type(p_chrg, 0);
-
-				if(chrg == CHARGER_USB)
-				{
-					shutdown_ilim_uV = NXE2000_DEF_LOWBAT_USB_PC_VOL;
-				}
-				else if(chrg == CHARGER_TA)
-				{
-					shutdown_ilim_uV = NXE2000_DEF_LOWBAT_ADP_VOL;
-				}
-				else
-				{
-					shutdown_ilim_uV = NXE2000_DEF_LOWBAT_BATTERY_VOL;
-				}
-#endif
-
 				if (power_key_depth > 1)
 				{
 					if (pb->bat->voltage_uV >= shutdown_ilim_uV)
@@ -953,6 +950,7 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 					}
 				}
 			}
+#if	defined(CONFIG_DISPLAY_OUT)
 
 			/* Draw battery status */
 			if (power_depth > 0)
@@ -966,9 +964,9 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 				else
 				{
 					dy = sy + (bh+4)*3;
+					i = 0;
 					printf("\n");
 					lcd_draw_boot_logo(CONFIG_FB_ADDR, CFG_DISP_PRI_RESOL_WIDTH, CFG_DISP_PRI_RESOL_HEIGHT, CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
-					i = 0;
 				}
 
 				if(show_bat_state == 3)
@@ -983,7 +981,7 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 						lcd_draw_text(str_charging, (lcdw - strlen(str_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
 				}
 			}
-
+#endif
 			if(!power_depth)
 			{
 				printf("\n");
@@ -993,12 +991,13 @@ int power_battery_check(int skip, void (*bd_display_run)(char *, int, int))
 			mdelay(1000);
 		}
 		printf("\n");
-		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+#if	defined(CONFIG_DISPLAY_OUT)
+		if(bd_display_run != NULL)
+			bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+#endif
 	}
 
 skip_bat_animation:
-#endif  /* CONFIG_DISPLAY_OUT */
-
 	if(p_muic)
 		chrg = p_muic->chrg->chrg_type(p_muic, 1);
 	else

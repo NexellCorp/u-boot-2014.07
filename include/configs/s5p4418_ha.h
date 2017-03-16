@@ -118,7 +118,7 @@
 #define CONFIG_GATEWAYIP				192.168.1.254
 #define CONFIG_BOOTFILE					"uImage"  		/* File to load	*/
 
-#define CONFIG_BOOTCOMMAND "mmc dev 0;mmc read 0x46000000 0x1000 0xA000;bootm 0x46000000"
+#define CONFIG_BOOTCOMMAND "mmc dev 0;mmc read 0x46000000 0x1000 0x5000;mmc read 0x47000000 0x18000 0x5000;bootm 0x46000000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -566,7 +566,8 @@
 			"flash=mmc,0:2ndboot:2nd:0x200,0x7E00;"			\
 			"flash=mmc,0:bootloader:boot:0x8000,0x70000;"	\
 			"flash=mmc,0:kernel:raw:0x200000,0x2800000;"	\
-			"flash=mmc,0:userdata:ext4:0x3000000,0x0;"
+			"flash=mmc,0:ramdisk:raw:0x3000000,0x2000000;"	\
+			"flash=mmc,0:userdata:ext4:0x5000000,0x0;"
 #endif
 
 /*-----------------------------------------------------------------------

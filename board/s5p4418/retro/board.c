@@ -855,7 +855,7 @@ void MJ40150N_lcd_on(void)
 	ssize_t ret;
 	int i, init_size;
 
-	spi_master_init(0, 0);
+	spi_master_init(2, 0);
 
 	ret = spi_master_write(0x1100, 0x00, 0);
 	mdelay(100);
@@ -878,7 +878,7 @@ void MJ40150N_lcd_init(void)
 	NX_GPIO_SetOutputValue(grp, bit, CTRUE);
 	mdelay(10);
 
-	spi_master_init(0, 0);
+	spi_master_init(2, 0);
 	init_size = sizeof(mj40150n_init_data)/sizeof(mj40150n_init_data[0]);
 
 	for (i=0; i<init_size; i++)

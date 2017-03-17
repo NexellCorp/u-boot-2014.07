@@ -140,8 +140,8 @@ struct spi_param _spi_param[3] = {
 	{
 		#ifdef	CONFIG_SPI_MODULE_2
 		/* SPI_CLOCK */
-		.hz 			= CONFIG_SPI_MODULE_0_SOURCE_CLOCK,
-		.req 			= CONFIG_SPI_MODULE_0_CLOCK,
+		.hz 			= CONFIG_SPI_MODULE_2_SOURCE_CLOCK,
+		.req 			= CONFIG_SPI_MODULE_2_CLOCK,
 		/* CLOCK GEN */
 		.clkgenEnable    = CTRUE,
 	/* SPI_ClOCK Set */

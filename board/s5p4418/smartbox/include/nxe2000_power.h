@@ -198,7 +198,7 @@
 #define NXE2000_DEF_CHG_VUSB_BUCK_THS		0		/* VAL(V) = 0: 4.1 ~ 4.2, 1: 4.2 ~ 4.3, 2: 4.3 ~ 4.4, 3: 4.4 ~ 4.5, default(OTP) = 4.1 ~ 4.2V */
 #define NXE2000_DEF_CHG_VADP_BUCK_THS		0		/* VAL(V) = 0: 4.1 ~ 4.2, 1: 4.2 ~ 4.3, 2: 4.3 ~ 4.4, 3: 4.4 ~ 4.5, default(OTP) = 4.1 ~ 4.2V */
 
-#define NXE2000_DEF_CHG_VSYS_VOL			3		/* VAL(V) = 0: 3.60, 1: 4.00, 2: 4.40, 3: 4.55, default = 4.00V */
+#define NXE2000_DEF_CHG_VSYS_VOL			0		/* VAL(V) = 0: 3.60, 1: 4.00, 2: 4.40, 3: 4.55, default = 4.00V */
 #define NXE2000_DEF_CHG_VSYS_OVER_VOL		1		/* VAL(V) = 0: 4.8 ~ 5.3, 1: 5.0 ~ 5.5, 2: 5.2 ~ 5.7, 3: 5.2 ~ 5.7, default = 5.0 ~ 5.5V */
 
 #define NXE2000_DEF_CHG_RAPID_TTIM_40		0

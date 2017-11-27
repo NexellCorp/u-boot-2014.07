@@ -159,21 +159,14 @@
 #define	NXE2000_DEF_DDC4_RAMP_SLOP			0		/* VAL(mV/us) = 0: 14, 1: 7, 2: 3.5, 3: prohibit, default = 14mV/us */
 #define	NXE2000_DEF_DDC5_RAMP_SLOP			0		/* VAL(mV/us) = 0: 14, 1: 7, 2: 3.5, 3: prohibit, default = 14mV/us */
 
-// psw0523 for 1.2GHz Overcurrent power down
-#if 0
-#define	NXE2000_DEF_DDC1_CUR_LIMIT			1		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
-#define	NXE2000_DEF_DDC2_CUR_LIMIT			1		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
+#define	NXE2000_DEF_DDC1_CUR_LIMIT			3		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
+#define	NXE2000_DEF_DDC2_CUR_LIMIT			3		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
 #define	NXE2000_DEF_DDC3_CUR_LIMIT			1		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
-#else
-#define	NXE2000_DEF_DDC1_CUR_LIMIT			0		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
-#define	NXE2000_DEF_DDC2_CUR_LIMIT			0		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
-#define	NXE2000_DEF_DDC3_CUR_LIMIT			0		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
-#endif
 #define	NXE2000_DEF_DDC4_CUR_LIMIT			1		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
 #define	NXE2000_DEF_DDC5_CUR_LIMIT			1		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
 
-#define	NXE2000_DEF_DDC1_LIMSHUT_EN			0		/* VAL = 0: Disable, 1: Enable */
-#define	NXE2000_DEF_DDC2_LIMSHUT_EN			0		/* VAL = 0: Disable, 1: Enable */
+#define	NXE2000_DEF_DDC1_LIMSHUT_EN			1		/* VAL = 0: Disable, 1: Enable */
+#define	NXE2000_DEF_DDC2_LIMSHUT_EN			1		/* VAL = 0: Disable, 1: Enable */
 #define	NXE2000_DEF_DDC3_LIMSHUT_EN			1		/* VAL = 0: Disable, 1: Enable */
 #define	NXE2000_DEF_DDC4_LIMSHUT_EN			1		/* VAL = 0: Disable, 1: Enable */
 #define	NXE2000_DEF_DDC5_LIMSHUT_EN			1		/* VAL = 0: Disable, 1: Enable */
@@ -205,7 +198,7 @@
 #define NXE2000_DEF_CHG_VUSB_BUCK_THS		0		/* VAL(V) = 0: 4.1 ~ 4.2, 1: 4.2 ~ 4.3, 2: 4.3 ~ 4.4, 3: 4.4 ~ 4.5, default(OTP) = 4.1 ~ 4.2V */
 #define NXE2000_DEF_CHG_VADP_BUCK_THS		0		/* VAL(V) = 0: 4.1 ~ 4.2, 1: 4.2 ~ 4.3, 2: 4.3 ~ 4.4, 3: 4.4 ~ 4.5, default(OTP) = 4.1 ~ 4.2V */
 
-#define NXE2000_DEF_CHG_VSYS_VOL			3		/* VAL(V) = 0: 3.60, 1: 4.00, 2: 4.40, 3: 4.55, default = 4.00V */
+#define NXE2000_DEF_CHG_VSYS_VOL			0		/* VAL(V) = 0: 3.60, 1: 4.00, 2: 4.40, 3: 4.55, default = 4.00V */
 #define NXE2000_DEF_CHG_VSYS_OVER_VOL		1		/* VAL(V) = 0: 4.8 ~ 5.3, 1: 5.0 ~ 5.5, 2: 5.2 ~ 5.7, 3: 5.2 ~ 5.7, default = 5.0 ~ 5.5V */
 
 #define NXE2000_DEF_CHG_RAPID_TTIM_40		0

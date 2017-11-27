@@ -247,12 +247,30 @@ void display_lvds(int module, unsigned int fbbase,
 
 	/* set lvds control */
 	disp_lvds_setup(module, input, pvsync, plvds);
+#if defined(CONFIG_PLAT_S5P4418_SVM_REF)
+	disp_lvds_enable(1);
+	/* LCD Device Power On */
+#ifdef CFG_IO_LCD_PWR_ENB
+	disp_lcd_device(CFG_IO_LCD_PWR_ENB);
+#endif
+#ifdef CFG_IO_LCD_GATEPWR_ENB
+	disp_lcd_device(CFG_IO_LCD_GATEPWR_ENB);
+#endif
+#ifdef CFG_IO_LCD_GATE_ENB
+	disp_lcd_device(CFG_IO_LCD_GATE_ENB);
+#endif
+#ifdef CFG_IO_BL_PWR_ENB
+	mdelay(130);
+	disp_lcd_device(CFG_IO_BL_PWR_ENB);
+#endif
+#else
 	disp_lvds_enable(1);
 
 	/* LCD Device Power On */
 	#ifdef CFG_IO_LCD_PWR_ENB
 	disp_lcd_device(CFG_IO_LCD_PWR_ENB);
 	#endif
+#endif
 }
 
 

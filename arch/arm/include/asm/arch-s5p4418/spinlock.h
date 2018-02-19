@@ -6,6 +6,11 @@
 #define barrier()	 	__asm__ __volatile__("": : :"memory")
 #define cpu_relax()     barrier()
 
+#if !defined(CONFIG_SMP)
+static inline void raw_spin_lock(spinlock_t *lock) {}
+static inline void raw_spin_unlock(spinlock_t *lock) {}
+#else
+
 static inline void raw_spin_lock(spinlock_t *lock)
 {
     unsigned long tmp;
@@ -39,5 +44,6 @@ static inline void raw_spin_unlock(spinlock_t *lock)
 		"sev"
 	);
 }
+#endif
 
 #endif /* __ASM_LINUX_SPINLOCK_H */

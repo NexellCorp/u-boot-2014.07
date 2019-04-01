@@ -22,6 +22,121 @@
       "revId": "3631e50279ff8596a268558f2fc8b2dfe23f4015",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "4c498993_5636c696",
+        "filename": "board/s5p4418/slt/board.c",
+        "patchSetId": 1
+      },
+      "lineNbr": 283,
+      "author": {
+        "id": 1015645
+      },
+      "writtenOn": "2019-04-01T09:40:47Z",
+      "side": 1,
+      "message": "remove unused functions",
+      "range": {
+        "startLine": 281,
+        "startChar": 0,
+        "endLine": 283,
+        "endChar": 6
+      },
+      "revId": "3631e50279ff8596a268558f2fc8b2dfe23f4015",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bed99c47_d6b6988a",
+        "filename": "board/s5p4418/slt/board.c",
+        "patchSetId": 1
+      },
+      "lineNbr": 332,
+      "author": {
+        "id": 1015645
+      },
+      "writtenOn": "2019-04-01T09:40:47Z",
+      "side": 1,
+      "message": "remove unused functions",
+      "range": {
+        "startLine": 307,
+        "startChar": 0,
+        "endLine": 332,
+        "endChar": 1
+      },
+      "revId": "3631e50279ff8596a268558f2fc8b2dfe23f4015",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "eb819a17_48d754d2",
+        "filename": "board/s5p4418/slt/board.c",
+        "patchSetId": 1
+      },
+      "lineNbr": 356,
+      "author": {
+        "id": 1015645
+      },
+      "writtenOn": "2019-04-01T09:40:47Z",
+      "side": 1,
+      "message": "remove unused functions",
+      "range": {
+        "startLine": 334,
+        "startChar": 0,
+        "endLine": 356,
+        "endChar": 1
+      },
+      "revId": "3631e50279ff8596a268558f2fc8b2dfe23f4015",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "838332db_18d8e6ae",
+        "filename": "board/s5p4418/slt/board.c",
+        "patchSetId": 1
+      },
+      "lineNbr": 359,
+      "author": {
+        "id": 1015645
+      },
+      "writtenOn": "2019-04-01T09:40:47Z",
+      "side": 1,
+      "message": "remove unused functions",
+      "range": {
+        "startLine": 358,
+        "startChar": 0,
+        "endLine": 359,
+        "endChar": 40
+      },
+      "revId": "3631e50279ff8596a268558f2fc8b2dfe23f4015",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "a37f94b2_a67bc446",
+        "filename": "board/s5p4418/slt/board.c",
+        "patchSetId": 1
+      },
+      "lineNbr": 401,
+      "author": {
+        "id": 1015645
+      },
+      "writtenOn": "2019-04-01T09:40:47Z",
+      "side": 1,
+      "message": "remove unused functions",
+      "range": {
+        "startLine": 369,
+        "startChar": 0,
+        "endLine": 401,
+        "endChar": 6
+      },
+      "revId": "3631e50279ff8596a268558f2fc8b2dfe23f4015",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
